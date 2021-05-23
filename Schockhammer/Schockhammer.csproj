@@ -7,7 +7,7 @@
     <ProjectGuid>{3578F34A-A505-4FA9-9FE3-26BFEF6A85BD}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>H3VR_Mods</RootNamespace>
+    <RootNamespace>Schockhammer</RootNamespace>
     <AssemblyName>Schockhammer</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
