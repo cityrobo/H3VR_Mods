@@ -33,16 +33,14 @@ namespace FistVR
 			}
 			if (this.sbState == SwitchBladeWeapon.SwitchBladeState.Closed)
 			{
-				this.sbState = SwitchBladeWeapon.SwitchBladeState.Open;
-				this.StartCoroutine("OpenBlade");
 				PlaySound(audio_source, open_clip);
+				this.StartCoroutine("OpenBlade");
 				this.MP.CanNewStab = true;
 			}
 			else if (this.sbState == SwitchBladeWeapon.SwitchBladeState.Open)
 			{
-				this.sbState = SwitchBladeWeapon.SwitchBladeState.Closed;
-				this.StartCoroutine("CloseBlade");
 				PlaySound(audio_source, close_clip);
+				this.StartCoroutine("CloseBlade");
 				this.MP.CanNewStab = false;
 			}
 		}
@@ -54,6 +52,7 @@ namespace FistVR
 
 		private IEnumerator OpenBlade()
         {
+			this.sbState = SwitchBladeWeapon.SwitchBladeState.Opening;
 			timeElapsed = 0f;
 			while (timeElapsed < BladeOpeningTime)
 			{
@@ -62,10 +61,12 @@ namespace FistVR
 				yield return null;
 			}
 			SetBladeRot(1f);
+			this.sbState = SwitchBladeWeapon.SwitchBladeState.Open;
 		}
 
 		private IEnumerator CloseBlade()
 		{
+			this.sbState = SwitchBladeWeapon.SwitchBladeState.Closing;
 			timeElapsed = 0f;
 			while (timeElapsed < BladeClosingTime)
             {
@@ -74,6 +75,7 @@ namespace FistVR
 				yield return null;
 			}
 			SetBladeRot(0f);
+			this.sbState = SwitchBladeWeapon.SwitchBladeState.Closed;
 		}
 
 		private void PlaySound(AudioSource A_source, AudioClip A_clip)
@@ -84,7 +86,9 @@ namespace FistVR
 
 		public enum SwitchBladeState
 		{
+			Closing,
 			Closed,
+			Opening,
 			Open,
 		}
 
