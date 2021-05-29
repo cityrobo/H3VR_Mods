@@ -172,8 +172,11 @@ namespace FistVR
                 Magazine_2.StoreAndDestroyRigidbody();
                 mag2_attached = false;
             }
-            hand.ForceSetInteractable(this);
-            this.BeginInteraction(hand);
+            if (hand != null)
+            {
+                hand.ForceSetInteractable(this);
+                this.BeginInteraction(hand);
+            }
             Magazine_1.SetAllCollidersToLayer(true, "Interactable");
             Magazine_2.SetAllCollidersToLayer(true, "Interactable");
             this.SetAllCollidersToLayer(true, "Interactable");
