@@ -1,4 +1,4 @@
-﻿using Deli.Setup;
+using Deli.Setup;
 
 namespace Cityrobo
 {

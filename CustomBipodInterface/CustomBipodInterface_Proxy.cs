@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using FistVR;
 
 public class CustomBipodInterface_Proxy : MonoBehaviour

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using FistVR;
 
 public class Magazine_Tape_Proxy : MonoBehaviour
