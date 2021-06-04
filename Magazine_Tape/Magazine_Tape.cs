@@ -109,11 +109,16 @@ namespace FistVR
             if (Magazine_1.State == FVRFireArmMagazine.MagazineState.Locked && !mag1_attached) Parent_to_mag1();
             else if (Magazine_2.State == FVRFireArmMagazine.MagazineState.Locked && !mag2_attached) Parent_to_mag2();
             else if ((Magazine_1.State == FVRFireArmMagazine.MagazineState.Free && Magazine_2.State == FVRFireArmMagazine.MagazineState.Free) && (mag1_attached || mag2_attached)) Parent_to_null();
+
+            if (mag1_attached) UseMag1_Attached_Transform();
+            else if (mag2_attached) UseMag2_Attached_Transform();
+            else Use_Standard_Transform();
         }
 
         private void Parent_to_mag1()
         {
             mag1_attached = true;
+            mag2_attached = false;
             if (this.QuickbeltSlot != null)
             {
                 this.SetAllCollidersToLayer(true, "NoCol");
@@ -128,11 +133,11 @@ namespace FistVR
             this.IsHeld = false;
             this.StoreAndDestroyRigidbody();
             this.Use_Mag1_Attached_Parenting();
-            this.UseMag1_Attached_Transform();
         }
 
         private void Parent_to_mag2()
         {
+            mag1_attached = false;
             mag2_attached = true;
             if (this.QuickbeltSlot != null)
             {
@@ -148,7 +153,6 @@ namespace FistVR
             this.IsHeld = false;
             this.StoreAndDestroyRigidbody();
             this.Use_Mag2_Attached_Parenting();
-            this.UseMag2_Attached_Transform();
         }
 
         private void Parent_to_null()
@@ -183,7 +187,6 @@ namespace FistVR
             Magazine_1.SetAllCollidersToLayer(false, "Default");
             Magazine_2.SetAllCollidersToLayer(false, "Default");
             this.SetAllCollidersToLayer(false, "Default");
-            Use_Standard_Transform();
         }
 
         private void Use_Standard_Parenting()
