@@ -57,6 +57,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy $(TargetPath) $(SolutionDir)Releases\releases\$(TargetFileName)</PostBuildEvent>
+    <PostBuildEvent>copy $(TargetPath) $(SolutionDir)Releases\$(TargetFileName)</PostBuildEvent>
   </PropertyGroup>
 </Project>
