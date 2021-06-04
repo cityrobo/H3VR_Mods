@@ -55,4 +55,7 @@
     <Compile Include="ClosedBoltToggleAction.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy $(TargetPath) $(SolutionDir)Releases\releases\$(TargetFileName)</PostBuildEvent>
+  </PropertyGroup>
 </Project>

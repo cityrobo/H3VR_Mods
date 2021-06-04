@@ -26,7 +26,7 @@ namespace FistVR
 
         private bool mag1_attached;
         private bool mag2_attached;
-
+        
 
         protected override void Awake()
         {
