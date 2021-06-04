@@ -28,7 +28,25 @@ namespace Cityrobo
 
 		public void Awake()
         {
-			SetBaseMagPos();
+			if (mag.transform.parent == attachment.transform)
+			{
+				SetBasePos();
+				UseSecondaryParenting();
+				SetSecondaryMagPos();
+				UseBaseParenting();
+				UseNormalTransform();
+			}
+			else if (attachment.transform.parent == mag.transform)
+			{
+				Transform magParent;
+				magParent = mag.transform.parent;
+				SetSecondaryMagPos();
+				UseBaseParenting();
+				SetBasePos();
+				UseSecondaryParenting();
+				UseSecondaryTransform();
+				mag.SetParentage(magParent);
+			}
 
 			Debug.Log("Attachable_Magazine waiting for mag and attachment to completly awake!");
 			StartCoroutine("Wait");
@@ -68,25 +86,19 @@ namespace Cityrobo
 				collider_list.Add(attachment.GetComponent<Collider>());
 				attachment.SetCollidersToLayer(collider_list, true, "Interactable");
             }
-			if (magAttached) UseMagAttachedTransform();
+			if (magAttached) UseSecondaryTransform();
 			else UseNormalTransform();
 		}
 
-		private void SetBaseMagPos()
+		private void SetBasePos()
         {
 			base_magPos = mag.transform.localPosition;
 			base_magEuler = mag.transform.localEulerAngles;
 		}
 		private void SetSecondaryMagPos()
         {
-			mag.SetParentage(null);
-			attachment.SetParentage(mag.transform);
-
 			secondary_magPos = attachment.transform.localPosition;
 			secondary_magEuler = attachment.transform.localEulerAngles;
-
-			attachment.SetParentage(null);
-			mag.SetParentage(attachment.transform);
         }
 
 		private void UseNormalTransform()
@@ -95,10 +107,22 @@ namespace Cityrobo
 			mag.transform.localEulerAngles = base_magEuler;
 		}
 
-		private void UseMagAttachedTransform()
+		private void UseSecondaryTransform()
         {
 			attachment.transform.localPosition = secondary_magPos;
 			attachment.transform.localEulerAngles = secondary_magEuler;
+		}
+
+		private void UseBaseParenting()
+        {
+			attachment.transform.SetParent(null);
+			mag.transform.SetParent(attachment.transform);
+		}
+
+		private void UseSecondaryParenting()
+        {
+			mag.transform.SetParent(null);
+			attachment.SetParentage(mag.transform);
 		}
 
 		IEnumerator Wait()
@@ -107,8 +131,10 @@ namespace Cityrobo
 
 			Debug.Log("Attachable_Magazine awoken!");
 			mag.StoreAndDestroyRigidbody();
-			SetSecondaryMagPos();
-			UseNormalTransform();
+            if (attachment.transform.parent == mag.transform)
+            {
+				attachment.StoreAndDestroyRigidbody();
+            }
 		}
 	}
 }
