@@ -1,3 +1,4 @@
+#if !DEBUG
 using Deli.Setup;
 
 namespace Cityrobo
@@ -18,3 +19,4 @@ namespace Cityrobo
         }
     }
 }
+#endif

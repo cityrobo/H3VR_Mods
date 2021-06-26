@@ -1,10 +1,6 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
-using UnityEngine.Serialization;
 using FistVR;
 
 namespace Cityrobo
@@ -48,7 +44,7 @@ namespace Cityrobo
 				mag.SetParentage(magParent);
 			}
 
-			Debug.Log("Attachable_Magazine waiting for mag and attachment to completly awake!");
+			//Debug.Log("Attachable_Magazine waiting for mag and attachment to completly awake!");
 			StartCoroutine("Wait");
 		}
 		
@@ -201,9 +197,13 @@ namespace Cityrobo
         {
 			while (!mag_Ready || !attachment_Ready) yield return null;
 
-			Debug.Log("Attachable_Magazine awoken!");
+			//Debug.Log("Attachable_Magazine awoken!");
 			mag.StoreAndDestroyRigidbody();
-            if (attachment.transform.parent == mag.transform)
+
+			Collider collider = mag.GetComponent<Collider>();
+
+			if (collider != null) Destroy(collider);
+			if (attachment.transform.parent == mag.transform) 
             {
 				attachment.StoreAndDestroyRigidbody();
             }
