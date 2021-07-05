@@ -80,4 +80,8 @@
   <PropertyGroup>
     <LangVersion>9</LangVersion>
   </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>if $(ConfigurationName) == Debug copy $(TargetPath) $(SolutionDir)Releases\unity_code\$(TargetName).dll
+if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\$(TargetName).dll</PostBuildEvent>
+  </PropertyGroup>
 </Project>
