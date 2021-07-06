@@ -30,65 +30,41 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="Assembly-CSharp-firstpass_publicized">
-      <HintPath>..\..\H3VR_SnappyBoltActionTrigger\ExampleMod\libs\Assembly-CSharp-firstpass_publicized.dll</HintPath>
-    </Reference>
-    <Reference Include="Assembly-CSharp_publicized">
-      <HintPath>..\..\H3VR_SnappyBoltActionTrigger\ExampleMod\libs\Assembly-CSharp_publicized.dll</HintPath>
-    </Reference>
-    <Reference Include="BepInEx">
-      <HintPath>..\..\..\..\..\..\SteamGames\steamapps\common\H3VR\BepInEx\core\BepInEx.dll</HintPath>
-    </Reference>
-    <Reference Include="BepInEx.Harmony">
-      <HintPath>..\..\..\..\..\..\SteamGames\steamapps\common\H3VR\BepInEx\core\BepInEx.Harmony.dll</HintPath>
-    </Reference>
-    <Reference Include="BepInEx.Preloader">
-      <HintPath>..\..\..\..\..\..\SteamGames\steamapps\common\H3VR\BepInEx\core\BepInEx.Preloader.dll</HintPath>
-    </Reference>
-    <Reference Include="Deli.Setup">
-      <HintPath>..\..\..\..\..\..\SteamGames\steamapps\common\H3VR\BepInEx\plugins\Deli.Setup.dll</HintPath>
-    </Reference>
-    <Reference Include="MMHOOK_Assembly-CSharp">
-      <HintPath>..\..\H3VR_SnappyBoltActionTrigger\ExampleMod\libs\MMHOOK_Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="MMHOOK_Assembly-CSharp-firstpass">
-      <HintPath>..\..\H3VR_SnappyBoltActionTrigger\ExampleMod\libs\MMHOOK_Assembly-CSharp-firstpass.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil, Version=0.10.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\SteamGames\steamapps\common\H3VR\BepInEx\core\Mono.Cecil.dll</HintPath>
-    </Reference>
-    <Reference Include="MonoMod.Utils">
-      <HintPath>..\..\..\..\..\..\SteamGames\steamapps\common\H3VR\BepInEx\core\MonoMod.Utils.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-    <Reference Include="UnityEditor">
-      <HintPath>..\..\..\..\..\..\Program Files\Unity\Hub\Editor\5.6.3f1\Editor\Data\Managed\UnityEditor.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\..\..\SteamGames\steamapps\common\H3VR\h3vr_Data\Managed\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\..\..\..\..\SteamGames\steamapps\common\H3VR\h3vr_Data\Managed\UnityEngine.UI.dll</HintPath>
-    </Reference>
-  </ItemGroup>
   <ItemGroup>
     <Compile Include="BrighterFlashlights_Hooks.cs" />
     <Compile Include="BrighterFlashlights_Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp_publicized">
+      <HintPath>..\..\..\libs\Assembly-CSharp_publicized.dll</HintPath>
+    </Reference>
+    <Reference Include="BepInEx">
+      <HintPath>..\..\..\libs\BepInEx.dll</HintPath>
+    </Reference>
+    <Reference Include="Deli.Setup">
+      <HintPath>..\..\..\libs\Deli.Setup.dll</HintPath>
+    </Reference>
+    <Reference Include="MMHOOK_Assembly-CSharp">
+      <HintPath>..\..\..\libs\MMHOOK_Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Cecil">
+      <HintPath>..\..\..\libs\Mono.Cecil.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoMod.Utils">
+      <HintPath>..\..\..\libs\MonoMod.Utils.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\..\..\..\..\SteamGames\steamapps\common\H3VR\h3vr_Data\Managed\UnityEngine.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy $(TargetPath) $(SolutionDir)Releases\$(TargetFileName)</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-	<LangVersion>9</LangVersion>
+    <LangVersion>9</LangVersion>
   </PropertyGroup>
 </Project>
