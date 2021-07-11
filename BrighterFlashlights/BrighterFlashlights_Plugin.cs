@@ -1,15 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Deli.Setup;
-using UnityEngine;
+using BepInEx;
 using BepInEx.Configuration;
 
 namespace Cityrobo
 {
-    public class BrighterFlashlights_Plugin : DeliBehaviour
+    [BepInPlugin("h3vr.cityrobo.brighterflashlights", "Brighter Flashlights", "1.2.0")]
+    public class BrighterFlashlights_Plugin : BaseUnityPlugin
     {
+        
         private readonly BrighterFlashlights_Hooks _hooks;
 
         private ConfigEntry<float> tacticalFlashlight_range;
