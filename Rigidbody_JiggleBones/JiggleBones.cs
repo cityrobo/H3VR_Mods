@@ -7,6 +7,7 @@ using UnityEngine;
 public class JiggleBones : MonoBehaviour {
 	public Rigidbody rootObject;
 	public Transform rootBone;
+	public Rigidbody referenceRigidbody;
 	public float spring_strength;
 	public float spring_dampening;
 
@@ -31,8 +32,8 @@ public class JiggleBones : MonoBehaviour {
 			}
 
 			Transform child = currentParent.GetChild (0);
-			Rigidbody body = child.gameObject.AddComponent<Rigidbody> ();
-			body.useGravity = false;
+			Rigidbody body = child.gameObject.AddComponent<Rigidbody>();
+			body = StaticExtras.GetCopyOf(body,referenceRigidbody);
 			ConfigurableJoint joint = child.gameObject.AddComponent<ConfigurableJoint> ();
 			configureJoint (joint, currentParent.gameObject.GetComponent<Rigidbody>());
 
@@ -49,6 +50,8 @@ public class JiggleBones : MonoBehaviour {
 			if (child != rootBone.transform)
 				child.SetParent (null);
 		}
+
+		Destroy(referenceRigidbody);
 	}
 
 	public void configureJoint(ConfigurableJoint joint, Rigidbody parent)
@@ -95,10 +98,10 @@ public class JiggleBones : MonoBehaviour {
 
 public static class StaticExtras 
 {
-	public static T GetCopyOf<T>(this Component comp, T other) where T : Component
+	public static T GetCopyOf<T>(this Component target, T reference) where T : Component
 	{
-		Type type = comp.GetType();
-		if (type != other.GetType()) return null; // type mis-match
+		Type type = target.GetType();
+		if (type != reference.GetType()) return null; // type mis-match
 		BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Default | BindingFlags.DeclaredOnly;
 		PropertyInfo[] pinfos = type.GetProperties(flags);
 		foreach (var pinfo in pinfos)
@@ -107,7 +110,7 @@ public static class StaticExtras
 			{
 				try
 				{
-					pinfo.SetValue(comp, pinfo.GetValue(other, null), null);
+					pinfo.SetValue(target, pinfo.GetValue(reference, null), null);
 				}
 				catch { } // In case of NotImplementedException being thrown. For some reason specifying that exception didn't seem to catch it, so I didn't catch anything specific.
 			}
@@ -115,15 +118,15 @@ public static class StaticExtras
 		FieldInfo[] finfos = type.GetFields(flags);
 		foreach (var finfo in finfos)
 		{
-			finfo.SetValue(comp, finfo.GetValue(other));
+			finfo.SetValue(target, finfo.GetValue(reference));
 		}
-		return comp as T;
+		return target as T;
 	}
 
-	public static T GetCopyOf<T>(this UnityEngine.Object comp, T other) where T : UnityEngine.Object
+	public static T GetCopyOf<T>(this UnityEngine.Object target, T reference) where T : UnityEngine.Object
 	{
-		Type type = comp.GetType();
-		if (type != other.GetType()) return null; // type mis-match
+		Type type = target.GetType();
+		if (type != reference.GetType()) return null; // type mis-match
 		BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Default | BindingFlags.DeclaredOnly;
 		PropertyInfo[] pinfos = type.GetProperties(flags);
 		foreach (var pinfo in pinfos)
@@ -132,7 +135,7 @@ public static class StaticExtras
 			{
 				try
 				{
-					pinfo.SetValue(comp, pinfo.GetValue(other, null), null);
+					pinfo.SetValue(target, pinfo.GetValue(reference, null), null);
 				}
 				catch { } // In case of NotImplementedException being thrown. For some reason specifying that exception didn't seem to catch it, so I didn't catch anything specific.
 			}
@@ -140,8 +143,8 @@ public static class StaticExtras
 		FieldInfo[] finfos = type.GetFields(flags);
 		foreach (var finfo in finfos)
 		{
-			finfo.SetValue(comp, finfo.GetValue(other));
+			finfo.SetValue(target, finfo.GetValue(reference));
 		}
-		return comp as T;
+		return target as T;
 	}
 }
