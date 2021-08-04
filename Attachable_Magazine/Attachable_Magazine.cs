@@ -22,14 +22,15 @@ namespace Cityrobo
 		[HideInInspector] public bool mag_Ready = false;
 		[HideInInspector] public bool attachment_Ready = false;
 
-		public void Awake()
-        {
+		public void Start()
+        {	
 			if (mag.transform.parent == attachment.transform)
 			{
+				Transform attachmentParent = attachment.transform.parent;
 				SetBasePos();
 				UseSecondaryParenting();
 				SetSecondaryMagPos();
-				UseBaseParenting();
+				UseBaseParenting(attachmentParent);
 				UseNormalTransform();
 			}
 			else if (attachment.transform.parent == mag.transform)
@@ -45,7 +46,16 @@ namespace Cityrobo
 			}
 
 			//Debug.Log("Attachable_Magazine waiting for mag and attachment to completly awake!");
-			StartCoroutine("Wait");
+			//StartCoroutine("Wait");
+			mag.StoreAndDestroyRigidbody();
+
+			Collider collider = mag.GetComponent<Collider>();
+
+			if (collider != null) Destroy(collider);
+			if (attachment.transform.parent == mag.transform)
+			{
+				attachment.StoreAndDestroyRigidbody();
+			}
 		}
 		
         public void Update()
@@ -115,9 +125,9 @@ namespace Cityrobo
 			attachment.transform.localEulerAngles = secondary_magEuler;
 		}
 
-		private void UseBaseParenting()
+		private void UseBaseParenting(Transform parent = null)
         {
-			attachment.transform.SetParent(null);
+			attachment.transform.SetParent(parent);
 			mag.transform.SetParent(attachment.transform);
 		}
 
