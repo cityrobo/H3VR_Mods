@@ -7,8 +7,8 @@
     <ProjectGuid>{CB0554A6-A9D8-4A5A-AB65-71F7218E0FCC}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MutlipleHideOnAttach</RootNamespace>
-    <AssemblyName>MutlipleHideOnAttach</AssemblyName>
+    <RootNamespace>MultipleHideOnAttach</RootNamespace>
+    <AssemblyName>MultipleHideOnAttach</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -29,31 +29,11 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp-firstpass_publicized">
-      <HintPath>..\..\H3VR_SnappyBoltActionTrigger\ExampleMod\libs\Assembly-CSharp-firstpass_publicized.dll</HintPath>
-    </Reference>
     <Reference Include="Assembly-CSharp_publicized">
-      <HintPath>..\..\H3VR_SnappyBoltActionTrigger\ExampleMod\libs\Assembly-CSharp_publicized.dll</HintPath>
-    </Reference>
-    <Reference Include="BepInEx">
-      <HintPath>..\..\..\..\..\..\SteamGames\steamapps\common\H3VR\BepInEx\core\BepInEx.dll</HintPath>
-    </Reference>
-    <Reference Include="BepInEx.Harmony">
-      <HintPath>..\..\..\..\..\..\SteamGames\steamapps\common\H3VR\BepInEx\core\BepInEx.Harmony.dll</HintPath>
-    </Reference>
-    <Reference Include="BepInEx.Preloader">
-      <HintPath>..\..\..\..\..\..\SteamGames\steamapps\common\H3VR\BepInEx\core\BepInEx.Preloader.dll</HintPath>
-    </Reference>
-    <Reference Include="Deli.Setup">
-      <HintPath>..\..\..\..\..\..\SteamGames\steamapps\common\H3VR\BepInEx\plugins\Deli.Setup.dll</HintPath>
-    </Reference>
-    <Reference Include="MMHOOK_Assembly-CSharp">
-      <HintPath>..\..\H3VR_SnappyBoltActionTrigger\ExampleMod\libs\MMHOOK_Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="MMHOOK_Assembly-CSharp-firstpass">
-      <HintPath>..\..\H3VR_SnappyBoltActionTrigger\ExampleMod\libs\MMHOOK_Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>..\..\..\libs\Assembly-CSharp_publicized.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -72,11 +52,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MutlipleHideOnAttach.cs" />
+    <Compile Include="MultipleHideOnAttach_forAttachments.cs" />
+    <Compile Include="MultipleHideOnAttach.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy $(TargetPath) $(SolutionDir)Releases\$(TargetFileName)</PostBuildEvent>
+    <PostBuildEvent>if $(ConfigurationName) == Debug copy $(TargetPath) $(SolutionDir)Releases\unity_code\$(TargetName).dll
+if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\$(TargetName).dll</PostBuildEvent>
   </PropertyGroup>
 </Project>
