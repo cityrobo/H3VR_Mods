@@ -11,7 +11,8 @@ namespace Cityrobo
         public Camera camera;
         public List<float> ZoomFactor;
 
-        [Header("If you want a Screen above the scope that shows the current Magninification, use this:")]
+        [Header("If you want a Screen above the scope that shows the current Magninification, use these two:")]
+        public GameObject canvas;
         public Text text;
 
         private List<float> CorrespondingCameraFOV;
@@ -25,7 +26,7 @@ namespace Cityrobo
             Debug.Log(camera.ToString());
 
             currentZoomIndex = 0;
-            if (text != null) hasZoomText = true;
+            if (text != null && canvas != null) hasZoomText = true;
             else hasZoomText = false;
 
             for (int i = 0; i < ZoomFactor.Count; i++)
@@ -33,8 +34,13 @@ namespace Cityrobo
                 CorrespondingCameraFOV.Add(53.7f * Mathf.Pow(ZoomFactor[i], -0.9284f) - 0.5035f);
             }
             Debug.Log(CorrespondingCameraFOV.ToString());
+
+            RenderTexture renderTexture = camera.targetTexture;
+            renderTexture = RenderTexture.Instantiate(renderTexture);
+            camera.targetTexture = renderTexture;
+            scopeLens.material.mainTexture = renderTexture;
         }
-        
+#if !UNITY_EDITOR
         public void Update()
         {
             FVRViveHand hand = AttachmentInterface.m_hand;
@@ -45,13 +51,13 @@ namespace Cityrobo
 
                 if (hasZoomText)
                 {
-                    text.gameObject.SetActive(true);
+                    canvas.gameObject.SetActive(true);
                     text.text = string.Format("Zoom: {0}x", ZoomFactor[currentZoomIndex].ToString());
                 }
             }
-            else if (hasZoomText) text.gameObject.SetActive(false);
+            else if (hasZoomText) canvas.gameObject.SetActive(false);
         }
-
+#endif
         public void NextZoom()
         {
             if (currentZoomIndex == ZoomFactor.Count - 1) return;
