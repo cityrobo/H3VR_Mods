@@ -1,5 +1,6 @@
 using UnityEngine;
 using FistVR;
+using System.Collections;
 
 namespace Cityrobo
 {
@@ -10,6 +11,12 @@ namespace Cityrobo
 
 		public void Start()
 		{
+			StartCoroutine("AttachToMount");
+		}
+
+		public IEnumerator AttachToMount()
+		{
+			yield return null;
 			attachment.AttachToMount(mount, false);
 		}
 	}
