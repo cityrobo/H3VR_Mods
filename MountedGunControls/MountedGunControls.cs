@@ -18,8 +18,10 @@ namespace Cityrobo
 
 		private FVRPhysicalObject mount;
         private bool hooked = false;
+		private FVRViveHand hand = null;
 
-        public void Start()
+
+		public void Start()
         {
 			Hook();
 
@@ -32,9 +34,9 @@ namespace Cityrobo
         }
         public void Update()
         {
-            FVRViveHand hand = controlHandle.m_hand;
+			if(hand != controlHandle.m_hand) hand = controlHandle.m_hand;
 
-            if (hand != null && !hooked)
+			if (hand != null && !hooked)
             {
 				openBoltWeapon.m_hand = hand;
 				openBoltWeapon.m_hasTriggeredUpSinceBegin = true;
@@ -53,7 +55,6 @@ namespace Cityrobo
         private void Hook()
         {
 #if !DEBUG
-            //IL.FistVR.OpenBoltReceiver.UpdateControls += OpenBoltReceiver_UpdateControls;
             On.FistVR.OpenBoltReceiver.UpdateControls += OpenBoltReceiver_UpdateControls;
             On.FistVR.FVRFireArmMagazine.Release += FVRFireArmMagazine_Release;
 #endif
@@ -62,7 +63,6 @@ namespace Cityrobo
         private void Unhook()
         {
 #if !DEBUG
-            //IL.FistVR.OpenBoltReceiver.UpdateControls -= OpenBoltReceiver_UpdateControls;
             On.FistVR.OpenBoltReceiver.UpdateControls -= OpenBoltReceiver_UpdateControls;
 			On.FistVR.FVRFireArmMagazine.Release -= FVRFireArmMagazine_Release;
 #endif
@@ -198,18 +198,6 @@ namespace Cityrobo
 			}
 			else orig(self);
 		}
-		/*private void OpenBoltReceiver_UpdateControls(ILContext il)
-        {
-            ILCursor c = new ILCursor(il);
-
-            c.GotoNext(
-                 MoveType.Before,
-                i => i.MatchLdarg(0),
-                i => i.MatchCall<FistVR.FVRInteractiveObject>("get_IsHeld")
-                );
-            c.RemoveRange(2);
-            c.Emit(OpCodes.Ldc_I4_1);
-        }*/
 #endif
 	}
 }

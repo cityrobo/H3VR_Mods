@@ -72,6 +72,7 @@
   <ItemGroup>
     <Compile Include="AttachableGunControls_ClosedBolt.cs" />
     <Compile Include="AttachableGunControls_OpenBolt.cs" />
+    <Compile Include="MountedGunControls_ClosedBolt.cs" />
     <Compile Include="MountedGunControls.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

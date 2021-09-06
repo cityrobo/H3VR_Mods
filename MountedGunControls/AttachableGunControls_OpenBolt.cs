@@ -208,7 +208,7 @@ namespace Cityrobo
 
 		private void FVRAlternateGrip_EndInteraction(On.FistVR.FVRAlternateGrip.orig_EndInteraction orig, FVRAlternateGrip self, FVRViveHand hand)
 		{
-			if (this.alternateGrip = self)
+			if (this.alternateGrip == self)
 			{
 				this.hand = null;
 				alternateGrip = null;
@@ -218,12 +218,12 @@ namespace Cityrobo
 
 		private void FVRFireArmAttachment_BeginInteraction(On.FistVR.FVRFireArmAttachment.orig_BeginInteraction orig, FVRFireArmAttachment self, FVRViveHand hand)
 		{
-			if (self = attachment) this.hand = hand;
+			if (self == attachment) this.hand = hand;
 			orig(self, hand);
 		}
 		private void FVRFireArmAttachment_EndInteraction(On.FistVR.FVRFireArmAttachment.orig_EndInteraction orig, FVRFireArmAttachment self, FVRViveHand hand)
 		{
-			if (self = attachment) this.hand = null;
+			if (self == attachment) this.hand = null;
 			orig(self, hand);
 		}
 #endif

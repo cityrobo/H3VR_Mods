@@ -8,20 +8,24 @@ using MonoMod.Cil;
 using Mono.Cecil.Cil;
 
 namespace Cityrobo
+
 {
-    public class AttachableGunControls_ClosedBolt : MonoBehaviour
+    public class MountedGunControls_ClosedBolt : MonoBehaviour
     {
-        public FVRInteractiveObject controlHandle;
+        public wwGatlingControlHandle controlHandle;
         public ClosedBoltWeapon closedBoltWeapon;
-		public FVRFireArmAttachment attachment;
 
 
-		private FVRViveHand hand = null;
-		private FVRAlternateGrip alternateGrip = null;
+		private FVRPhysicalObject mount;
+        private bool hooked = false;
+		private FVRViveHand hand;
 
-        public void Start()
+
+		public void Start()
         {
 			Hook();
+
+			mount = controlHandle.BaseFrame.gameObject.GetComponent<FVRPhysicalObject>();
         }
 
 		public void OnDestroy()
@@ -30,33 +34,43 @@ namespace Cityrobo
         }
         public void Update()
         {
-            if (hand != null) closedBoltWeapon.UpdateInputAndAnimate(hand);
-        }
+			if (hand != controlHandle.m_hand) hand = controlHandle.m_hand;
+
+			if (hand != null && !hooked)
+            {
+				closedBoltWeapon.m_hand = hand;
+				closedBoltWeapon.m_hasTriggeredUpSinceBegin = true;
+
+                hooked = true;
+            }
+            else if (hand == null && hooked)
+            {
+				closedBoltWeapon.m_hand = hand;
+				closedBoltWeapon.m_hasTriggeredUpSinceBegin = false;
+
+                hooked = false;
+            }
+
+			if (hand != null) closedBoltWeapon.UpdateInputAndAnimate(hand);
+		}
 
         private void Hook()
         {
 #if !DEBUG
-            On.FistVR.ClosedBoltWeapon.UpdateInputAndAnimate += ClosedBoltWeapon_UpdateInputAndAnimate;
-            On.FistVR.FVRFireArmMagazine.Release += FVRFireArmMagazine_Release;
-            On.FistVR.AttachableForegrip.BeginInteraction += AttachableForegrip_BeginInteraction;
-            On.FistVR.FVRAlternateGrip.EndInteraction += FVRAlternateGrip_EndInteraction;
-			On.FistVR.FVRFireArmAttachment.BeginInteraction += FVRFireArmAttachment_BeginInteraction;
-			On.FistVR.FVRFireArmAttachment.EndInteraction += FVRFireArmAttachment_EndInteraction;
+			On.FistVR.ClosedBoltWeapon.UpdateInputAndAnimate += ClosedBoltWeapon_UpdateInputAndAnimate;
+			On.FistVR.FVRFireArmMagazine.Release += FVRFireArmMagazine_Release;
 #endif
-		}
+        }
 
         private void Unhook()
         {
 #if !DEBUG
 			On.FistVR.ClosedBoltWeapon.UpdateInputAndAnimate -= ClosedBoltWeapon_UpdateInputAndAnimate;
 			On.FistVR.FVRFireArmMagazine.Release -= FVRFireArmMagazine_Release;
-			On.FistVR.AttachableForegrip.BeginInteraction -= AttachableForegrip_BeginInteraction;
-			On.FistVR.FVRAlternateGrip.EndInteraction -= FVRAlternateGrip_EndInteraction;
-			On.FistVR.FVRFireArmAttachment.BeginInteraction -= FVRFireArmAttachment_BeginInteraction;
-			On.FistVR.FVRFireArmAttachment.EndInteraction -= FVRFireArmAttachment_EndInteraction;
 #endif
 		}
 #if !DEBUG
+
 		private void ClosedBoltWeapon_UpdateInputAndAnimate(On.FistVR.ClosedBoltWeapon.orig_UpdateInputAndAnimate orig, ClosedBoltWeapon self, FVRViveHand hand)
 		{
 			if (self == closedBoltWeapon)
@@ -216,7 +230,7 @@ namespace Cityrobo
 					}
 				}
 			}
-			else orig(self,hand);
+			else orig(self, hand);
 		}
 
 		private void FVRFireArmMagazine_Release(On.FistVR.FVRFireArmMagazine.orig_Release orig, FVRFireArmMagazine self)
@@ -277,48 +291,6 @@ namespace Cityrobo
 				self.SetAllCollidersToLayer(false, "Default");
 			}
 			else orig(self);
-		}
-
-		private void AttachableForegrip_BeginInteraction(On.FistVR.AttachableForegrip.orig_BeginInteraction orig, AttachableForegrip self, FVRViveHand hand)
-		{
-			if (self == controlHandle)
-			{
-				FVRFireArm fvrfireArm = self.OverrideFirearm;
-				if (fvrfireArm == null)
-				{
-					fvrfireArm = (self.Attachment.GetRootObject() as FVRFireArm);
-				}
-				if (fvrfireArm != null && fvrfireArm.Foregrip != null)
-				{
-					FVRAlternateGrip component = fvrfireArm.Foregrip.GetComponent<FVRAlternateGrip>();
-					hand.ForceSetInteractable(component);
-					component.BeginInteractionFromAttachedGrip(self, hand);
-					this.hand = component.m_hand;
-					this.alternateGrip = component;
-				}
-			}
-			else orig(self, hand);
-		}
-
-		private void FVRAlternateGrip_EndInteraction(On.FistVR.FVRAlternateGrip.orig_EndInteraction orig, FVRAlternateGrip self, FVRViveHand hand)
-		{
-			if (this.alternateGrip == self)
-			{
-				this.hand = null;
-				alternateGrip = null;
-			}
-			orig(self, hand);
-		}
-
-		private void FVRFireArmAttachment_BeginInteraction(On.FistVR.FVRFireArmAttachment.orig_BeginInteraction orig, FVRFireArmAttachment self, FVRViveHand hand)
-		{
-			if (self == attachment) this.hand = hand;
-			orig(self, hand);
-		}
-		private void FVRFireArmAttachment_EndInteraction(On.FistVR.FVRFireArmAttachment.orig_EndInteraction orig, FVRFireArmAttachment self, FVRViveHand hand)
-		{
-			if (self == attachment) this.hand = null;
-			orig(self, hand);
 		}
 #endif
 	}
