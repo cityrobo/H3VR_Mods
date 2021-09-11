@@ -10,7 +10,6 @@ namespace Manipulate_Animator
     {
         public Animator animator;
 		public GameObject Observed_Object;
-        public GameObject MagReloadTrigger;
 
         public float wiggleroom = 0.05f;
 
@@ -36,11 +35,10 @@ namespace Manipulate_Animator
         }
         public void Update()
         {
-			float pos = Mathf.InverseLerp(start[(int)direction], end[(int)direction], Observed_Object.transform.localPosition[(int)direction]);
+            float pos;
+            if (!is_rotation) pos = Mathf.InverseLerp(start[(int)direction], end[(int)direction], Observed_Object.transform.localPosition[(int)direction]);
+            else pos = Mathf.InverseLerp(start[(int)direction], end[(int)direction], Observed_Object.transform.localEulerAngles[(int)direction]);
             animator.Play("animation", 0, pos);
-
-            if ((1f - wiggleroom) <= pos) MagReloadTrigger.SetActive(true);
-            else MagReloadTrigger.SetActive(false);
         }
     }
 }
