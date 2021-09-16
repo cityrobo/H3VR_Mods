@@ -61,7 +61,7 @@ namespace Cityrobo
 
             UpdateScreen();
         }
-
+#if !(UNITY_EDITOR || UNITY_5)
         public void OnDestroy()
         {
             Unhook();
@@ -87,7 +87,7 @@ namespace Cityrobo
                 FVRFireArm fireArm;
                 try
                 {
-                    fireArm = (FVRFireArm)attachment.curMount.MyObject;
+                    fireArm = (FVRFireArm)attachment.curMount.GetRootMount().MyObject;
                     muzzlePos = fireArm.MuzzlePos;
 
                     Vector3 muzzleOffset = muzzlePos.InverseTransformPoint(reticle.transform.position);
@@ -101,7 +101,7 @@ namespace Cityrobo
                 }
                 catch (System.Exception)
                 {
-
+                    Debug.Log("MyObject not type FVRFireArm");
                 }
             }
             else if (attachment.curMount == null && attached)
@@ -185,6 +185,7 @@ namespace Cityrobo
             orig(self, hand);
             if (self == reflexSightInterface) UseNextTexture();
         }
+#endif
 #endif
     }
 }
