@@ -11,7 +11,7 @@ namespace Cityrobo
 
         private int lastFireMode;
         private bool magSafetyEngaged;
-
+#if!DEBUG
         public void Update()
         {
             if (openFireArm != null)
@@ -43,5 +43,6 @@ namespace Cityrobo
                 }
             }
         }
+#endif
     }
 }

@@ -8,7 +8,9 @@ namespace Cityrobo
         public OpenBoltReceiver openBoltWeapon;
         public int safetyMode = 0;
         //public ClosedBolt closedBoltWeapon;
+        public bool safetyLock = false;
         public GameObject lockHandle;
+        public GameObject MagReloadTrigger;
         public Vector3 start;
         public Vector3 end;
 
@@ -27,22 +29,27 @@ namespace Cityrobo
         private bool isLocked;
         private int lastFireMode;
 
+#if!DEBUG
         public void Update()
         {
             float pos = Mathf.InverseLerp(start[(int)direction], end[(int)direction], lockHandle.transform.localPosition[(int)direction]);
 
-            if ((0f + wiggleroom) <= pos && !isLocked)
+            if (safetyLock)
             {
-                lastFireMode = openBoltWeapon.m_fireSelectorMode;
-                openBoltWeapon.m_fireSelectorMode = safetyMode;
-                isLocked = true;
+                if ((0f + wiggleroom) <= pos)
+                {
+                    if(!isLocked) lastFireMode = openBoltWeapon.m_fireSelectorMode;
+                    openBoltWeapon.m_fireSelectorMode = safetyMode;
+                    isLocked = true;
+                }
+                else if ((0f + wiggleroom) >= pos && isLocked)
+                {
+                    openBoltWeapon.m_fireSelectorMode = lastFireMode;
+                    isLocked = false;
+                }
             }
-            else if ((0f + wiggleroom) >= pos && isLocked)
-            {
-                openBoltWeapon.m_fireSelectorMode = lastFireMode;
-                isLocked = false;
-            }
-
+            if ((1f - wiggleroom) <= pos) MagReloadTrigger.SetActive(true);
+            else MagReloadTrigger.SetActive(false);
             /*if (openBoltWeapon != null)
             {
 
@@ -54,5 +61,6 @@ namespace Cityrobo
 
 
         }
+#endif
     }
 }

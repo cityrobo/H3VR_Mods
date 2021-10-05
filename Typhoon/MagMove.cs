@@ -8,6 +8,7 @@ namespace Cityrobo
         public FVRFireArm fireArm = null;
 
         private bool posChanged;
+#if!DEBUG
         public void Update()
         {
             if (fireArm.Magazine == null)
@@ -19,5 +20,6 @@ namespace Cityrobo
                 fireArm.Magazine.SetParentage(fireArm.MagazineMountPos.transform);
             }
         }
+#endif
     }
 }
