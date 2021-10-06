@@ -10,6 +10,7 @@ namespace Cityrobo
 {
     public class QBArmorPiece_Backpack : PlayerBackPack
     {
+		[Header("QBArmorPiece_Backpack Config")]
 		public string layerName = "NoCol";
 #if !(UNITY_EDITOR || UNITY_5)
 		public override void SetQuickBeltSlot(FVRQuickBeltSlot slot)
