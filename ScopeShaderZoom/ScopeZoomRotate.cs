@@ -2,16 +2,30 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using FistVR;
-namespace Cityrobo
+
+namespace Cityrobo.AndrewFTW
 {
-    public class ScopeShaderZoom : MonoBehaviour
+    public class ScopeZoomRotate : MonoBehaviour
     {
         public FVRInteractiveObject AttachmentInterface;
         public MeshRenderer scopeLens;
         public Camera camera;
-        public int currentZoomIndex = 0;
-
         public List<float> ZoomFactor;
+
+        public int currentZoomIndex;
+
+        [Header("Rotation deatails")]
+        public List<float> Rotation;
+        public Axis axis;
+
+        public GameObject ObjectToRotate;
+
+        public enum Axis
+        {
+            x,
+            y,
+            z
+        }
 
         [Header("If you want a Screen above the scope that shows the current Magninification, use these two:")]
         public GameObject canvas;
@@ -20,6 +34,7 @@ namespace Cityrobo
         private List<float> CorrespondingCameraFOV;
 
         private bool hasZoomText;
+
         private RenderTexture renderTexture;
         public void Start()
         {
@@ -81,12 +96,29 @@ namespace Cityrobo
 
         public void SetZoom()
         {
+            Vector3 rotation;
+            switch (axis)
+            {
+                case Axis.x:
+                    rotation = new Vector3(Rotation[currentZoomIndex],0,0);
+                    break;
+                case Axis.y:
+                    rotation = new Vector3(0, Rotation[currentZoomIndex], 0);
+                    break;
+                case Axis.z:
+                    rotation = new Vector3(0, 0, Rotation[currentZoomIndex]);
+                    break;
+                default:
+                    rotation = new Vector3();
+                    break;
+            }
+            ObjectToRotate.transform.localEulerAngles = rotation;
             camera.fieldOfView = CorrespondingCameraFOV[currentZoomIndex];
         }
 
         public void ChangeElevation()
         {
-            
+
         }
     }
 }
