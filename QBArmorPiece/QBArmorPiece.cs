@@ -11,7 +11,7 @@ namespace Cityrobo
     public class QBArmorPiece : FVRPhysicalObject
     {
 		[Header("QBArmorPiece Config")]
-		public string layerName = "NoCol";
+		public string layerName = "Default";
 #if !(UNITY_EDITOR || UNITY_5)
 		public override void SetQuickBeltSlot(FVRQuickBeltSlot slot)
 		{
