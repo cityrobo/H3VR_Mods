@@ -12,6 +12,9 @@ namespace Cityrobo
     {
 		[Header("QBArmorPiece_Backpack Config")]
 		public string layerName = "Default";
+		public string attachmentLayerName = "Default";
+
+		private int attachmentCountOnQBSlotEnter;
 #if !(UNITY_EDITOR || UNITY_5)
 		public override void SetQuickBeltSlot(FVRQuickBeltSlot slot)
 		{
@@ -23,9 +26,11 @@ namespace Cityrobo
 					{
 						if (this.AttachmentsList[i] != null)
 						{
-							this.AttachmentsList[i].SetAllCollidersToLayer(false, layerName);
+							this.AttachmentsList[i].SetAllCollidersToLayer(false, attachmentLayerName);
 						}
 					}
+
+					attachmentCountOnQBSlotEnter = AttachmentsList.Count;
 				}
 			}
 			else if (this.AttachmentsList.Count > 0)
@@ -37,6 +42,7 @@ namespace Cityrobo
 						this.AttachmentsList[j].SetAllCollidersToLayer(false, "Default");
 					}
 				}
+				attachmentCountOnQBSlotEnter = AttachmentsList.Count;
 			}
 			if (this.m_quickbeltSlot != null && slot != this.m_quickbeltSlot)
 			{
@@ -57,6 +63,23 @@ namespace Cityrobo
 			}
 			this.m_quickbeltSlot = slot;
 		}
+
+        public override void FVRUpdate()
+        {
+            base.FVRUpdate();
+
+            if (m_quickbeltSlot != null)
+            {
+				if (this.AttachmentsList.Count > attachmentCountOnQBSlotEnter)
+				{
+					if (this.AttachmentsList[attachmentCountOnQBSlotEnter] != null)
+					{
+					this.AttachmentsList[attachmentCountOnQBSlotEnter].SetAllCollidersToLayer(false, attachmentLayerName);
+					}
+					attachmentCountOnQBSlotEnter = this.AttachmentsList.Count;
+				}
+			}
+        }
 #endif
-	}
+    }
 }
