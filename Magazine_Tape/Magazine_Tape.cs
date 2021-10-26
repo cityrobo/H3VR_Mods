@@ -26,8 +26,8 @@ namespace FistVR
 
         private bool mag1_attached;
         private bool mag2_attached;
-        
 
+#if!DEBUG
         protected override void Awake()
         {
             base.Awake();
@@ -106,13 +106,21 @@ namespace FistVR
         protected override void FVRUpdate()
         {
             base.FVRUpdate();
-            if (Magazine_1.State == FVRFireArmMagazine.MagazineState.Locked && !mag1_attached) Parent_to_mag1();
-            else if (Magazine_2.State == FVRFireArmMagazine.MagazineState.Locked && !mag2_attached) Parent_to_mag2();
-            else if ((Magazine_1.State == FVRFireArmMagazine.MagazineState.Free && Magazine_2.State == FVRFireArmMagazine.MagazineState.Free) && (mag1_attached || mag2_attached)) Parent_to_null();
+            try
+            {
+                if (Magazine_1.State == FVRFireArmMagazine.MagazineState.Locked && !mag1_attached) Parent_to_mag1();
+                else if (Magazine_2.State == FVRFireArmMagazine.MagazineState.Locked && !mag2_attached) Parent_to_mag2();
+                else if ((Magazine_1.State == FVRFireArmMagazine.MagazineState.Free && Magazine_2.State == FVRFireArmMagazine.MagazineState.Free) && (mag1_attached || mag2_attached)) Parent_to_null();
 
-            if (mag1_attached) UseMag1_Attached_Transform();
-            else if (mag2_attached) UseMag2_Attached_Transform();
-            else Use_Standard_Transform();
+                if (mag1_attached) UseMag1_Attached_Transform();
+                else if (mag2_attached) UseMag2_Attached_Transform();
+                else Use_Standard_Transform();
+            }
+            catch (Exception)
+            {
+                if (Magazine_1 == null || Magazine_2 == null) Destroy(this.gameObject);
+                else Debug.LogError("Error in MagTape Script!"); 
+            }
         }
 
         private void Parent_to_mag1()
@@ -304,5 +312,6 @@ namespace FistVR
             Destroy(original);
             return real;
         }
+#endif
     }
 }

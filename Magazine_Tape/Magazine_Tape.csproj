@@ -51,12 +51,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MagazineTapeMK2.cs" />
     <Compile Include="Magazine_Tape.cs" />
     <Compile Include="Magazine_Tape_Proxy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy $(TargetPath) $(SolutionDir)Releases\$(TargetFileName)</PostBuildEvent>
+    <PostBuildEvent>if $(ConfigurationName) == Debug copy $(TargetPath) $(SolutionDir)Releases\unity_code\$(TargetName).dll
+if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\$(TargetName).dll</PostBuildEvent>
   </PropertyGroup>
 </Project>

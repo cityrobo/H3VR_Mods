@@ -6,7 +6,7 @@ public class Magazine_Tape_Proxy : MonoBehaviour
     public FVRFireArmMagazine Magazine_1;
     public FVRFireArmMagazine Magazine_2;
     public FVRPhysicalObject PhysicalObject;
-
+#if!DEBUG
     private void Awake()
     {
         FistVR.Magazine_Tape real = FistVR.Magazine_Tape.CopyFromObject(PhysicalObject, this.gameObject);
@@ -14,4 +14,5 @@ public class Magazine_Tape_Proxy : MonoBehaviour
         real.Magazine_2 = Magazine_2;
         this.gameObject.SetActive(true);      
     }
+#endif
 }
