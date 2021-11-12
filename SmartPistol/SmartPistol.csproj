@@ -56,6 +56,9 @@
     <Reference Include="MonoMod.Utils">
       <HintPath>..\..\..\libs\MonoMod.Utils.dll</HintPath>
     </Reference>
+    <Reference Include="Sodalite">
+      <HintPath>..\..\..\..\AppData\Roaming\r2modmanPlus-local\H3VR\profiles\Creating Mods Stratum\BepInEx\plugins\nrgill28-Sodalite\Sodalite.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />

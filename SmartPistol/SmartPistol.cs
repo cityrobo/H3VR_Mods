@@ -12,6 +12,7 @@ namespace Cityrobo
     {
         public Handgun pistol;
 		public MeshRenderer reticle;
+		public bool disableReticleWithoutTarget = true;
 		public float EngageRange = 15f;
 		[Range(1f,179f)]
 		public float EngageAngle = 45f;
@@ -20,11 +21,34 @@ namespace Cityrobo
 		public LayerMask LatchingMask;
 		public LayerMask BlockingMask;
 
+		public bool locksUpWithoutTarget = true;
+		public bool doesRandomRotationWithoutTarget = true;
+		public float randomAngleMagnitude = 5f;
 		//constants
 		private string nameOfDistanceVariable = "_RedDotDist";
 
 #if !DEBUG
-		public void Update()
+		public void Start()
+        {
+			Hook();
+        }
+		
+		public void Hook()
+        {
+            On.FistVR.Handgun.UpdateInputAndAnimate += Handgun_UpdateInputAndAnimate;
+        }
+
+        private void Handgun_UpdateInputAndAnimate(On.FistVR.Handgun.orig_UpdateInputAndAnimate orig, Handgun self, FVRViveHand hand)
+        {
+			if (self == pistol)
+			{
+				EarlyUpdate();
+			}
+
+			orig(self,hand);
+		}
+
+        public void EarlyUpdate()
         {
             if (pistol.m_hand != null)
             {
@@ -34,18 +58,31 @@ namespace Cityrobo
                 {
                     Debug.Log(target);
 
-					pistol.m_isSafetyEngaged = false;
+					if (locksUpWithoutTarget) pistol.m_isSafetyEngaged = false;
 					//Debug.DrawRay(pistol.MuzzlePos.position, target, Color.green);
+					//Popcron.Gizmos.Line(pistol.MuzzlePos.position, target, Color.green);
+
 					pistol.MuzzlePos.LookAt(target);
                     if (reticle != null)
                     {
 						reticle.material.SetFloat(nameOfDistanceVariable, (target - pistol.MuzzlePos.position).magnitude);
+						if (disableReticleWithoutTarget) reticle.gameObject.SetActive(true);
 					}
                 }
 				else
                 {
-					pistol.m_isSafetyEngaged = true;
-					pistol.MuzzlePos.localEulerAngles = new Vector3(0, 0, 0);
+					if(locksUpWithoutTarget) pistol.m_isSafetyEngaged = true;
+					if (doesRandomRotationWithoutTarget)
+                    {
+						Vector3 randRot = new Vector3();
+						randRot.x = UnityEngine.Random.Range(-randomAngleMagnitude, randomAngleMagnitude);
+						randRot.y = UnityEngine.Random.Range(-randomAngleMagnitude, randomAngleMagnitude);
+
+						pistol.MuzzlePos.localEulerAngles = randRot;
+					}
+					else pistol.MuzzlePos.localEulerAngles = new Vector3(0, 0, 0);
+
+					if (disableReticleWithoutTarget && reticle != null) reticle.gameObject.SetActive(false);
 				}
             }
         }
