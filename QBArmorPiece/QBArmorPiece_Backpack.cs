@@ -14,6 +14,11 @@ namespace Cityrobo
 		public string layerName = "Default";
 		public string attachmentLayerName = "Default";
 
+		public string layerOutsideQBSlot = "Default";
+
+		public GameObject disabledInQB;
+		public GameObject enabledInQB;
+
 		private int attachmentCountOnQBSlotEnter;
 #if !(UNITY_EDITOR || UNITY_5)
 		public override void SetQuickBeltSlot(FVRQuickBeltSlot slot)
@@ -39,7 +44,7 @@ namespace Cityrobo
 				{
 					if (this.AttachmentsList[j] != null)
 					{
-						this.AttachmentsList[j].SetAllCollidersToLayer(false, "Default");
+						this.AttachmentsList[j].SetAllCollidersToLayer(false, layerOutsideQBSlot);
 					}
 				}
 				attachmentCountOnQBSlotEnter = AttachmentsList.Count;
@@ -56,10 +61,30 @@ namespace Cityrobo
 				slot.HeldObject = this;
 				slot.CurObject = this;
 				slot.IsKeepingTrackWithHead = this.DoesQuickbeltSlotFollowHead;
+
+				if (disabledInQB != null)
+				{
+					disabledInQB.SetActive(false);
+				}
+
+				if (enabledInQB != null)
+				{
+					enabledInQB.SetActive(true);
+				}
 			}
 			else
 			{
-				base.SetAllCollidersToLayer(false, "Default");
+				base.SetAllCollidersToLayer(false, layerOutsideQBSlot);
+
+				if (disabledInQB != null)
+				{
+					disabledInQB.SetActive(true);
+				}
+
+				if (enabledInQB != null)
+				{
+					enabledInQB.SetActive(false);
+				}
 			}
 			this.m_quickbeltSlot = slot;
 		}
