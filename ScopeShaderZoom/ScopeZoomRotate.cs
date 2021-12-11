@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -5,6 +6,7 @@ using FistVR;
 
 namespace Cityrobo.AndrewFTW
 {
+    [Obsolete("ScopeZoomRotate is deprecated, please use ScopeShaderZoom instead.")]
     public class ScopeZoomRotate : MonoBehaviour
     {
         public FVRInteractiveObject AttachmentInterface;
