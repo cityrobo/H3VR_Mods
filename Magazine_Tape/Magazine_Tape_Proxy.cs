@@ -1,6 +1,8 @@
 using UnityEngine;
 using FistVR;
+using System;
 
+[Obsolete("Magazine_Tape_Proxy is deprecated, please use MagazineTapeMK2 instead.")]
 public class Magazine_Tape_Proxy : MonoBehaviour
 {
     public FVRFireArmMagazine Magazine_1;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using FistVR;
+using System.ComponentModel;
 
 namespace Cityrobo
 {
@@ -16,14 +17,14 @@ namespace Cityrobo
 
         [Header("Relative Mag Positions (Use Context Menu to calculate)")]
         [Tooltip("Primary mag position when parented to secondary mag.")]
-        public Vector3 primary2SecondaryPos;
+        [ReadOnly] public Vector3 primary2SecondaryPos;
         [Tooltip("Primary mag rotation when parented to secondary mag.")]
-        public Quaternion primary2SecondaryRot;
+        [ReadOnly] public Quaternion primary2SecondaryRot;
 
         [Tooltip("Secondary mag position when parented to primary mag.")]
-        public Vector3 secondary2PrimaryPos;
+        [ReadOnly] public Vector3 secondary2PrimaryPos;
         [Tooltip("Primary mag rotation when parented to primary mag.")]
-        public Quaternion secondary2PrimaryRot;
+        [ReadOnly] public Quaternion secondary2PrimaryRot;
 
         [ContextMenu("Calculate Relative Mag Positions")]
         public void CalculateReltativeMagPositions()
@@ -33,9 +34,7 @@ namespace Cityrobo
 
             primary2SecondaryPos = secondaryMagazine.transform.InverseTransformPoint(primaryMagazine.transform.position);
             primary2SecondaryRot = Quaternion.Inverse(secondaryMagazine.transform.rotation) * primaryMagazine.transform.rotation;
-
         }
-
 
         private enum ActiveMagazine
         {
@@ -52,7 +51,6 @@ namespace Cityrobo
 
         private ActiveMagazine activeMagazine = ActiveMagazine.primary;
         private AttachedMagazine attachedMagazine = AttachedMagazine.none;
-
 
 #if!DEBUG
         public void Start()
@@ -71,11 +69,27 @@ namespace Cityrobo
                 primaryMagazine.StoreAndDestroyRigidbody();
                 primaryMagazine.gameObject.layer = LayerMask.NameToLayer("NoCol");
             }
+            else if (primaryMagazine.transform.parent == secondaryMagazine.transform)
+            {
+                activeMagazine = ActiveMagazine.secondary;
+
+                primaryMagazine.StoreAndDestroyRigidbody();
+                primaryMagazine.gameObject.layer = LayerMask.NameToLayer("NoCol");
+            }
             else
             {
+                activeMagazine = ActiveMagazine.primary;
+
                 secondaryMagazine.StoreAndDestroyRigidbody();
                 secondaryMagazine.gameObject.layer = LayerMask.NameToLayer("NoCol");
             }
+
+            Hook();
+        }
+
+        public void OnDestroy()
+        {
+            Unhook();
         }
         public void Update()
         {
@@ -201,6 +215,90 @@ namespace Cityrobo
             secondaryMagazine.BeginInteraction(hand);
             secondaryMagazine.gameObject.layer = LayerMask.NameToLayer("Interactable");
         }
+
+        void Unhook()
+        {
+            //On.FistVR.FVRFireArmMagazine.ReloadMagWithType -= FVRFireArmMagazine_ReloadMagWithType;
+            On.FistVR.FVRFireArmMagazine.DuplicateFromSpawnLock -= FVRFireArmMagazine_DuplicateFromSpawnLock;
+        }
+
+        void Hook()
+        {
+            //On.FistVR.FVRFireArmMagazine.ReloadMagWithType += FVRFireArmMagazine_ReloadMagWithType;
+            On.FistVR.FVRFireArmMagazine.DuplicateFromSpawnLock += FVRFireArmMagazine_DuplicateFromSpawnLock;
+        }
+
+        private GameObject FVRFireArmMagazine_DuplicateFromSpawnLock(On.FistVR.FVRFireArmMagazine.orig_DuplicateFromSpawnLock orig, FVRFireArmMagazine self, FVRViveHand hand)
+        {
+            GameObject gameObject = orig(self, hand);
+
+            if (self == primaryMagazine)
+            {
+                MagazineTapeMK2 tape = gameObject.GetComponent<MagazineTapeMK2>();
+
+                FVRFireArmMagazine component = tape.secondaryMagazine;
+                for (int i = 0; i < Mathf.Min(this.secondaryMagazine.LoadedRounds.Length, component.LoadedRounds.Length); i++)
+                {
+                    if (this.secondaryMagazine.LoadedRounds[i] != null && this.secondaryMagazine.LoadedRounds[i].LR_Mesh != null)
+                    {
+                        component.LoadedRounds[i].LR_Class = this.secondaryMagazine.LoadedRounds[i].LR_Class;
+                        component.LoadedRounds[i].LR_Mesh = this.secondaryMagazine.LoadedRounds[i].LR_Mesh;
+                        component.LoadedRounds[i].LR_Material = this.secondaryMagazine.LoadedRounds[i].LR_Material;
+                        component.LoadedRounds[i].LR_ObjectWrapper = this.secondaryMagazine.LoadedRounds[i].LR_ObjectWrapper;
+                    }
+                }
+                component.m_numRounds = this.secondaryMagazine.m_numRounds;
+                component.UpdateBulletDisplay();
+                return gameObject;
+            }
+            else if (self == secondaryMagazine)
+            {
+                MagazineTapeMK2 tape = gameObject.GetComponentInChildren<MagazineTapeMK2>();
+
+                FVRFireArmMagazine component = tape.primaryMagazine;
+                for (int i = 0; i < Mathf.Min(this.primaryMagazine.LoadedRounds.Length, component.LoadedRounds.Length); i++)
+                {
+                    if (this.primaryMagazine.LoadedRounds[i] != null && this.primaryMagazine.LoadedRounds[i].LR_Mesh != null)
+                    {
+                        component.LoadedRounds[i].LR_Class = this.primaryMagazine.LoadedRounds[i].LR_Class;
+                        component.LoadedRounds[i].LR_Mesh = this.primaryMagazine.LoadedRounds[i].LR_Mesh;
+                        component.LoadedRounds[i].LR_Material = this.primaryMagazine.LoadedRounds[i].LR_Material;
+                        component.LoadedRounds[i].LR_ObjectWrapper = this.primaryMagazine.LoadedRounds[i].LR_ObjectWrapper;
+                    }
+                }
+                component.m_numRounds = this.primaryMagazine.m_numRounds;
+                component.UpdateBulletDisplay();
+                return gameObject;
+            }
+            else return gameObject;
+        }
+
+        private void FVRFireArmMagazine_ReloadMagWithType(On.FistVR.FVRFireArmMagazine.orig_ReloadMagWithType orig, FVRFireArmMagazine self, FireArmRoundClass rClass)
+        {
+            if (self == primaryMagazine || self == secondaryMagazine)
+            {
+                primaryMagazine.m_numRounds = 0;
+                for (int i = 0; i < primaryMagazine.m_capacity; i++)
+                {
+                    primaryMagazine.AddRound(rClass, false, false);
+                }
+                primaryMagazine.UpdateBulletDisplay();
+
+                secondaryMagazine.m_numRounds = 0;
+                for (int i = 0; i < secondaryMagazine.m_capacity; i++)
+                {
+                    secondaryMagazine.AddRound(rClass, false, false);
+                }
+                secondaryMagazine.UpdateBulletDisplay();
+            }
+            else orig(self, rClass);
+        }
 #endif
     }
+}
+
+namespace System.Runtime.CompilerServices
+{
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    internal class IsExternalInit { }
 }
