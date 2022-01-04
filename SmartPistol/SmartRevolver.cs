@@ -8,9 +8,9 @@ using UnityEngine;
 
 namespace Cityrobo
 {
-    public class SmartPistol : MonoBehaviour
+    public class SmartRevolver : MonoBehaviour
     {
-        public Handgun pistol;
+        public Revolver revolver;
 		public MeshRenderer reticle;
 		public bool disableReticleWithoutTarget = true;
 		public float EngageRange = 15f;
@@ -21,7 +21,6 @@ namespace Cityrobo
 		public LayerMask LatchingMask;
 		public LayerMask BlockingMask;
 
-		public bool locksUpWithoutTarget = true;
 		public bool doesRandomRotationWithoutTarget = true;
 		public float randomAngleMagnitude = 5f;
 		//constants
@@ -40,7 +39,7 @@ namespace Cityrobo
 
         private void Handgun_UpdateInputAndAnimate(On.FistVR.Handgun.orig_UpdateInputAndAnimate orig, Handgun self, FVRViveHand hand)
         {
-			if (self == pistol)
+			if (self == revolver)
 			{
 				EarlyUpdate();
 			}
@@ -50,7 +49,7 @@ namespace Cityrobo
 
         public void EarlyUpdate()
         {
-            if (pistol.m_hand != null)
+            if (revolver.m_hand != null)
             {
 				Vector3 target = FindTarget();
 
@@ -58,35 +57,33 @@ namespace Cityrobo
                 {
                     //Debug.Log(target);
 
-					if (locksUpWithoutTarget) pistol.m_isSafetyEngaged = false;
 					//Debug.DrawRay(pistol.MuzzlePos.position, target, Color.green);
 					//Popcron.Gizmos.Line(pistol.MuzzlePos.position, target, Color.green);
 
-					pistol.CurrentMuzzle.LookAt(target);
-					pistol.MuzzlePos.LookAt(target);
+					revolver.CurrentMuzzle.LookAt(target);
+					revolver.MuzzlePos.LookAt(target);
 
                     if (reticle != null)
                     {
-						reticle.material.SetFloat(nameOfDistanceVariable, (target - pistol.CurrentMuzzle.position).magnitude);
+						reticle.material.SetFloat(nameOfDistanceVariable, (target - revolver.CurrentMuzzle.position).magnitude);
 						if (disableReticleWithoutTarget) reticle.gameObject.SetActive(true);
 					}
                 }
 				else
                 {
-					if(locksUpWithoutTarget) pistol.m_isSafetyEngaged = true;
 					if (doesRandomRotationWithoutTarget)
 					{
 						Vector3 randRot = new Vector3();
 						randRot.x = UnityEngine.Random.Range(-randomAngleMagnitude, randomAngleMagnitude);
 						randRot.y = UnityEngine.Random.Range(-randomAngleMagnitude, randomAngleMagnitude);
 
-						pistol.CurrentMuzzle.localEulerAngles = randRot;
-						pistol.MuzzlePos.localEulerAngles = randRot;
+						revolver.CurrentMuzzle.localEulerAngles = randRot;
+						revolver.MuzzlePos.localEulerAngles = randRot;
 					}
 					else
 					{
-						pistol.CurrentMuzzle.localEulerAngles = new Vector3(0, 0, 0);
-						pistol.MuzzlePos.localEulerAngles = new Vector3(0, 0, 0);
+						revolver.CurrentMuzzle.localEulerAngles = new Vector3(0, 0, 0);
+						revolver.MuzzlePos.localEulerAngles = new Vector3(0, 0, 0);
 					}
 
 					if (disableReticleWithoutTarget && reticle != null) reticle.gameObject.SetActive(false);
@@ -97,7 +94,7 @@ namespace Cityrobo
 		private Vector3 FindTarget()
         {
 			float radius = EngageRange * Mathf.Tan(0.5f * EngageAngle * Mathf.Deg2Rad);
-			Collider[] array = Physics.OverlapCapsule(pistol.CurrentMuzzle.position, pistol.CurrentMuzzle.position + pistol.transform.forward * this.EngageRange, radius, this.LatchingMask);
+			Collider[] array = Physics.OverlapCapsule(revolver.CurrentMuzzle.position, revolver.CurrentMuzzle.position + revolver.transform.forward * this.EngageRange, radius, this.LatchingMask);
 			List<Rigidbody> list = new List<Rigidbody>();
 			for (int i = 0; i < array.Length; i++)
 			{
@@ -119,15 +116,15 @@ namespace Cityrobo
 					{
 						if (true || component.S.E.IFFCode == 1)
 						{
-							Vector3 from = list[j].transform.position - pistol.CurrentMuzzle.position;
-							float num2 = Vector3.Angle(from, pistol.transform.forward);
+							Vector3 from = list[j].transform.position - revolver.CurrentMuzzle.position;
+							float num2 = Vector3.Angle(from, revolver.transform.forward);
 
 							Sosig s = component.S;
 							if (num2 <= PrecisionAngle) sosigLink2 = s.Links[0];
 							else sosigLink2 = s.Links[1];
 
 
-							if (num2 < num &&  !Physics.Linecast(pistol.CurrentMuzzle.position, sosigLink2.transform.position, this.BlockingMask, QueryTriggerInteraction.Ignore))
+							if (num2 < num &&  !Physics.Linecast(revolver.CurrentMuzzle.position, sosigLink2.transform.position, this.BlockingMask, QueryTriggerInteraction.Ignore))
 							{
 								sosigLink = sosigLink2;
 								num = num2;

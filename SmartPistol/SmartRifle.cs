@@ -8,9 +8,9 @@ using UnityEngine;
 
 namespace Cityrobo
 {
-    public class SmartPistol : MonoBehaviour
+    public class SmartRifle : MonoBehaviour
     {
-        public Handgun pistol;
+        public ClosedBoltWeapon rifle;
 		public MeshRenderer reticle;
 		public bool disableReticleWithoutTarget = true;
 		public float EngageRange = 15f;
@@ -21,11 +21,16 @@ namespace Cityrobo
 		public LayerMask LatchingMask;
 		public LayerMask BlockingMask;
 
-		public bool locksUpWithoutTarget = true;
+		public bool locksUpWithoutTarget = false;
+		public int safetyIndex = 0;
+
 		public bool doesRandomRotationWithoutTarget = true;
 		public float randomAngleMagnitude = 5f;
 		//constants
 		private string nameOfDistanceVariable = "_RedDotDist";
+
+		private bool isLocked;
+		private int lastSelectorPos;
 
 #if !DEBUG
 		public void Start()
@@ -35,12 +40,11 @@ namespace Cityrobo
 		
 		public void Hook()
         {
-            On.FistVR.Handgun.UpdateInputAndAnimate += Handgun_UpdateInputAndAnimate;
+            On.FistVR.ClosedBoltWeapon.UpdateInputAndAnimate += ClosedBoltWeapon_UpdateInputAndAnimate;
         }
-
-        private void Handgun_UpdateInputAndAnimate(On.FistVR.Handgun.orig_UpdateInputAndAnimate orig, Handgun self, FVRViveHand hand)
+        private void ClosedBoltWeapon_UpdateInputAndAnimate(On.FistVR.ClosedBoltWeapon.orig_UpdateInputAndAnimate orig, ClosedBoltWeapon self, FVRViveHand hand)
         {
-			if (self == pistol)
+			if (self == rifle)
 			{
 				EarlyUpdate();
 			}
@@ -50,7 +54,7 @@ namespace Cityrobo
 
         public void EarlyUpdate()
         {
-            if (pistol.m_hand != null)
+            if (rifle.m_hand != null)
             {
 				Vector3 target = FindTarget();
 
@@ -58,35 +62,34 @@ namespace Cityrobo
                 {
                     //Debug.Log(target);
 
-					if (locksUpWithoutTarget) pistol.m_isSafetyEngaged = false;
+					if (locksUpWithoutTarget) LockRifle(false);
 					//Debug.DrawRay(pistol.MuzzlePos.position, target, Color.green);
 					//Popcron.Gizmos.Line(pistol.MuzzlePos.position, target, Color.green);
 
-					pistol.CurrentMuzzle.LookAt(target);
-					pistol.MuzzlePos.LookAt(target);
-
+					rifle.CurrentMuzzle.LookAt(target);
+					rifle.MuzzlePos.LookAt(target);
                     if (reticle != null)
                     {
-						reticle.material.SetFloat(nameOfDistanceVariable, (target - pistol.CurrentMuzzle.position).magnitude);
+						reticle.material.SetFloat(nameOfDistanceVariable, (target - rifle.CurrentMuzzle.position).magnitude);
 						if (disableReticleWithoutTarget) reticle.gameObject.SetActive(true);
 					}
                 }
 				else
                 {
-					if(locksUpWithoutTarget) pistol.m_isSafetyEngaged = true;
+					if(locksUpWithoutTarget) LockRifle(true);
 					if (doesRandomRotationWithoutTarget)
 					{
 						Vector3 randRot = new Vector3();
 						randRot.x = UnityEngine.Random.Range(-randomAngleMagnitude, randomAngleMagnitude);
 						randRot.y = UnityEngine.Random.Range(-randomAngleMagnitude, randomAngleMagnitude);
 
-						pistol.CurrentMuzzle.localEulerAngles = randRot;
-						pistol.MuzzlePos.localEulerAngles = randRot;
+						rifle.CurrentMuzzle.localEulerAngles = randRot;
+						rifle.MuzzlePos.localEulerAngles = randRot;
 					}
 					else
 					{
-						pistol.CurrentMuzzle.localEulerAngles = new Vector3(0, 0, 0);
-						pistol.MuzzlePos.localEulerAngles = new Vector3(0, 0, 0);
+						rifle.CurrentMuzzle.localEulerAngles = new Vector3(0, 0, 0);
+						rifle.MuzzlePos.localEulerAngles = new Vector3(0, 0, 0);
 					}
 
 					if (disableReticleWithoutTarget && reticle != null) reticle.gameObject.SetActive(false);
@@ -97,7 +100,7 @@ namespace Cityrobo
 		private Vector3 FindTarget()
         {
 			float radius = EngageRange * Mathf.Tan(0.5f * EngageAngle * Mathf.Deg2Rad);
-			Collider[] array = Physics.OverlapCapsule(pistol.CurrentMuzzle.position, pistol.CurrentMuzzle.position + pistol.transform.forward * this.EngageRange, radius, this.LatchingMask);
+			Collider[] array = Physics.OverlapCapsule(rifle.CurrentMuzzle.position, rifle.CurrentMuzzle.position + rifle.transform.forward * this.EngageRange, radius, this.LatchingMask);
 			List<Rigidbody> list = new List<Rigidbody>();
 			for (int i = 0; i < array.Length; i++)
 			{
@@ -119,15 +122,15 @@ namespace Cityrobo
 					{
 						if (true || component.S.E.IFFCode == 1)
 						{
-							Vector3 from = list[j].transform.position - pistol.CurrentMuzzle.position;
-							float num2 = Vector3.Angle(from, pistol.transform.forward);
+							Vector3 from = list[j].transform.position - rifle.CurrentMuzzle.position;
+							float num2 = Vector3.Angle(from, rifle.transform.forward);
 
 							Sosig s = component.S;
 							if (num2 <= PrecisionAngle) sosigLink2 = s.Links[0];
 							else sosigLink2 = s.Links[1];
 
 
-							if (num2 < num &&  !Physics.Linecast(pistol.CurrentMuzzle.position, sosigLink2.transform.position, this.BlockingMask, QueryTriggerInteraction.Ignore))
+							if (num2 < num &&  !Physics.Linecast(rifle.CurrentMuzzle.position, sosigLink2.transform.position, this.BlockingMask, QueryTriggerInteraction.Ignore))
 							{
 								sosigLink = sosigLink2;
 								num = num2;
@@ -146,6 +149,25 @@ namespace Cityrobo
 				return new Vector3(0, 0, 0);
             }
 		}
+		public void LockRifle(bool lockRifle)
+        {
+			if (lockRifle && !isLocked)
+            {
+				lastSelectorPos = rifle.m_fireSelectorMode;
+				rifle.m_fireSelectorMode = safetyIndex;
 
+				isLocked = true;
+            }
+            else if (lockRifle && isLocked)
+			{
+				rifle.m_fireSelectorMode = safetyIndex;
+			}
+			else if (!lockRifle && isLocked)
+            {
+				rifle.m_fireSelectorMode = lastSelectorPos;
+
+				isLocked = false;
+			}
+        }
     }
 }
