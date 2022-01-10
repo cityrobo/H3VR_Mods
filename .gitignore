@@ -361,3 +361,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/DKS-501_FireSelector
+/NightVision
+/MeshCombiner_MonoMod
+/ChamberRoundClassFilter
+/ShotClock.7z
