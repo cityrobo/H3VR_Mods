@@ -15,7 +15,13 @@ namespace Cityrobo
         public enum TargetType
         {
             Bolt,
-            Trigger
+            Trigger,
+            BoltHandle,
+            Safety,
+            FireSelector,
+            MagazineRelease,
+            BoltRelease,
+            Hammer
         }
         
         public TargetType targetType;
@@ -76,9 +82,23 @@ namespace Cityrobo
                     proxy = s.Bolt.transform;
                     break;
                 case TargetType.Trigger:
-                    proxy = s.Trigger.transform;
+                    proxy = s.Trigger;
+                    break;
+                case TargetType.BoltHandle:
+                    OpenBoltChargingHandle openBoltChargingHandle = s.GetComponentInChildren<OpenBoltChargingHandle>();
+                    proxy = openBoltChargingHandle.transform;
+                    break;
+                case TargetType.Safety:
+                    proxy = s.FireSelectorSwitch;
+                    break;
+                case TargetType.FireSelector:
+                    proxy = s.FireSelectorSwitch2;
+                    break;
+                case TargetType.MagazineRelease:
+                    proxy = s.MagReleaseButton;
                     break;
                 default:
+                    Debug.LogWarning("ManipulateObjectAttachmentProxy: TargetType not available for this type of FireArm!");
                     break;
             }
         }
@@ -90,9 +110,22 @@ namespace Cityrobo
                     proxy = s.Bolt.transform;
                     break;
                 case TargetType.Trigger:
-                    proxy = s.Trigger.transform;
+                    proxy = s.Trigger;
+                    break;
+                case TargetType.BoltHandle:
+                    proxy = s.Handle.transform;
+                    break;
+                case TargetType.Safety:
+                    proxy = s.FireSelectorSwitch;
+                    break;
+                case TargetType.FireSelector:
+                    proxy = s.FireSelectorSwitch2;
+                    break;
+                case TargetType.Hammer:
+                    proxy = s.Bolt.Hammer;
                     break;
                 default:
+                    Debug.LogWarning("ManipulateObjectAttachmentProxy: TargetType not available for this type of FireArm!");
                     break;
             }
         }
@@ -104,9 +137,25 @@ namespace Cityrobo
                     proxy = s.Slide.transform;
                     break;
                 case TargetType.Trigger:
-                    proxy = s.Trigger.transform;
+                    proxy = s.Trigger;
+                    break;
+                case TargetType.MagazineRelease:
+                    proxy = s.MagazineReleaseButton;
+                    break;
+                case TargetType.Safety:
+                    proxy = s.Safety;
+                    break;
+                case TargetType.FireSelector:
+                    proxy = s.FireSelector;
+                    break;
+                case TargetType.BoltRelease:
+                    proxy = s.SlideRelease;
+                    break;
+                case TargetType.Hammer:
+                    proxy = s.Hammer;
                     break;
                 default:
+                    Debug.LogWarning("ManipulateObjectAttachmentProxy: TargetType not available for this type of FireArm!");
                     break;
             }
         }
@@ -118,9 +167,16 @@ namespace Cityrobo
                     proxy = s.Bolt.transform;
                     break;
                 case TargetType.Trigger:
-                    proxy = s.Trigger.transform;
+                    proxy = s.Trigger;
+                    break;
+                case TargetType.Safety:
+                    proxy = s.Safety;
+                    break;
+                case TargetType.Hammer:
+                    proxy = s.Bolt.Hammer;
                     break;
                 default:
+                    Debug.LogWarning("ManipulateObjectAttachmentProxy: TargetType not available for this type of FireArm!");
                     break;
             }
         }
@@ -134,7 +190,14 @@ namespace Cityrobo
                 case TargetType.Trigger:
                     proxy = s.Trigger_Display.transform;
                     break;
+                case TargetType.Safety:
+                    proxy = s.FireSelector_Display;
+                    break;
+                case TargetType.Hammer:
+                    proxy = s.Hammer;
+                    break;
                 default:
+                    Debug.LogWarning("ManipulateObjectAttachmentProxy: TargetType not available for this type of FireArm!");
                     break;
             }
         }
