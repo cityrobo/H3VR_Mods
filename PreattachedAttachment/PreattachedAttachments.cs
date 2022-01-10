@@ -9,6 +9,7 @@ namespace Cityrobo
 		public FVRFireArmAttachment[] attachments;
 		public FVRFireArmAttachmentMount mount;
 
+#if !DEBUG
 		public void Start()
 		{
 			StartCoroutine("AttachAllToMount");
@@ -20,9 +21,14 @@ namespace Cityrobo
 			foreach (var attachment in attachments)
             {
 				attachment.AttachToMount(mount, false);
-
+				if (attachment.GetType() == typeof(Suppressor))
+				{
+					Suppressor tempSup = attachment as Suppressor;
+					tempSup.AutoMountWell();
+				}
 				yield return null;
 			}
         }
+#endif
 	}
 }
