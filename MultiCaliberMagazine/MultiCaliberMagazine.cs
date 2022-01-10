@@ -29,6 +29,8 @@ namespace Cityrobo
             public MeshFilter[] DisplayMeshFilters;
             public Renderer[] DisplayRenderers;
             public FVRFireArmMechanicalAccuracyClass accuracyClass;
+            public FVRFireArmRecoilProfile recoilProfile;
+            public FVRFireArmRecoilProfile recoilProfileStocked;
         }
 
         [Tooltip("Only allows insertion of mag into firearm if the caliber of the mag and the gun are equal")]
@@ -69,6 +71,12 @@ namespace Cityrobo
 
             canvas.SetActive(false);
         }
+
+        public void OnDestroy()
+        {
+            Unhook();
+        }
+
         public void Update()
         {
             FVRViveHand hand = magazine.m_hand;
@@ -92,13 +100,22 @@ namespace Cityrobo
             {
                 fireArm = magazine.FireArm;
                 originalCaliberDefinition.accuracyClass = fireArm.AccuracyClass;
+                originalCaliberDefinition.recoilProfile = fireArm.RecoilProfile;
+                originalCaliberDefinition.recoilProfileStocked = fireArm.RecoilProfileStocked;
 
                 if(caliberDefinitionsList[currentCaliberDefinition].accuracyClass != FVRFireArmMechanicalAccuracyClass.None)
                     fireArm.AccuracyClass = caliberDefinitionsList[currentCaliberDefinition].accuracyClass;
+                if (caliberDefinitionsList[currentCaliberDefinition].recoilProfile != null)
+                    fireArm.RecoilProfile = caliberDefinitionsList[currentCaliberDefinition].recoilProfile;
+                if (caliberDefinitionsList[currentCaliberDefinition].recoilProfileStocked != null)
+                    fireArm.RecoilProfileStocked = caliberDefinitionsList[currentCaliberDefinition].recoilProfileStocked;
+
             }
             else if (magazine.State == FVRFireArmMagazine.MagazineState.Free && fireArm != null)
             {
                 fireArm.AccuracyClass = originalCaliberDefinition.accuracyClass;
+                fireArm.RecoilProfile = originalCaliberDefinition.recoilProfile;
+                fireArm.RecoilProfileStocked = originalCaliberDefinition.recoilProfileStocked;
 
                 fireArm = null;
             }
@@ -150,6 +167,16 @@ namespace Cityrobo
             magazine.DisplayBullets = caliberDefinitionsList[CaliberDefinitionIndex].DisplayBullets;
             magazine.DisplayMeshFilters = caliberDefinitionsList[CaliberDefinitionIndex].DisplayMeshFilters;
             magazine.DisplayRenderers = caliberDefinitionsList[CaliberDefinitionIndex].DisplayRenderers;
+        }
+
+        public void Unhook()
+        {
+            On.FistVR.FVRFireArmRound.OnTriggerEnter -= FVRFireArmRound_OnTriggerEnter;
+
+            if (checksFirearmCompatibility)
+            {
+                On.FistVR.FVRFireArmReloadTriggerMag.OnTriggerEnter -= FVRFireArmReloadTriggerMag_OnTriggerEnter;
+            }
         }
 
         public void Hook()
