@@ -18,8 +18,6 @@ namespace Cityrobo
         {
             On.FistVR.FVRFireArmChamber.EjectRound -= FVRFireArmChamber_EjectRound;
         }
-
-
     }
 }
 #endif
