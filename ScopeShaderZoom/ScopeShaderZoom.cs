@@ -71,7 +71,7 @@ namespace Cityrobo
         public bool isIntegrated = false;
         public FVRFireArm firearm = null;
         [Header("Reticle Change Settings")]
-        [Tooltip("The existance of this text enables the reticle change functionality")]
+        [Tooltip("The existence of this text enables the reticle change functionality")]
         public Text reticleText;
         public string reticlePrefix = "Reticle: ";
 
@@ -82,6 +82,9 @@ namespace Cityrobo
         [Tooltip("Additional reticles")]
         public List<Texture2D> reticles;
         public int currentReticle = 0;
+
+        public bool doesEachZoomFactorHaveOwnReticle = false;
+        public List<Texture2D> additionalReticlesPerZoomLevel;
 
         private List<float> CorrespondingCameraFOV;
 
@@ -144,7 +147,7 @@ namespace Cityrobo
 
             ScopeEnabled(activeWithoutMount);
 
-            camera.gameObject.SetActive(activeWithoutMount);
+            //camera.gameObject.SetActive(activeWithoutMount);
 
             if (isIntegrated) Zero();
 
@@ -166,15 +169,29 @@ namespace Cityrobo
                 }
             }
 
-            if (reticleText != null && reticleColors.Count > 0 && reticles.Count > 0)
+            if ((reticleText != null || doesEachZoomFactorHaveOwnReticle))
             {
-                if (!reticles.Contains(scopeLens.material.GetTexture("_ReticleTex") as Texture2D))
+                /*
+                if (reticles.Count != reticleName.Length)
                 {
-                    reticleColors.Add(scopeLens.material.GetColor("_ReticleColor"));
-                    reticles.Add(scopeLens.material.GetTexture("_ReticleTex") as Texture2D);
-                    if (currentReticle == 0) currentReticle = reticles.Count - 1;
+                    reticles.Insert(0,scopeLens.material.GetTexture("_ReticleTex") as Texture2D);
+                }
+                if (reticleColors.Count != reticleName.Length)
+                {
+                    reticleColors.Insert(0, scopeLens.material.GetColor("_ReticleColor"));
                 }
 
+                if (doesEachZoomFactorHaveOwnReticle)
+                {
+                    for (int i = 0; i < reticles.Count; i++)
+                    {
+                        if (additionalReticlesPerZoomLevel[ZoomFactor.Count * i] != reticles[i])
+                        {
+                            additionalReticlesPerZoomLevel.Insert(ZoomFactor.Count * i, reticles[i]);
+                        }
+                    }
+                }
+                */
                 if (currentReticle >= reticles.Count) currentReticle = reticles.Count - 1;
                 ChangeReticle();
             }
@@ -212,31 +229,38 @@ namespace Cityrobo
                 else ScopeEnabled(true);
             }
 
-            if (!initialZero && Attachment.curMount != null)
+            if (!initialZero && Attachment != null && Attachment.curMount != null)
             {
                 Zero();
                 initialZero = true;
             }
-            else if (initialZero && Attachment.curMount == null)
+            else if (initialZero && Attachment != null && Attachment.curMount == null)
             {
                 Zero();
                 initialZero = false;
+            }
+            else if (!initialZero && isIntegrated)
+            {
+                Zero();
+                initialZero = true;
             }
         }
 #endif
         public void NextZoom()
         {
-            if (currentZoomIndex == ZoomFactor.Count - 1) return;
+            if (currentZoomIndex >= ZoomFactor.Count - 1) return;
             currentZoomIndex++;
             SetZoom();
+            if (doesEachZoomFactorHaveOwnReticle) ChangeReticle();
             UpdateMenu();
         }
 
         public void PreviousZoom()
         {
-            if (currentZoomIndex == 0) return;
+            if (currentZoomIndex <= 0) return;
             currentZoomIndex--;
             SetZoom();
+            if (doesEachZoomFactorHaveOwnReticle) ChangeReticle();
             UpdateMenu();
         }
 
@@ -440,6 +464,7 @@ namespace Cityrobo
                 //this.camera.transform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(forward - camera.transform.position, camera.transform.right), camera.transform.up);// PointTowards(p);
                 this.camera.transform.LookAt(projected_p, this.transform.up);
                 this.camera.transform.localEulerAngles += new Vector3(-this.ElevationStep / 60f, this.WindageStep / 60f, 0);
+                //this.camera.transform.Rotate(new Vector3(-this.ElevationStep / 60f, this.WindageStep / 60f, 0));
 
                 //this.camera.transform.LookAt(forward);
 
@@ -466,8 +491,16 @@ namespace Cityrobo
 
         private void ChangeReticle()
         {
-            scopeLens.material.SetColor("_ReticleColor", reticleColors[currentReticle]);
-            scopeLens.material.SetTexture("_ReticleTex", reticles[currentReticle]);
+            if (!doesEachZoomFactorHaveOwnReticle)
+            {
+                scopeLens.material.SetColor("_ReticleColor", reticleColors[currentReticle]);
+                scopeLens.material.SetTexture("_ReticleTex", reticles[currentReticle]);
+            }
+            else
+            {
+                scopeLens.material.SetColor("_ReticleColor", reticleColors[currentReticle]);
+                scopeLens.material.SetTexture("_ReticleTex", additionalReticlesPerZoomLevel[currentZoomIndex + currentReticle * ZoomFactor.Count]);
+            }
         }
     }
 }
