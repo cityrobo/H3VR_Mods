@@ -8,6 +8,7 @@ namespace FistVR
 {
 	public class CustomBipodInterface : FVRFireArmAttachmentInterface
 	{
+#if !DEBUG
 		public override void SimpleInteraction(FVRViveHand hand)
 		{
 			this.Bipod.Toggle();
@@ -154,5 +155,6 @@ namespace FistVR
 			Destroy(original);
 			return real;
 		}
+#endif
 	}
 }

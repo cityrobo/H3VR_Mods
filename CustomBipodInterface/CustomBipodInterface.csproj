@@ -31,9 +31,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
+    <Reference Include="Assembly-CSharp" Condition="'$(Configuration)'!='Debug'">
       <HintPath>..\..\..\..\..\..\SteamGames\steamapps\common\H3VR\h3vr_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
+    <Reference Include="E:\Speicher\Unity Projects\Wolfenstein2Sturmgewehr\H3 Object Base distro\Library\ScriptAssemblies\Assembly-CSharp.dll" Condition="'$(Configuration)'=='Debug'" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -51,12 +52,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CustomBipodInterface_stub.cs" />
     <Compile Include="CustomBipodInterface.cs" />
     <Compile Include="CustomBipodInterface_Proxy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy $(TargetPath) $(SolutionDir)Releases\$(TargetFileName)</PostBuildEvent>
+    <PostBuildEvent>if $(ConfigurationName) == Debug copy $(TargetPath) $(SolutionDir)Releases\unity_code\$(TargetName).dll
+if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\$(TargetName).dll</PostBuildEvent>
   </PropertyGroup>
 </Project>

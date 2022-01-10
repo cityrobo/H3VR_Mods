@@ -9,6 +9,7 @@ public class CustomBipodInterface_Proxy : MonoBehaviour
     public float rotation_duration;
     public Vector2 RotationRange = new Vector2(0f, 90f);
 
+#if !DEBUG
     private void Awake()
     {
         FistVR.CustomBipodInterface real = FistVR.CustomBipodInterface.CopyFromInterface(FVRInterface, this.gameObject);
@@ -18,4 +19,5 @@ public class CustomBipodInterface_Proxy : MonoBehaviour
         real.RotationRange = RotationRange;
         this.gameObject.SetActive(true);
     }
+#endif
 }
