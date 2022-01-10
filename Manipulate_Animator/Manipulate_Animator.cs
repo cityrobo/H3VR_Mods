@@ -16,18 +16,15 @@ namespace Manipulate_Animator
         public Vector3 start;
         public Vector3 end;
 
-
-
         public enum dirtype
         {
             x = 0,
             y = 1,
-            z = 2,
-            w = 3
+            z = 2
         }
 
         public dirtype direction;
-        public bool is_rotation;
+        public bool isRotation;
 
 
         public void Awake()
@@ -36,7 +33,7 @@ namespace Manipulate_Animator
         public void Update()
         {
             float pos;
-            if (!is_rotation) pos = Mathf.InverseLerp(start[(int)direction], end[(int)direction], Observed_Object.transform.localPosition[(int)direction]);
+            if (!isRotation) pos = Mathf.InverseLerp(start[(int)direction], end[(int)direction], Observed_Object.transform.localPosition[(int)direction]);
             else pos = Mathf.InverseLerp(start[(int)direction], end[(int)direction], Observed_Object.transform.localEulerAngles[(int)direction]);
             animator.Play("animation", 0, pos);
         }

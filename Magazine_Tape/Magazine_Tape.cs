@@ -28,7 +28,7 @@ namespace FistVR
         private bool mag2_attached;
 
 #if!DEBUG
-        protected override void Awake()
+        public override void Awake()
         {
             base.Awake();
 
@@ -103,7 +103,7 @@ namespace FistVR
             Debug.Log("tape2pos: " + tape2pos.ToString("F6"));
             Debug.Log("tape2euler: " + tape2euler.ToString("F6"));*/
         }
-        protected override void FVRUpdate()
+        public override void FVRUpdate()
         {
             base.FVRUpdate();
             try

@@ -25,9 +25,9 @@ namespace Cityrobo
             On.FistVR.FVRFireArm.Fire -= FVRFireArm_Fire;
         }
 
-        private void FVRFireArm_Fire(On.FistVR.FVRFireArm.orig_Fire orig, FistVR.FVRFireArm self, FistVR.FVRFireArmChamber chamber, UnityEngine.Transform muzzle, bool doBuzz, float velMult)
+        private void FVRFireArm_Fire(On.FistVR.FVRFireArm.orig_Fire orig, FVRFireArm self, FVRFireArmChamber chamber, Transform muzzle, bool doBuzz, float velMult, float rangeOverride)
         {
-            orig(self, chamber, muzzle, doBuzz, velMult);
+            orig(self, chamber, muzzle, doBuzz, velMult, rangeOverride);
             if (this.fireArm == self)
             {
                 float chamberVelMult = AM.GetChamberVelMult(chamber.RoundType, Vector3.Distance(chamber.transform.position, muzzle.position));
