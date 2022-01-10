@@ -42,6 +42,7 @@ namespace Cityrobo
             On.FistVR.FVRAlternateGrip.EndInteraction += FVRAlternateGrip_EndInteraction;
 			On.FistVR.FVRFireArmAttachment.BeginInteraction += FVRFireArmAttachment_BeginInteraction;
 			On.FistVR.FVRFireArmAttachment.EndInteraction += FVRFireArmAttachment_EndInteraction;
+			On.FistVR.FVRPhysicalObject.EndInteractionIntoInventorySlot += FVRPhysicalObject_EndInteractionIntoInventorySlot;
 #endif
 		}
 
@@ -51,6 +52,10 @@ namespace Cityrobo
             On.FistVR.OpenBoltReceiver.UpdateControls -= OpenBoltReceiver_UpdateControls;
 			On.FistVR.FVRFireArmMagazine.Release -= FVRFireArmMagazine_Release;
 			On.FistVR.AttachableForegrip.BeginInteraction -= AttachableForegrip_BeginInteraction;
+			On.FistVR.FVRAlternateGrip.EndInteraction -= FVRAlternateGrip_EndInteraction;
+			On.FistVR.FVRFireArmAttachment.BeginInteraction -= FVRFireArmAttachment_BeginInteraction;
+			On.FistVR.FVRFireArmAttachment.EndInteraction -= FVRFireArmAttachment_EndInteraction;
+			On.FistVR.FVRPhysicalObject.EndInteractionIntoInventorySlot -= FVRPhysicalObject_EndInteractionIntoInventorySlot;
 #endif
 		}
 #if !DEBUG
@@ -125,7 +130,8 @@ namespace Cityrobo
 
 		}
 
-		private void FVRFireArmMagazine_Release(On.FistVR.FVRFireArmMagazine.orig_Release orig, FVRFireArmMagazine self)
+
+		private void FVRFireArmMagazine_Release(On.FistVR.FVRFireArmMagazine.orig_Release orig, FVRFireArmMagazine self, bool PhysicalRelease)
 		{
 			if (self.FireArm == openBoltWeapon)
 			{
@@ -155,15 +161,10 @@ namespace Cityrobo
 				self.RootRigidbody.isKinematic = false;
 				//self.RootRigidbody.velocity = mount.RootRigidbody.velocity - self.transform.up * self.EjectionSpeed;
 				//self.RootRigidbody.angularVelocity = mount.RootRigidbody.angularVelocity;
-				if (self.FireArm.m_hand != null)
+				if (self.FireArm.m_hand != null && !PhysicalRelease)
 				{
-					bool flag = false;
 					FVRViveHand otherHand = self.FireArm.m_hand.OtherHand;
 					if (otherHand.CurrentInteractable == null && otherHand.Input.IsGrabbing)
-					{
-						flag = true;
-					}
-					if (flag)
 					{
 						Vector3 position = otherHand.transform.position;
 						if (GM.Options.ControlOptions.UseInvertedHandgunMagPose)
@@ -178,11 +179,15 @@ namespace Cityrobo
 							self.BeginInteraction(otherHand);
 						}
 					}
+					else if (GM.Options.ControlOptions.MagPalming == ControlOptions.MagPalmingMode.Enabled && self.GetCanPalm() && otherHand.Input.IsGrabbing && otherHand.CurrentInteractable != null && otherHand.CurrentInteractable is FVRFireArmMagazine && (otherHand.CurrentInteractable as FVRFireArmMagazine).GetCanPalm() && (otherHand.CurrentInteractable as FVRFireArmMagazine).GetMagParent() == null && (otherHand.CurrentInteractable as FVRFireArmMagazine).GetMagChild() == null && (otherHand.CurrentInteractable as FVRFireArmMagazine).MagazineType == self.MagazineType && Vector3.Distance(otherHand.CurrentInteractable.transform.position, self.FireArm.GetMagMountPos(self.IsBeltBox).position) < 0.2f)
+					{
+						self.SetMagParent(otherHand.CurrentInteractable as FVRFireArmMagazine);
+					}
 				}
 				self.FireArm = null;
 				self.SetAllCollidersToLayer(false, "Default");
 			}
-			else orig(self);
+			else orig(self, PhysicalRelease);
 		}
 
 		private void AttachableForegrip_BeginInteraction(On.FistVR.AttachableForegrip.orig_BeginInteraction orig, AttachableForegrip self, FVRViveHand hand)
@@ -225,6 +230,11 @@ namespace Cityrobo
 		{
 			if (self == attachment) this.hand = null;
 			orig(self, hand);
+		}
+		private void FVRPhysicalObject_EndInteractionIntoInventorySlot(On.FistVR.FVRPhysicalObject.orig_EndInteractionIntoInventorySlot orig, FVRPhysicalObject self, FVRViveHand hand, FVRQuickBeltSlot slot)
+		{
+			if (self == attachment) this.hand = null;
+			orig(self, hand, slot);
 		}
 #endif
 	}
