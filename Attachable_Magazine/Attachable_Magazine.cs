@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,6 +6,7 @@ using FistVR;
 
 namespace Cityrobo
 {
+	[Obsolete("Attachable_Magazine is deprecated, please use Attachable_Magazine_MK2 instead.")]
 	public class Attachable_Magazine : MonoBehaviour
 	{
 		public FistVR.FVRFireArmMagazine mag;
