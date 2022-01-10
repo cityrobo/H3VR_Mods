@@ -46,7 +46,7 @@ namespace Cityrobo
             On.FistVR.FVRFireArm.Fire -= FVRFireArm_Fire;
         }
 
-        private void FVRFireArm_Fire(On.FistVR.FVRFireArm.orig_Fire orig, FistVR.FVRFireArm self, FistVR.FVRFireArmChamber chamber, UnityEngine.Transform muzzle_orig, bool doBuzz, float velMult)
+        private void FVRFireArm_Fire(On.FistVR.FVRFireArm.orig_Fire orig, FistVR.FVRFireArm self, FistVR.FVRFireArmChamber chamber, UnityEngine.Transform muzzle_orig, bool doBuzz, float velMult, float rangeOverride)
         {
             if (this.fireArm == self)
             {
@@ -71,7 +71,7 @@ namespace Cityrobo
                     }
                 }
             }
-            else orig(self, chamber, muzzle_orig, doBuzz, velMult);
+            else orig(self, chamber, muzzle_orig, doBuzz, velMult, rangeOverride);
         }
     #endif
     }
