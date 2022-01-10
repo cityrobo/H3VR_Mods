@@ -3,11 +3,13 @@ using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using FistVR;
 
 namespace Rigidbody_JiggleBones
 {
-	public class JiggleBones : MonoBehaviour
+	public class JiggleBones_FVRObject : MonoBehaviour
 	{
+		public FVRPhysicalObject fvrPhysicalObject;
 		public Rigidbody rootObject;
 		public Transform rootBone;
 		public Rigidbody referenceRigidbody;
@@ -25,7 +27,17 @@ namespace Rigidbody_JiggleBones
 			Transform currentParent = rootBone;
 			FixedJoint fJoint = rootBone.gameObject.AddComponent<FixedJoint>();
 			fJoint.connectedBody = rootObject;
+			/*
+			if (fvrPhysicalObject != null)
+			{
+				Rigidbody[] DependantRBs = fvrPhysicalObject.DependantRBs;
+				int DependantRBsCount = fvrPhysicalObject.DependantRBs.Length;
 
+				Array.Resize(ref DependantRBs, DependantRBsCount + 1);
+				DependantRBs[DependantRBsCount] = rootBone.GetComponent<Rigidbody>();
+				fvrPhysicalObject.DependantRBs = DependantRBs;
+			}
+			*/
 			while (currentParent != null)
 			{
 
@@ -37,7 +49,20 @@ namespace Rigidbody_JiggleBones
 
 				Transform child = currentParent.GetChild(0);
 				Rigidbody body = child.gameObject.AddComponent<Rigidbody>();
-				body = StaticExtras.GetCopyOf(body, referenceRigidbody);
+				body.useGravity = false;
+				//body = StaticExtras.GetCopyOf(body, referenceRigidbody);
+
+				/*
+				if (fvrPhysicalObject != null)
+				{
+					Rigidbody[] DependantRBs = fvrPhysicalObject.DependantRBs;
+					int DependantRBsCount = fvrPhysicalObject.DependantRBs.Length;
+
+					Array.Resize(ref DependantRBs, DependantRBsCount + 1);
+					DependantRBs[DependantRBsCount] = body;
+					fvrPhysicalObject.DependantRBs = DependantRBs;
+				}
+				*/
 				ConfigurableJoint joint = child.gameObject.AddComponent<ConfigurableJoint>();
 				configureJoint(joint, currentParent.gameObject.GetComponent<Rigidbody>());
 
@@ -54,6 +79,8 @@ namespace Rigidbody_JiggleBones
 			{
 				if (child != rootBone.transform)
 					child.SetParent(null);
+
+
 			}
 
 			Destroy(referenceRigidbody);
