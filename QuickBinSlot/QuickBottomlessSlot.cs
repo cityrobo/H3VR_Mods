@@ -16,6 +16,10 @@ namespace Cityrobo
         public int maxItems = 30;
         public float timeBetweenMagSwitch = 0.25f;
         public Color hoverColor;
+        public bool storesMagazines = true;
+        public bool storesClips = true;
+        public bool storesSpeedloaders = true;
+        public bool onlyStoresEmpty = false;
 
         public AudioEvent insertSound;
         public AudioEvent extractSound;
@@ -52,12 +56,12 @@ namespace Cityrobo
 
         private List<GameObject> storedGameObjects;
 
-
         private bool switchingObject = false;
 
-        private int selectedMagIndex = 0;
+        private int selectedObjectIndex = 0;
 
         private float timeWaited = 0f;
+
         public void Start()
         {
             audioSource = new SM.AudioSourcePool(3, 3, FVRPooledAudioType.Generic);
@@ -86,7 +90,7 @@ namespace Cityrobo
             {
                 if (this.currentSelectedObject != null)
                 {
-                    FVRFireArmMagazine mag = this.currentSelectedObject.GetComponent<FVRFireArmMagazine>();
+                    FVRPhysicalObject mag = this.currentSelectedObject.GetComponent<FVRPhysicalObject>();
                     if (mag.IsHeld)
                     {
                         return;
@@ -104,7 +108,7 @@ namespace Cityrobo
             {
                 if (this.currentSelectedObject != null)
                 {
-                    FVRFireArmMagazine mag = this.currentSelectedObject.GetComponent<FVRFireArmMagazine>();
+                    FVRPhysicalObject mag = this.currentSelectedObject.GetComponent<FVRPhysicalObject>();
                     if (mag.IsHeld)
                     {
                         return;
@@ -122,7 +126,7 @@ namespace Cityrobo
             {
                 if (this.currentSelectedObject != null)
                 {
-                    FVRFireArmMagazine mag = this.currentSelectedObject.GetComponent<FVRFireArmMagazine>();
+                    FVRPhysicalObject mag = this.currentSelectedObject.GetComponent<FVRPhysicalObject>();
                     if (mag.IsHeld)
                     {
                         return;
@@ -223,27 +227,21 @@ namespace Cityrobo
                 //    else currentSelectedObject.SetActive(false);
                 //}
 
-                if (CurObject != null && CurObject is FVRFireArmMagazine && storedGameObjects.Count < maxItems)
+                if (storesMagazines && CurObject != null && CurObject is FVRFireArmMagazine && storedGameObjects.Count < maxItems)
                 {
-                    //storedGameObjects.Add(newRoot);
-                    //newObject.SetActive(false);
-                    if (!storedGameObjects.Contains(CurObject.gameObject))
-                    {
-                        storedGameObjects.Add(CurObject.gameObject);
-                        CurObject.gameObject.SetActive(false);
-
-                        CurObject = null;
-                        HeldObject = null;
-
-                        audioSource.PlayClip(insertSound, this.transform.position);
-                    }
+                    StoreCurObject();
                 }
-                if (CurObject != null && (!(CurObject is FVRFireArmMagazine) || storedGameObjects.Count >= maxItems))
+                else if (storesClips && CurObject != null && CurObject is FVRFireArmClip && storedGameObjects.Count < maxItems)
                 {
-                    CurObject.SetQuickBeltSlot(null);
-                    CurObject = null;
-                    HeldObject = null;
-                    audioSource.PlayClip(failureSound, this.transform.position);
+                    StoreCurObject();
+                }
+                else if (storesSpeedloaders && CurObject != null && CurObject is Speedloader && storedGameObjects.Count < maxItems)
+                {
+                    StoreCurObject();
+                }
+                else if (CurObject != null)
+                {
+                    EjectCurObject();
                 }
 
                 if (storedGameObjects.Count > 0)
@@ -261,13 +259,13 @@ namespace Cityrobo
                         switchingObject = false;
                     }
 
-                    int magIndex = -1;
+                    int removalIndex = -1;
 
                     for (int i = 0; i < storedGameObjects.Count; i++)
                     {
-                        storedGameObjects[i].SetActive(i == selectedMagIndex);
+                        storedGameObjects[i].SetActive(i == selectedObjectIndex);
 
-                        if (i != selectedMagIndex)
+                        if (i != selectedObjectIndex)
                         {
                             if (QuickbeltRoot != null)
                             {
@@ -286,21 +284,21 @@ namespace Cityrobo
                             }
                         }
 
-                        FVRFireArmMagazine mag = storedGameObjects[i].GetComponent<FVRFireArmMagazine>();
-                        if (mag.IsHeld)
+                        FVRPhysicalObject objectComponent = storedGameObjects[i].GetComponent<FVRPhysicalObject>();
+                        if (objectComponent.IsHeld)
                         {
-                            magIndex = i;
+                            removalIndex = i;
                         }
-                        if (mag.m_isSpawnLock)
+                        if (objectComponent.m_isSpawnLock)
                         {
-                            mag.m_isSpawnLock = false;
+                            objectComponent.m_isSpawnLock = false;
                         }
                     }
 
-                    if (magIndex >= 0)
+                    if (removalIndex >= 0)
                     {
-                        storedGameObjects[magIndex].SetActive(true);
-                        storedGameObjects.RemoveAt(magIndex);
+                        storedGameObjects[removalIndex].SetActive(true);
+                        storedGameObjects.RemoveAt(removalIndex);
                         audioSource.PlayClip(extractSound, this.transform.position);
                         switchingObject = false;
                     }
@@ -321,6 +319,52 @@ namespace Cityrobo
             else orig(self);
         }
 
+        void StoreCurObject()
+        {
+            if (!storedGameObjects.Contains(CurObject.gameObject))
+            {
+                if (onlyStoresEmpty)
+                {
+                    if (!CheckEmpty()) return;
+                }
+                storedGameObjects.Add(CurObject.gameObject);
+                CurObject.gameObject.SetActive(false);
+
+                CurObject = null;
+                HeldObject = null;
+
+                audioSource.PlayClip(insertSound, this.transform.position);
+            }
+        }
+
+        bool EjectCurObject()
+        {
+            CurObject.SetQuickBeltSlot(null);
+            CurObject = null;
+            HeldObject = null;
+            audioSource.PlayClip(failureSound, this.transform.position);
+            return false;
+        }
+
+        bool CheckEmpty()
+        {
+            FVRFireArmMagazine mag = CurObject.gameObject.GetComponent<FVRFireArmMagazine>();
+            FVRFireArmClip clip = CurObject.gameObject.GetComponent<FVRFireArmClip>();
+            Speedloader speedloader = CurObject.gameObject.GetComponent<Speedloader>();
+
+            if (mag != null && mag.m_numRounds > 0) return EjectCurObject();
+            if (clip != null && clip.m_numRounds > 0) return EjectCurObject();
+            if (speedloader != null)
+            {
+                bool notEmpty = false;
+                foreach (var chamber in speedloader.Chambers)
+                {
+                    notEmpty = chamber.IsLoaded;
+                }
+                if (notEmpty) return EjectCurObject();
+            }
+            return true;
+        }
 
         Vector3 GetPointInside()
         {
@@ -339,8 +383,8 @@ namespace Cityrobo
         void SelectObject()
         {
             switchingObject = true;
-            selectedMagIndex = UnityEngine.Random.Range(0, storedGameObjects.Count);
-            currentSelectedObject = storedGameObjects[selectedMagIndex];
+            selectedObjectIndex = UnityEngine.Random.Range(0, storedGameObjects.Count);
+            currentSelectedObject = storedGameObjects[selectedObjectIndex];
             currentSelectedObject.SetActive(true);
         }
 
@@ -349,10 +393,10 @@ namespace Cityrobo
             Debug.Log("SelectingObjectSlow");
 
             switchingObject = true;
-            selectedMagIndex = UnityEngine.Random.Range(0, storedGameObjects.Count - 1);
+            selectedObjectIndex = UnityEngine.Random.Range(0, storedGameObjects.Count - 1);
 
-            Debug.Log("SelectedMag: " + selectedMagIndex);
-            currentSelectedObject = storedGameObjects[selectedMagIndex];
+            Debug.Log("SelectedMag: " + selectedObjectIndex);
+            currentSelectedObject = storedGameObjects[selectedObjectIndex];
             Debug.Log("SelectedMagObject: " + currentSelectedObject);
             currentSelectedObject.SetActive(true);
             Debug.Log("SelectedMagObject Active: " + currentSelectedObject.activeSelf);
@@ -361,16 +405,16 @@ namespace Cityrobo
             Debug.Log("Checking hand");
             Debug.Log("StoredObjects: " + storedGameObjects);
             Debug.Log("StoredObjects: " + storedGameObjects.Count);
-            Debug.Log("SelectedMag: " + selectedMagIndex);
-            Debug.Log("SelectedMagObject: " + storedGameObjects[selectedMagIndex]);
-            currentSelectedObject = storedGameObjects[selectedMagIndex];
+            Debug.Log("SelectedMag: " + selectedObjectIndex);
+            Debug.Log("SelectedMagObject: " + storedGameObjects[selectedObjectIndex]);
+            currentSelectedObject = storedGameObjects[selectedObjectIndex];
             Debug.Log("SelectedMagObject: " + currentSelectedObject);
             FVRFireArmMagazine mag = currentSelectedObject.GetComponent<FVRFireArmMagazine>();
             Debug.Log("SelectedMagMag: " + mag);
             if (mag.IsHeld)
             {
                 Debug.Log("isHeld");
-                storedGameObjects.RemoveAt(selectedMagIndex);
+                storedGameObjects.RemoveAt(selectedObjectIndex);
                 Debug.Log("RemovedMagFromStorage");
                 audioSource.PlayClip(extractSound, this.transform.position);
             }
@@ -387,8 +431,8 @@ namespace Cityrobo
         {
             switchingObject = true;
 
-            selectedMagIndex = UnityEngine.Random.Range(0, storedGameObjects.Count - 1);
-            currentSelectedObject = storedGameObjects[selectedMagIndex];
+            selectedObjectIndex = UnityEngine.Random.Range(0, storedGameObjects.Count - 1);
+            currentSelectedObject = storedGameObjects[selectedObjectIndex];
 
             currentSelectedObject.SetActive(true);
 
