@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net35</TargetFramework>
+        <LangVersion>9</LangVersion>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <AssemblyName>SnappyBoltActionTrigger</AssemblyName>
+        <RootNamespace>Cityrobo</RootNamespace>
+    </PropertyGroup>
+    
+    <ItemGroup>
+      <None Update="manifest.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="Deli" Version="0.3.2" />
+        
+      <PackageReference Include="jnm2.ReferenceAssemblies.net35" Version="1.0.1" PrivateAssets="all" />  
+      <PackageReference Include="Nullable" Version="1.3.0" PrivateAssets="all" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <Reference Include="Assembly-CSharp">
+        <HintPath>..\..\..\libs\Assembly-CSharp_publicized.dll</HintPath>
+      </Reference>
+      <Reference Include="MMHOOK_Assembly-CSharp">
+        <HintPath>..\..\..\libs\MMHOOK_Assembly-CSharp.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+</Project>
