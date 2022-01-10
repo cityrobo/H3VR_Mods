@@ -3,6 +3,10 @@ All the scripts that I use for my mods are published here. Take care. They are t
 
 Please credit me if you use my code!
 
+## General Information:
+The Editor DLLs for the mods are found in Releases/unity_code.
+If such a file does not exist, it means that the mod actually uses the source files for implementation.
+
 # MagazineTapeMK2
 ## How to use:
 Put Editor DLL (found in Releases/unity_code folder) to your Unity Project (Assets/Plugins)
