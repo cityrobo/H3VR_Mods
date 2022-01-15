@@ -14,9 +14,9 @@ namespace Cityrobo
         public FVRFireArmMagazine rightMag;
 
 #if !(UNITY_EDITOR || UNITY_5)
-		public override void Awake()
+		public override void Start()
         {
-            base.Awake();
+            base.Start();
 
             leftMag.StoreAndDestroyRigidbody();
             rightMag.StoreAndDestroyRigidbody();
