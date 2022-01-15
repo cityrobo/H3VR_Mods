@@ -3,19 +3,14 @@ All the scripts that I use for my mods are published here. Take care. They are t
 
 Please credit me if you use my code!
 
-# Magazine Tape
+## General Information:
+The Editor DLLs for the mods are found in Releases/unity_code.
+If such a file does not exist, it means that the mod actually uses the source files for implementation.
+
+# MagazineTapeMK2
 ## How to use:
-To use, put into "Assets/Plugins" Folder in your unity project (create if it doesn't already exist). Put new MagTapeProxy component as root of your double mag. Place two normal Magazines inside of that object (these should work without being inside the tape. if your mag doesn't work on its own it won't work inside the tape either!). reference the two magazines inside of the script.
-Create a FVRPhysicalObject inside your Object and configure it correctly (see normal Magazines for example, or P90 mag if you want a "rotation free" grab). Reference it inside of the MagTapeProxy script, just like the mags.
-Add a trigger to your object (box or capsule collider set to trigger)
-Add a rigid body to your object. (configure like the ones on the mags)
-After moving the Magazines how you want them to positioned, drag the colliders (usually called Phys) outside the magazines, so they are a child of the Tape instead (this is a fix for the tape dropping through the floor on spawn, IDK why this is happening)
+Put Editor DLL (found in Releases/unity_code folder) to your Unity Project (Assets/Plugins)
+Make a magazine that works on its own in game. Place the script as a new component on the magazine. Put a second magazine as a child inside of the first, primary magazine. Fill out the fields for primary and secondary magazine. if you have a GameObject with the tape mesh you can place it in there as well.
+Use the context menu (cogwheel icon in the top right corner of the component) to calculate relative positions.
 
-configure FVRObject and ISID like you would with any other item you wanna put in the game, put the configured FVRObject inside your FVRPhysicalObject script (it needs this for spawnlocking).
-
-## Putting it in the game:
-Put the DLL inside of a .deli folder and make sure to edit the manifest so that it gets loaded on SETUP with deli:assembly. (Check the OtherLoader manifest, it's doing the same thing with the OtherLoader.dll)
-
-### DISCLAIMER:
-Making the Tape Mag vault correctly when inside of a firearm requires a bit more setup, but the Mag Tape should "just" work like this.
-idk if I can make the whole "vaulting ready" process any easier, so if you want to know how it works, DM me on discord.
+To make Vaulting work, duplicate the magazine and drag the secondary magazine out. Now place the primary magazine in it as a child object. Make a new FVRObject and ISID for it.
