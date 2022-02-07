@@ -4,100 +4,81 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Rigidbody_JiggleBones
+public class JiggleBones : MonoBehaviour
 {
-	public class JiggleBones : MonoBehaviour
+	public Rigidbody rootObject;
+	public Transform rootBone;
+	public float spring_strength;
+	public float spring_dampening;
+
+	public float angleLimit;
+
+	public float collider_Radius;
+	public float collider_Height;
+
+	public void Start()
 	{
-		public Rigidbody rootObject;
-		public Transform rootBone;
-		public Rigidbody referenceRigidbody;
-		public float spring_strength;
-		public float spring_dampening;
+		Transform currentParent = rootBone;
+		FixedJoint fJoint = rootBone.gameObject.AddComponent<FixedJoint>();
+		fJoint.connectedBody = rootObject;
 
-		public float twistLimit;
-		public float angleLimit;
-
-		public float collider_Radius;
-		public float collider_Height;
-
-		public void Start()
+		while (currentParent != null)
 		{
-			Transform currentParent = rootBone;
-			FixedJoint fJoint = rootBone.gameObject.AddComponent<FixedJoint>();
-			fJoint.connectedBody = rootObject;
 
-			while (currentParent != null)
+			if (currentParent.childCount == 0)
 			{
-
-				if (currentParent.childCount == 0)
-				{
-					currentParent = null;
-					break;
-				}
-
-				Transform child = currentParent.GetChild(0);
-				Rigidbody body = child.gameObject.AddComponent<Rigidbody>();
-				body = StaticExtras.GetCopyOf(body, referenceRigidbody);
-				ConfigurableJoint joint = child.gameObject.AddComponent<ConfigurableJoint>();
-				configureJoint(joint, currentParent.gameObject.GetComponent<Rigidbody>());
-
-				CapsuleCollider collider = child.gameObject.AddComponent<CapsuleCollider>();
-				collider.direction = 1;
-				collider.radius = collider_Radius;
-				collider.height = collider_Height;
-
-				currentParent = child;
+				currentParent = null;
+				break;
 			}
 
-			var allChildren = rootBone.GetComponentsInChildren<Transform>();
-			foreach (Transform child in allChildren)
-			{
-				if (child != rootBone.transform)
-					child.SetParent(null);
-			}
+			Transform child = currentParent.GetChild(0);
+			Rigidbody body = child.gameObject.AddComponent<Rigidbody>();
+			body.useGravity = false;
+			ConfigurableJoint joint = child.gameObject.AddComponent<ConfigurableJoint>();
+			configureJoint(joint, currentParent.gameObject.GetComponent<Rigidbody>());
 
-			Destroy(referenceRigidbody);
+			CapsuleCollider collider = child.gameObject.AddComponent<CapsuleCollider>();
+			collider.direction = 1;
+			collider.radius = collider_Radius;
+			collider.height = collider_Height;
+
+			currentParent = child;
 		}
 
-		public void configureJoint(ConfigurableJoint joint, Rigidbody parent)
+		var allChildren = rootBone.GetComponentsInChildren<Transform>();
+		foreach (Transform child in allChildren)
 		{
-			joint.connectedBody = parent;
-			joint.axis = new Vector3(0, 1, 0);
-
-			joint.xMotion = ConfigurableJointMotion.Locked;
-			joint.yMotion = ConfigurableJointMotion.Locked;
-			joint.zMotion = ConfigurableJointMotion.Locked;
-
-			joint.angularXMotion = ConfigurableJointMotion.Limited;
-			joint.angularYMotion = ConfigurableJointMotion.Limited;
-			joint.angularZMotion = ConfigurableJointMotion.Limited;
-
-			JointDrive drive = new JointDrive();
-			drive.positionSpring = spring_strength;
-			drive.positionDamper = spring_dampening;
-			drive.maximumForce = joint.angularYZDrive.maximumForce;
-
-			joint.angularXDrive = drive;
-			joint.angularYZDrive = drive;
-
-			SoftJointLimit high_twistlimit = new SoftJointLimit();
-			high_twistlimit.limit = twistLimit;
-			high_twistlimit.bounciness = joint.highAngularXLimit.bounciness;
-			high_twistlimit.contactDistance = joint.highAngularXLimit.contactDistance;
-			joint.highAngularXLimit = high_twistlimit;
-
-			SoftJointLimit low_twistlimit = new SoftJointLimit();
-			low_twistlimit.limit = twistLimit;
-			low_twistlimit.bounciness = joint.lowAngularXLimit.bounciness;
-			low_twistlimit.contactDistance = joint.lowAngularXLimit.contactDistance;
-			joint.lowAngularXLimit = low_twistlimit;
-
-			SoftJointLimit anglelimit = new SoftJointLimit();
-			anglelimit.limit = angleLimit;
-			anglelimit.bounciness = joint.angularYLimit.bounciness;
-			anglelimit.contactDistance = joint.angularYLimit.contactDistance;
-			joint.angularYLimit = anglelimit;
-			joint.angularZLimit = anglelimit;
+			if (child != rootBone.transform)
+				child.SetParent(null);
 		}
+	}
+
+	public void configureJoint(ConfigurableJoint joint, Rigidbody parent)
+	{
+		joint.connectedBody = parent;
+		joint.axis = new Vector3(0, 1, 0);
+
+		joint.xMotion = ConfigurableJointMotion.Locked;
+		joint.yMotion = ConfigurableJointMotion.Locked;
+		joint.zMotion = ConfigurableJointMotion.Locked;
+
+		joint.angularXMotion = ConfigurableJointMotion.Free;
+		joint.angularYMotion = ConfigurableJointMotion.Limited;
+		joint.angularZMotion = ConfigurableJointMotion.Limited;
+
+		JointDrive drive = new JointDrive();
+		drive.positionSpring = spring_strength;
+		drive.positionDamper = spring_dampening;
+		drive.maximumForce = joint.angularYZDrive.maximumForce;
+
+		joint.angularXDrive = drive;
+		joint.angularYZDrive = drive;
+
+		SoftJointLimit limit = new SoftJointLimit();
+		limit.limit = angleLimit;
+		limit.bounciness = joint.angularYLimit.bounciness;
+		limit.contactDistance = joint.angularYLimit.contactDistance;
+		joint.angularYLimit = limit;
+		joint.angularZLimit = limit;
 	}
 }

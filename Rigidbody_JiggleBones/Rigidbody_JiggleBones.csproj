@@ -31,6 +31,16 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'MeatKit|AnyCPU'">
+    <OutputPath>bin\MeatKit\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.5.7.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\HarmonyX.2.5.7\lib\net35\0Harmony.dll</HintPath>
@@ -82,8 +92,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="JiggleBones_orig.cs" />
-    <Compile Include="JiggleBones_FVRObject.cs" />
     <Compile Include="JiggleBonesMK2.cs" />
     <Compile Include="JiggleBones.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
