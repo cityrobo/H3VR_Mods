@@ -1,13 +1,18 @@
 using UnityEngine;
 namespace Cityrobo
 {
-    class ThermalBody_Hooks
+    public class ThermalBody_Hooks
     {
         public struct TemperatureData
         {
             public float sosig_tempDist;
             public float sosig_maxTemp;
             public float sosig_minTemp;
+
+            public bool encryption_hot;
+            public float encryption_tempDistHot;
+            public float encryption_maxTempHot;
+            public float encryption_minTempHot;
 
             public float physicalObject_tempDist;
             public float physicalObject_maxTemp;
@@ -18,26 +23,126 @@ namespace Cityrobo
         }
 
         private TemperatureData temperatureData;
+        private bool essentialsOnly = false;
+
+        public static float sosig_tempDist;
+        public static float sosig_maxTemp;
+        public static float sosig_minTemp;
+
+        public static float physicalObject_tempDist;
+        public static float physicalObject_maxTemp;
+        public static float physicalObject_minTemp;
+
+        public static bool IsHooked;
+
 #if !DEBUG
         public void Unhook()
         {
-            On.FistVR.Sosig.Start -= this.Sosig_Start;
-            On.FistVR.FVRPhysicalObject.Awake -= FVRPhysicalObject_Awake;
-            On.FistVR.MuzzleDevice.Awake -= MuzzleDevice_Awake;
-            On.FistVR.FVRFireArmRound.FVRUpdate -= FVRFireArmRound_FVRUpdate;
-            On.FistVR.FVRFireArmChamber.UpdateProxyDisplay -= FVRFireArmChamber_UpdateProxyDisplay;
-            On.FistVR.FVRFireArmMagazine.UpdateBulletDisplay -= FVRFireArmMagazine_UpdateBulletDisplay;
+            if (essentialsOnly)
+            {
+                On.FistVR.Sosig.Start -= Sosig_Start;
+                On.FistVR.FVRPhysicalObject.Awake -= FVRPhysicalObject_Awake;
+                On.FistVR.TNH_EncryptionTarget.Start -= TNH_EncryptionTarget_Start;
+            }
+            else
+            {
+                On.FistVR.Sosig.Start -= Sosig_Start;
+                On.FistVR.FVRPhysicalObject.Awake -= FVRPhysicalObject_Awake;
+                On.FistVR.TNH_EncryptionTarget.Start -= TNH_EncryptionTarget_Start;
+                On.FistVR.MuzzleDevice.Awake -= MuzzleDevice_Awake;
+                On.FistVR.FVRFireArmRound.FVRUpdate -= FVRFireArmRound_FVRUpdate;
+                On.FistVR.FVRFireArmChamber.UpdateProxyDisplay -= FVRFireArmChamber_UpdateProxyDisplay;
+                On.FistVR.FVRFireArmMagazine.UpdateBulletDisplay -= FVRFireArmMagazine_UpdateBulletDisplay;
+            }
+
+            IsHooked = false;
         }
         public void Hook(TemperatureData data)
         {
             this.temperatureData = data;
 
-            On.FistVR.Sosig.Start += this.Sosig_Start;
+            On.FistVR.Sosig.Start += Sosig_Start;
             On.FistVR.FVRPhysicalObject.Awake += FVRPhysicalObject_Awake;
+            On.FistVR.TNH_EncryptionTarget.Start += TNH_EncryptionTarget_Start;
             On.FistVR.MuzzleDevice.Awake += MuzzleDevice_Awake;
             On.FistVR.FVRFireArmRound.FVRUpdate += FVRFireArmRound_FVRUpdate;
             On.FistVR.FVRFireArmChamber.UpdateProxyDisplay += FVRFireArmChamber_UpdateProxyDisplay;
             On.FistVR.FVRFireArmMagazine.UpdateBulletDisplay += FVRFireArmMagazine_UpdateBulletDisplay;
+
+            ApplyStaticValues();
+            IsHooked = true;
+        }
+
+        public void EssentialsHook(TemperatureData data)
+        {
+            this.temperatureData = data;
+
+            On.FistVR.Sosig.Start += Sosig_Start;
+            On.FistVR.FVRPhysicalObject.Awake += FVRPhysicalObject_Awake;
+            On.FistVR.TNH_EncryptionTarget.Start += TNH_EncryptionTarget_Start;
+
+            essentialsOnly = true;
+
+            ApplyStaticValues();
+            IsHooked = true;
+        }
+
+        void ApplyStaticValues()
+        {
+            ThermalBody_Hooks.sosig_tempDist = temperatureData.sosig_tempDist;
+            ThermalBody_Hooks.sosig_maxTemp = temperatureData.sosig_maxTemp;
+            ThermalBody_Hooks.sosig_minTemp = temperatureData.sosig_minTemp;
+
+            ThermalBody_Hooks.physicalObject_tempDist = temperatureData.physicalObject_tempDist;
+            ThermalBody_Hooks.physicalObject_maxTemp = temperatureData.physicalObject_maxTemp;
+            ThermalBody_Hooks.physicalObject_minTemp = temperatureData.physicalObject_minTemp;
+        }
+
+
+        private void TNH_EncryptionTarget_Start(On.FistVR.TNH_EncryptionTarget.orig_Start orig, FistVR.TNH_EncryptionTarget self)
+        {
+            orig(self);
+            ThermalBody tB = self.gameObject.GetComponent<ThermalBody>();
+            if (temperatureData.encryption_hot)
+            {
+                if (tB == null)
+                {
+                    tB = self.gameObject.AddComponent<ThermalBody>();
+                    tB.enabled = false;
+                    tB.ThermalDistribution = temperatureData.encryption_tempDistHot;
+                    tB.MaximumTemperature = temperatureData.encryption_maxTempHot;
+                    tB.MinimumTemperature = temperatureData.encryption_minTempHot;
+                    tB.enabled = true;
+                }
+                else
+                {
+                    tB.enabled = false;
+                    tB.ThermalDistribution = temperatureData.encryption_tempDistHot;
+                    tB.MaximumTemperature = temperatureData.encryption_maxTempHot;
+                    tB.MinimumTemperature = temperatureData.encryption_minTempHot;
+                    tB.enabled = true;
+                }
+            }
+            else
+            {
+                if (tB == null)
+                {
+                    tB = self.gameObject.AddComponent<ThermalBody>();
+                    tB.enabled = false;
+                    tB.ThermalDistribution = temperatureData.physicalObject_tempDist;
+                    tB.MaximumTemperature = temperatureData.physicalObject_maxTemp;
+                    tB.MinimumTemperature = temperatureData.physicalObject_minTemp;
+                    tB.enabled = true;
+                }
+                else
+                {
+                    tB.enabled = false;
+                    tB.ThermalDistribution = temperatureData.physicalObject_tempDist;
+                    tB.MaximumTemperature = temperatureData.physicalObject_maxTemp;
+                    tB.MinimumTemperature = temperatureData.physicalObject_minTemp;
+                    tB.enabled = true;
+                }
+            }
         }
 
         private void FVRFireArmMagazine_UpdateBulletDisplay(On.FistVR.FVRFireArmMagazine.orig_UpdateBulletDisplay orig, FistVR.FVRFireArmMagazine self)
