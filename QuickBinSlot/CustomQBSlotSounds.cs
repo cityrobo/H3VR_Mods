@@ -51,14 +51,18 @@ namespace Cityrobo
 
         void Unhook()
         {
+#if !(DEBUG || MEATKIT)
             On.FistVR.FVRPhysicalObject.DuplicateFromSpawnLock -= FVRPhysicalObject_DuplicateFromSpawnLock;
+#endif
         }
 
         void Hook()
         {
+#if !(DEBUG || MEATKIT)
             On.FistVR.FVRPhysicalObject.DuplicateFromSpawnLock += FVRPhysicalObject_DuplicateFromSpawnLock;
+#endif
         }
-
+#if !(DEBUG || MEATKIT)
         private GameObject FVRPhysicalObject_DuplicateFromSpawnLock(On.FistVR.FVRPhysicalObject.orig_DuplicateFromSpawnLock orig, FVRPhysicalObject self, FVRViveHand hand)
         {
             GameObject temp = orig(self, hand);
@@ -68,6 +72,7 @@ namespace Cityrobo
             }
             return temp;
         }
+#endif
 #endif
     }
 }

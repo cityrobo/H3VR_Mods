@@ -51,14 +51,18 @@ namespace Cityrobo
 
         void Unhook()
         {
+#if !(DEBUG || MEATKIT)
             On.FistVR.FVRQuickBeltSlot.Update -= FVRQuickBeltSlot_Update;
+#endif
         }
 
         void Hook()
         {
+#if !(DEBUG || MEATKIT)
             On.FistVR.FVRQuickBeltSlot.Update += FVRQuickBeltSlot_Update;
+#endif
         }
-
+#if !(DEBUG || MEATKIT)
         private void FVRQuickBeltSlot_Update(On.FistVR.FVRQuickBeltSlot.orig_Update orig, FVRQuickBeltSlot self)
         {
             if (this == self)
@@ -123,6 +127,7 @@ namespace Cityrobo
             }
             else orig(self);
         }
+#endif
 #endif
     }
 }

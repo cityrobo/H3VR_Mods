@@ -71,19 +71,23 @@ namespace Cityrobo
         }
         void Unhook()
         {
+#if !(DEBUG || MEATKIT)
             On.FistVR.FVRQuickBeltSlot.Update -= FVRQuickBeltSlot_Update;
             On.FistVR.FVRQuickBeltSlot.MoveContents -= FVRQuickBeltSlot_MoveContents;
             On.FistVR.FVRQuickBeltSlot.MoveContentsInstant -= FVRQuickBeltSlot_MoveContentsInstant;
             On.FistVR.FVRQuickBeltSlot.MoveContentsCheap -= FVRQuickBeltSlot_MoveContentsCheap;
+#endif
         }
         void Hook()
         {
+#if !(DEBUG || MEATKIT)
             On.FistVR.FVRQuickBeltSlot.Update += FVRQuickBeltSlot_Update;
             On.FistVR.FVRQuickBeltSlot.MoveContents += FVRQuickBeltSlot_MoveContents;
             On.FistVR.FVRQuickBeltSlot.MoveContentsInstant += FVRQuickBeltSlot_MoveContentsInstant;
             On.FistVR.FVRQuickBeltSlot.MoveContentsCheap += FVRQuickBeltSlot_MoveContentsCheap;
+#endif
         }
-
+#if !(DEBUG || MEATKIT)
         private void FVRQuickBeltSlot_MoveContentsCheap(On.FistVR.FVRQuickBeltSlot.orig_MoveContentsCheap orig, FVRQuickBeltSlot self, Vector3 dir)
         {
             if (self == this)
@@ -318,7 +322,7 @@ namespace Cityrobo
             }
             else orig(self);
         }
-
+#endif
         void StoreCurObject()
         {
             if (!storedGameObjects.Contains(CurObject.gameObject))
@@ -441,4 +445,4 @@ namespace Cityrobo
         }
 #endif
     }
-}
+    }
