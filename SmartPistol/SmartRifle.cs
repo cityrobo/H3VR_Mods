@@ -96,7 +96,7 @@ namespace Cityrobo
 				}
             }
         }
-#endif
+
 		private Vector3 FindTarget()
         {
 			float radius = EngageRange * Mathf.Tan(0.5f * EngageAngle * Mathf.Deg2Rad);
@@ -169,5 +169,6 @@ namespace Cityrobo
 				isLocked = false;
 			}
         }
-    }
+#endif
+	}
 }

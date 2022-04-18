@@ -97,6 +97,7 @@
   <ItemGroup>
     <Compile Include="CustomQBSlotSounds.cs" />
     <Compile Include="CustomQuickBeltSlots_BepInEx.cs" />
+    <Compile Include="QuickBeltAreaCollisionDetector.cs" />
     <Compile Include="QuickBeltArea.cs" />
     <Compile Include="WristMounted_ClosedBoltWeapon.cs" />
     <Compile Include="WristItem.cs" />

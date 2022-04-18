@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace H3VRUtils
 {
-	class OpenBoltBurstFire : MonoBehaviour
+	public class OpenBoltBurstFire : MonoBehaviour
 	{
 		public OpenBoltReceiver Receiver = null;
 

@@ -16,12 +16,19 @@ namespace Cityrobo
 
 		public float VelocityMultiplier = 1f;
 		public float RangeOverride = -1f;
+		public FVRFireArmRecoilProfile OverrideRecoilProfile;
+		public FVRFireArmRecoilProfile OverrideRecoilProfileStocked;
 
 		public AudioEvent GrenadeShot;
+		[Tooltip("Normally, only caseless rounds will be removed from the chamber when fired. Enabling this will also remove fired cased rounds from the chamber automatically.")]
+		public bool DoesClearCasedRounds = false;
 
         private Vector3 _origMuzzlePos;
 		private Quaternion _origMuzzleRot;
         private FVRFireArm _fireArm;
+		private FVRFireArmRecoilProfile _origRecoilProfile;
+		private FVRFireArmRecoilProfile _origRecoilProfileStocked;
+		private bool _recoilProfileSet = false;
 
 #if !(UNITY_EDITOR || UNITY_5)
 		public override void Awake()
@@ -41,10 +48,38 @@ namespace Cityrobo
 				this.Muzzle.position = Vector3.down * 3 + this.transform.TransformPoint(_origMuzzlePos);
 				this.Muzzle.rotation = Quaternion.LookRotation(Vector3.down, Vector3.forward);
 
-				if (GrenadeChamber.IsSpent && GrenadeChamber.GetRound().IsCaseless) GrenadeChamber.Unload();
+				if (!_recoilProfileSet && _fireArm != null && OverrideRecoilProfile != null)
+                {
+					_origRecoilProfile = _fireArm.RecoilProfile;
+					_origRecoilProfileStocked = _fireArm.RecoilProfileStocked;
+
+                    if (OverrideRecoilProfileStocked != null)
+                    {
+						_fireArm.RecoilProfile = OverrideRecoilProfile;
+						_fireArm.RecoilProfileStocked = OverrideRecoilProfileStocked;
+					}
+                    else
+                    {
+						_fireArm.RecoilProfile = OverrideRecoilProfile;
+						_fireArm.RecoilProfileStocked = OverrideRecoilProfile;
+					}
+
+					_recoilProfileSet = true;
+                }
+
+				if (GrenadeChamber.IsSpent && (GrenadeChamber.GetRound().IsCaseless || DoesClearCasedRounds)) GrenadeChamber.Unload();
             }
             else
             {
+				if (_recoilProfileSet && _fireArm != null)
+				{
+
+					_fireArm.RecoilProfile = _origRecoilProfile;
+					_fireArm.RecoilProfileStocked = _origRecoilProfileStocked;
+
+					_recoilProfileSet = false;
+				}
+
 				this.Muzzle.localPosition = _origMuzzlePos;
 				this.Muzzle.localRotation = _origMuzzleRot;
 			}

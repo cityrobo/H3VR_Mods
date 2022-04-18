@@ -91,7 +91,7 @@ namespace Cityrobo
 
         private void ClosedBoltWeapon_DropHammer(On.FistVR.ClosedBoltWeapon.orig_DropHammer orig, ClosedBoltWeapon self)
         {
-            if (_shouldCoolDown || _isCoolingDown) return;
+            if ((_shouldCoolDown || _isCoolingDown) && self == FireArm) return;
 
             orig(self);
 
@@ -108,7 +108,7 @@ namespace Cityrobo
                     _burstAmount--;
                 }
 
-                if (_burstAmount == 0)
+                if (_burstAmount == 0 && _isBurstFiring)
                 {
                     _shouldCoolDown = true;
                     _isBurstFiring = false;
@@ -157,7 +157,7 @@ namespace Cityrobo
 
         private void Handgun_ReleaseSeer(On.FistVR.Handgun.orig_ReleaseSeer orig, Handgun self)
         {
-            if (_shouldCoolDown || _isCoolingDown) return;
+            if ((_shouldCoolDown || _isCoolingDown) && self == FireArm) return;
 
             if (self == FireArm && self.m_isHammerCocked && self.m_isSeerReady)
             {
@@ -172,7 +172,7 @@ namespace Cityrobo
                     _burstAmount--;
                 }
 
-                if (_burstAmount == 0)
+                if (_burstAmount == 0 && _isBurstFiring)
                 {
                     _shouldCoolDown = true;
                     _isBurstFiring = false;

@@ -33,7 +33,7 @@ namespace Cityrobo
             public FVRFireArmRecoilProfile recoilProfileStocked;
         }
 
-        [Tooltip("Only allows insertion of mag into firearm if the caliber of the mag and the gun are equal")]
+        [Tooltip("Only allows insertion of mag into firearm if the caliber of the mag and the gun are equal. Also ejects the magazine if the firearms caliber is changed to something the magazine doesn't support.")]
         public bool checksFirearmCompatibility;
 
         private CaliberDefinition originalCaliberDefinition;
@@ -118,6 +118,13 @@ namespace Cityrobo
                 fireArm.RecoilProfileStocked = originalCaliberDefinition.recoilProfileStocked;
 
                 fireArm = null;
+            }
+            else if (magazine.State == FVRFireArmMagazine.MagazineState.Locked && fireArm != null && fireArm.RoundType != caliberDefinitionsList[currentCaliberDefinition].RoundType)
+            {
+                if (!SetCartridge(fireArm.RoundType) && magazine.m_numRounds == 0 && checksFirearmCompatibility)
+                {
+                    fireArm.EjectMag();
+                }
             }
         }
 

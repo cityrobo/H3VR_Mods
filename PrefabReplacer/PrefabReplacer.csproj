@@ -71,6 +71,9 @@
     <Reference Include="SemanticVersioning, Version=2.0.0.0, Culture=neutral, PublicKeyToken=a89bb7dc6f7a145c, processorArchitecture=MSIL">
       <HintPath>..\packages\SemanticVersioning.2.0.0\lib\net35\SemanticVersioning.dll</HintPath>
     </Reference>
+    <Reference Include="Sodalite">
+      <HintPath>..\..\..\..\AppData\Roaming\r2modmanPlus-local\H3VR\profiles\Creating Mods Stratum\BepInEx\plugins\nrgill28-Sodalite\Sodalite.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />

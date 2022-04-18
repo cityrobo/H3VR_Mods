@@ -52,7 +52,7 @@ namespace Cityrobo
         private ActiveMagazine activeMagazine = ActiveMagazine.primary;
         private AttachedMagazine attachedMagazine = AttachedMagazine.none;
 
-#if!DEBUG
+#if !(DEBUG || MEATKIT)
         public void Start()
         {
             if (primaryMagazine.State == FVRFireArmMagazine.MagazineState.Locked)
@@ -220,12 +220,58 @@ namespace Cityrobo
         {
             //On.FistVR.FVRFireArmMagazine.ReloadMagWithType -= FVRFireArmMagazine_ReloadMagWithType;
             On.FistVR.FVRFireArmMagazine.DuplicateFromSpawnLock -= FVRFireArmMagazine_DuplicateFromSpawnLock;
+            On.FistVR.FVRWristMenu.CleanUpScene_Empties -= FVRWristMenu_CleanUpScene_Empties;
         }
 
         void Hook()
         {
             //On.FistVR.FVRFireArmMagazine.ReloadMagWithType += FVRFireArmMagazine_ReloadMagWithType;
             On.FistVR.FVRFireArmMagazine.DuplicateFromSpawnLock += FVRFireArmMagazine_DuplicateFromSpawnLock;
+            On.FistVR.FVRWristMenu.CleanUpScene_Empties += FVRWristMenu_CleanUpScene_Empties;
+        }
+
+        private void FVRWristMenu_CleanUpScene_Empties(On.FistVR.FVRWristMenu.orig_CleanUpScene_Empties orig, FVRWristMenu self)
+        {
+            self.Aud.PlayOneShot(self.AudClip_Engage, 1f);
+            if (!self.askConfirm_CleanupEmpties)
+            {
+                self.ResetConfirm();
+                self.AskConfirm_CleanupEmpties();
+                return;
+            }
+            self.ResetConfirm();
+            FVRFireArmMagazine[] array = UnityEngine.Object.FindObjectsOfType<FVRFireArmMagazine>();
+            for (int i = array.Length - 1; i >= 0; i--)
+            {
+                if (!array[i].IsHeld && array[i].QuickbeltSlot == null && array[i].FireArm == null && array[i].m_numRounds == 0 && array[i].GetComponentInChildren<MagazineTapeMK2>() == null)
+                {
+                    UnityEngine.Object.Destroy(array[i].gameObject);
+                }
+            }
+            FVRFireArmRound[] array2 = UnityEngine.Object.FindObjectsOfType<FVRFireArmRound>();
+            for (int j = array2.Length - 1; j >= 0; j--)
+            {
+                if (!array2[j].IsHeld && array2[j].QuickbeltSlot == null && array2[j].RootRigidbody != null)
+                {
+                    UnityEngine.Object.Destroy(array2[j].gameObject);
+                }
+            }
+            FVRFireArmClip[] array3 = UnityEngine.Object.FindObjectsOfType<FVRFireArmClip>();
+            for (int k = array3.Length - 1; k >= 0; k--)
+            {
+                if (!array3[k].IsHeld && array3[k].QuickbeltSlot == null && array3[k].FireArm == null && array3[k].m_numRounds == 0)
+                {
+                    UnityEngine.Object.Destroy(array3[k].gameObject);
+                }
+            }
+            Speedloader[] array4 = UnityEngine.Object.FindObjectsOfType<Speedloader>();
+            for (int l = array4.Length - 1; l >= 0; l--)
+            {
+                if (!array4[l].IsHeld && array4[l].QuickbeltSlot == null)
+                {
+                    UnityEngine.Object.Destroy(array4[l].gameObject);
+                }
+            }
         }
 
         private GameObject FVRFireArmMagazine_DuplicateFromSpawnLock(On.FistVR.FVRFireArmMagazine.orig_DuplicateFromSpawnLock orig, FVRFireArmMagazine self, FVRViveHand hand)

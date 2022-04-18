@@ -74,16 +74,18 @@ namespace Cityrobo
         [Tooltip("The existence of this text enables the reticle change functionality")]
         public Text reticleText;
         public string reticlePrefix = "Reticle: ";
-
-        [Tooltip("Names of additional reticles first. Last reticle name is the name of the default reticle (on the shader itself)")]
-        public string[] reticleName;
-        [Tooltip("Additional reticle colors")]
-        public List<Color> reticleColors;
-        [Tooltip("Additional reticles")]
+        [Tooltip("Additional reticles. Default reticle is first entry.")]
         public List<Texture2D> reticles;
+        [Tooltip("Names of additional reticles. Default reticle name is first entry.")]
+        public string[] reticleName;
+        [Tooltip("Additional reticle colors. Default reticle color is first entry.")]
+        public List<Color> reticleColors;
+
         public int currentReticle = 0;
 
+        [Tooltip("This enables the very specialized reticle change system.")]
         public bool doesEachZoomFactorHaveOwnReticle = false;
+        [Tooltip("Starts with default reticle, than all default reticle variants for the following zoom levels. Next entries are additional reticles and their according zoom levels, all ordered by zoom level and grouped by reticle type.")]
         public List<Texture2D> additionalReticlesPerZoomLevel;
 
         private List<float> CorrespondingCameraFOV;
@@ -148,9 +150,9 @@ namespace Cityrobo
             ScopeEnabled(activeWithoutMount);
 
             //camera.gameObject.SetActive(activeWithoutMount);
-
+#if !DEBUG
             if (isIntegrated) Zero();
-
+#endif
             if (text == null) 
             { 
                 currentMenu++;
@@ -192,7 +194,7 @@ namespace Cityrobo
                     }
                 }
                 */
-                if (currentReticle >= reticles.Count) currentReticle = reticles.Count - 1;
+                if (currentReticle >= reticles.Count && reticles.Count != 0) currentReticle = reticles.Count - 1;
                 ChangeReticle();
             }
         }
@@ -440,7 +442,7 @@ namespace Cityrobo
         }
         public void Zero()
         {
-#if!Debug
+#if !Debug
             if (isIntegrated || (this.Attachment != null && this.Attachment.curMount != null && this.Attachment.curMount.Parent != null && this.Attachment.curMount.Parent is FVRFireArm))
             {
                 if (!isIntegrated) firearm = this.Attachment.curMount.Parent as FVRFireArm;

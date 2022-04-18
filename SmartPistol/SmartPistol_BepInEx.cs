@@ -1,3 +1,4 @@
+#if !DEBUG
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,8 +7,7 @@ using BepInEx;
 
 namespace Cityrobo
 {
-#if !DEBUG
-    [BepInPlugin("h3vr.cityrobo.smartpistol", "SmartPistol Scripts", "1.0.0")]
+    [BepInPlugin("h3vr.cityrobo.openscripts.smartpistol", "SmartPistol Scripts", "1.0.0")]
     class SmartPistol_BepInEx : BaseUnityPlugin
     {
         public SmartPistol_BepInEx()
@@ -15,5 +15,5 @@ namespace Cityrobo
             Logger.LogInfo("SmartPistol Scripts loaded!");
         }
     }
-#endif
 }
+#endif

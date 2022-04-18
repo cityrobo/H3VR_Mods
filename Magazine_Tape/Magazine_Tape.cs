@@ -27,7 +27,7 @@ namespace FistVR
         private bool mag1_attached;
         private bool mag2_attached;
 
-#if!DEBUG
+#if !(DEBUG || MEATKIT)
         public override void Awake()
         {
             base.Awake();

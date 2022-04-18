@@ -1,3 +1,4 @@
+#if !DEBUG
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +7,6 @@ using BepInEx;
 
 namespace Cityrobo
 {
-#if!DEBUG
     [BepInPlugin("h3vr.cityrobo.openscripts.additional_barrel", "OpenScripts: AdditionalBarrel Script", "1.0.0")]
     class AdditionalBarrel_BepInEx : BaseUnityPlugin
     {
@@ -15,5 +15,5 @@ namespace Cityrobo
             Logger.LogInfo("OpenScripts: AdditionalBarrel Script loaded!");
         }
     }
-#endif
 }
+#endif

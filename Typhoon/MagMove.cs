@@ -18,6 +18,7 @@ namespace Cityrobo
             else if (!posChanged)
             {
                 fireArm.Magazine.SetParentage(fireArm.MagazineMountPos.transform);
+                posChanged = true;
             }
         }
 #endif

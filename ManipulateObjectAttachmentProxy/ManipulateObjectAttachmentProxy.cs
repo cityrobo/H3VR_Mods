@@ -26,51 +26,92 @@ namespace Cityrobo
         
         public TargetType targetType;
 
+        [Header("Alternative target by name:")]
+        public bool useAlternativeMethod;
+        [Tooltip("If the part you wanna monitor doesn't exist as a type, you can put in the exact path of the part (without the parent) that you wanna proxy and it will get that one on the gun instead.")]
+        public string targetPath;
 
         private FVRPhysicalObject weapon;
-        private Transform proxy;
+        private Transform proxy = null;
 
-        private bool proxySet = false;
-        
-        public void Start()
-        {
-        }
-#if !(UNITY_EDITOR || UNITY_5)
+        private bool debug = false;
+
+#if !(UNITY_EDITOR || UNITY_5 || DEBUG)
 
         public void Update()
         {
-            if (attachment.curMount != null)
+            if (attachment.curMount != null && !useAlternativeMethod)
             {
-                weapon = attachment.curMount.GetRootMount().MyObject;
-                if (!proxySet)
+                if (proxy == null)
                 {
+                    DebugMessage("Grabbing mounted item.");
+
+                    weapon = attachment.curMount.GetRootMount().MyObject;
+
+                    DebugMessage("Mounted Item: " + weapon.name);
+
                     switch (weapon)
                     {
                         case OpenBoltReceiver s:
+                            DebugMessage("OpenBoltReceiver found!");
                             SetProxy(s);
                             break;
                         case ClosedBoltWeapon s:
+                            DebugMessage("ClosedBoltWeapon found!");
                             SetProxy(s);
                             break;
                         case Handgun s:
+                            DebugMessage("Handgun found!");
                             SetProxy(s);
                             break;
                         case TubeFedShotgun s:
+                            DebugMessage("TubeFedShotgun found!");
                             SetProxy(s);
                             break;
                         case BoltActionRifle s:
+                            DebugMessage("BoltActionRifle found!");
                             SetProxy(s);
                             break;
                         default:
+                            Debug.LogWarning("ManipulateObjectAttachmentProxy: Parent object is not a supported firearm!");
                             break;
                     }
-                    proxySet = true;
                 }
-                this.transform.localPosition = proxy.localPosition;
-                this.transform.localRotation = proxy.localRotation;
-                this.transform.localScale = proxy.localScale;
+                if (proxy != null)
+                {
+                    this.transform.localPosition = proxy.localPosition;
+                    this.transform.localRotation = proxy.localRotation;
+                    this.transform.localScale = proxy.localScale;
+                }
+
             }
-            else proxySet = false;
+            else if (attachment.curMount != null && useAlternativeMethod)
+            {
+                if (proxy == null)
+                {
+                    DebugMessage("Grabbing mounted item.");
+
+                    weapon = attachment.curMount.GetRootMount().MyObject;
+
+                    DebugMessage("Mounted Item: " + weapon.name);
+
+                    proxy = weapon.transform.Find(targetPath);
+                }
+                if (proxy != null)
+                {
+                    this.transform.localPosition = proxy.localPosition;
+                    this.transform.localRotation = proxy.localRotation;
+                    this.transform.localScale = proxy.localScale;
+                }
+                else
+                {
+                    Debug.LogWarning("ManipulateObjectAttachmentProxy: Could not find target with alternative mode path!");
+                }
+            }
+            else
+            {
+                proxy = null;
+            }
         }
 
 #endif
@@ -143,7 +184,10 @@ namespace Cityrobo
                     proxy = s.MagazineReleaseButton;
                     break;
                 case TargetType.Safety:
+                    if (debug && s.Safety == null) Debug.LogWarning("ManipulateObjectAttachmentProxy: Handgun.Safety == null");
+                    if (debug) DebugMessage("Safety: " + s.Safety);
                     proxy = s.Safety;
+                    if (debug) DebugMessage("proxy: " + proxy);
                     break;
                 case TargetType.FireSelector:
                     proxy = s.FireSelector;
@@ -158,6 +202,7 @@ namespace Cityrobo
                     Debug.LogWarning("ManipulateObjectAttachmentProxy: TargetType not available for this type of FireArm!");
                     break;
             }
+            if (debug && proxy == null) Debug.LogWarning("ManipulateObjectAttachmentProxy: Proxy should be set but isn't!");
         }
         private void SetProxy(TubeFedShotgun s)
         {
@@ -200,6 +245,11 @@ namespace Cityrobo
                     Debug.LogWarning("ManipulateObjectAttachmentProxy: TargetType not available for this type of FireArm!");
                     break;
             }
+        }
+
+        private void DebugMessage(string message)
+        {
+            if (debug) Debug.Log("ManipulateObjectAttachmentProxy: " + message);
         }
     }
 }

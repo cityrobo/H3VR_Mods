@@ -34,6 +34,48 @@
   <PropertyGroup>
     <StartupObject />
   </PropertyGroup>
-  <ItemGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'MeatKit|AnyCPU'">
+    <OutputPath>bin\MeatKit\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="thermal_vision_test" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="unity_code\AdditionalBarrel.dll" />
+    <Content Include="unity_code\Adjustable_ReflexSight.dll" />
+    <Content Include="unity_code\Attachable_Magazine.dll" />
+    <Content Include="unity_code\AttachmentMountParentToThis.dll" />
+    <Content Include="unity_code\AttachmentStock.dll" />
+    <Content Include="unity_code\BreakActionWeapon_BarrelSwitch.dll" />
+    <Content Include="unity_code\Crossbow_Quiver.dll" />
+    <Content Include="unity_code\CustomBipodInterface.dll" />
+    <Content Include="unity_code\DKS-501_FireSelector.dll" />
+    <Content Include="unity_code\FG42_SelectorSwitch.dll" />
+    <Content Include="unity_code\FO4_LaserRifle.dll" />
+    <Content Include="unity_code\LongRecoilSystem.dll" />
+    <Content Include="unity_code\Magazine_Tape.dll" />
+    <Content Include="unity_code\MagPoseCycler.dll" />
+    <Content Include="unity_code\ManipulateObjectAttachmentProxy.dll" />
+    <Content Include="unity_code\ModifyWeaponCartrideAndMagazineAttachment.dll" />
+    <Content Include="unity_code\MountedGunControls.dll" />
+    <Content Include="unity_code\MultiCaliberMagazine.dll" />
+    <Content Include="unity_code\PreattachedAttachment.dll" />
+    <Content Include="unity_code\RangeFinder.dll" />
+    <Content Include="unity_code\ScopeShaderZoom.dll" />
+    <Content Include="unity_code\ShotClock.dll" />
+    <Content Include="unity_code\SmartPistol.dll" />
+    <Content Include="unity_code\ThermalVision_Enabler.dll" />
+    <Content Include="unity_code\TKB-059.dll" />
+    <Content Include="unity_code\Typhoon.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="MeatKit\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

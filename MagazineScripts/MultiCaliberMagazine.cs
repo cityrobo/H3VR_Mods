@@ -18,7 +18,9 @@ namespace Cityrobo
         [Header("Text field that shows current selected caliber on switching calibers manually.")]
         public GameObject canvas;
         public Text text;
+        public bool alwaysShowText;
 
+        public int currentCaliberDefinition = 0;
         [Serializable]
         public class CaliberDefinition
         {
@@ -28,48 +30,106 @@ namespace Cityrobo
             public GameObject[] DisplayBullets;
             public MeshFilter[] DisplayMeshFilters;
             public Renderer[] DisplayRenderers;
+            [SearchableEnum]
             public FVRFireArmMechanicalAccuracyClass accuracyClass;
             public FVRFireArmRecoilProfile recoilProfile;
             public FVRFireArmRecoilProfile recoilProfileStocked;
+            public FVRFirearmAudioSet ReplacementFiringSounds;
+            public FVRObject objectWrapper;
         }
-
+        /*
+        [SearchableEnum]
+        public FireArmRoundClass defaultRoundClass;
+        */
         [Tooltip("Only allows insertion of mag into firearm if the caliber of the mag and the gun are equal")]
         public bool checksFirearmCompatibility;
 
-        private CaliberDefinition originalCaliberDefinition;
-        private int currentCaliberDefinition = 0;
-        private FVRFireArm fireArm = null;
-        private List<CaliberDefinition> caliberDefinitionsList;
+        //private CaliberDefinition originalCaliberDefinition;
+
+        [Header("MeatKit required stuff. Use ContextMenu to populate.")]
+        [SearchableEnum]
+        public FireArmRoundType[] roundTypes;
+        public int[] capacities;
+        public GameObject[][] DisplayBulletss;
+        public MeshFilter[][] DisplayMeshFilterss;
+        public Renderer[][] DisplayRendererss;
+        [SearchableEnum]
+        public FVRFireArmMechanicalAccuracyClass[] accuracyClasses;
+        public FVRFireArmRecoilProfile[] recoilProfiles;
+        public FVRFireArmRecoilProfile[] recoilProfilesStocked;
+        public FVRFirearmAudioSet[] ReplacementFiringSoundss;
+        public FVRObject[] objectWrappers;
+
+        public bool isMeatKit = false;
+
+        private FVRFireArm _fireArm = null;
+        private List<CaliberDefinition> _caliberDefinitionsList;
+
+        private FVRFireArmMechanicalAccuracyClass _origAccuracyClass;
+        private FVRFireArmRecoilProfile _origRecoilProfile;
+        private FVRFireArmRecoilProfile _origRecoilProfileStocked;
+        private FVRFirearmAudioSet _origAudioSet;
+
+        private bool _isDebug = true;
+
+        [ContextMenu("Populate MeatKit Lists")]
+        public void PopulateMeatKitLists()
+        {
+            int definitionCount = caliberDefinitions.Length;
+
+            roundTypes = new FireArmRoundType[definitionCount];
+            capacities = new int[definitionCount];
+            DisplayBulletss = new GameObject[definitionCount][];
+            DisplayMeshFilterss = new MeshFilter[definitionCount][];
+            DisplayRendererss = new Renderer[definitionCount][];
+            accuracyClasses = new FVRFireArmMechanicalAccuracyClass[definitionCount];
+            recoilProfiles = new FVRFireArmRecoilProfile[definitionCount];
+            recoilProfilesStocked = new FVRFireArmRecoilProfile[definitionCount];
+            ReplacementFiringSoundss = new FVRFirearmAudioSet[definitionCount];
+            objectWrappers = new FVRObject[definitionCount];
+
+            for (int i = 0; i < definitionCount; i++)
+            {
+                roundTypes[i] = caliberDefinitions[i].RoundType;
+                capacities[i] = caliberDefinitions[i].capacity;
+                DisplayBulletss[i] = caliberDefinitions[i].DisplayBullets;
+                DisplayMeshFilterss[i] = caliberDefinitions[i].DisplayMeshFilters;
+                DisplayRendererss[i] = caliberDefinitions[i].DisplayRenderers;
+                accuracyClasses[i] = caliberDefinitions[i].accuracyClass;
+                recoilProfiles[i] = caliberDefinitions[i].recoilProfile;
+                recoilProfilesStocked[i] = caliberDefinitions[i].recoilProfileStocked;
+                ReplacementFiringSoundss[i] = caliberDefinitions[i].ReplacementFiringSounds;
+
+                objectWrappers[i] = caliberDefinitions[i].objectWrapper;
+            }
+
+            if (_isDebug)
+            {
+                foreach (var DisplayBullets in DisplayBulletss)
+                {
+                    foreach (var DisplayBullet in DisplayBullets)
+                    {
+                        Debug.Log("DisplayBullets: " + DisplayBullet.name);
+                    }
+                }
+            }
+
+            isMeatKit = true;
+        }
 
 #if!(UNITY_EDITOR || UNITY_5)
+        public void Awake()
+        {
+            Hook();
+        }
+
         public void Start()
         {
-            //Debug.Log(caliberDefinitions);
-            //Debug.Log(caliberDefinitions.Length);
+            if (!isMeatKit) _caliberDefinitionsList = new List<CaliberDefinition>(caliberDefinitions);
+            else _caliberDefinitionsList = CreateListFromMeatKitDefines();
 
-            caliberDefinitionsList = new List<CaliberDefinition>(caliberDefinitions);
-            originalCaliberDefinition = new CaliberDefinition();
-
-            originalCaliberDefinition.RoundType = magazine.RoundType;
-            originalCaliberDefinition.capacity = magazine.m_capacity;
-            originalCaliberDefinition.DisplayBullets = magazine.DisplayBullets;
-            originalCaliberDefinition.DisplayMeshFilters = magazine.DisplayMeshFilters;
-            originalCaliberDefinition.DisplayRenderers = magazine.DisplayRenderers;
-
-            caliberDefinitionsList.Add(originalCaliberDefinition);
-
-            currentCaliberDefinition = caliberDefinitionsList.Count - 1;
-            //Debug.Log("Caliber Definitions: " + caliberDefinitionsList);
-            //Debug.Log("Caliber Definitions: " + caliberDefinitionsList.Count);
-
-            //Debug.Log("currentCaliberDefinition: " + currentCaliberDefinition);
-
-            //Debug.Log("OriginalCaliberDefinition: " + caliberDefinitionsList[currentCaliberDefinition].RoundType);
-
-
-            Hook();
-
-            canvas.SetActive(false);
+            PrepareCaliberDefinitions();
+            if (!alwaysShowText && canvas != null) canvas.SetActive(false);
         }
 
         public void OnDestroy()
@@ -87,7 +147,7 @@ namespace Cityrobo
                     if (hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.right) < 45f)
                     {
                         NextCartridge();
-                        if (text != null)
+                        if (!alwaysShowText && text != null)
                         {
                             StopCoroutine("ShowCaliberText");
                             StartCoroutine("ShowCaliberText");
@@ -96,40 +156,61 @@ namespace Cityrobo
                 }
             }
 
-            if (magazine.State == FVRFireArmMagazine.MagazineState.Locked && fireArm == null)
+            if (magazine.State == FVRFireArmMagazine.MagazineState.Locked && _fireArm == null)
             {
-                fireArm = magazine.FireArm;
-                originalCaliberDefinition.accuracyClass = fireArm.AccuracyClass;
-                originalCaliberDefinition.recoilProfile = fireArm.RecoilProfile;
-                originalCaliberDefinition.recoilProfileStocked = fireArm.RecoilProfileStocked;
+                _fireArm = magazine.FireArm;
 
-                if(caliberDefinitionsList[currentCaliberDefinition].accuracyClass != FVRFireArmMechanicalAccuracyClass.None)
-                    fireArm.AccuracyClass = caliberDefinitionsList[currentCaliberDefinition].accuracyClass;
-                if (caliberDefinitionsList[currentCaliberDefinition].recoilProfile != null)
-                    fireArm.RecoilProfile = caliberDefinitionsList[currentCaliberDefinition].recoilProfile;
-                if (caliberDefinitionsList[currentCaliberDefinition].recoilProfileStocked != null)
-                    fireArm.RecoilProfileStocked = caliberDefinitionsList[currentCaliberDefinition].recoilProfileStocked;
+                _origAccuracyClass = _fireArm.AccuracyClass;
+                _origRecoilProfile = _fireArm.RecoilProfile;
+                _origRecoilProfileStocked = _fireArm.RecoilProfileStocked;
+                _origAudioSet = Instantiate(_fireArm.AudioClipSet);
+
+                if (_caliberDefinitionsList[currentCaliberDefinition].accuracyClass != FVRFireArmMechanicalAccuracyClass.None)
+                    _fireArm.AccuracyClass = _caliberDefinitionsList[currentCaliberDefinition].accuracyClass;
+                if (_caliberDefinitionsList[currentCaliberDefinition].recoilProfile != null)
+                    _fireArm.RecoilProfile = _caliberDefinitionsList[currentCaliberDefinition].recoilProfile;
+                if (_caliberDefinitionsList[currentCaliberDefinition].recoilProfileStocked != null)
+                    _fireArm.RecoilProfileStocked = _caliberDefinitionsList[currentCaliberDefinition].recoilProfileStocked;
+
+                if (_caliberDefinitionsList[currentCaliberDefinition].ReplacementFiringSounds != null) ReplaceFiringSounds(_caliberDefinitionsList[currentCaliberDefinition].ReplacementFiringSounds);
 
             }
-            else if (magazine.State == FVRFireArmMagazine.MagazineState.Free && fireArm != null)
+            else if (magazine.State == FVRFireArmMagazine.MagazineState.Free && _fireArm != null)
             {
-                fireArm.AccuracyClass = originalCaliberDefinition.accuracyClass;
-                fireArm.RecoilProfile = originalCaliberDefinition.recoilProfile;
-                fireArm.RecoilProfileStocked = originalCaliberDefinition.recoilProfileStocked;
+                _fireArm.AccuracyClass = _origAccuracyClass;
+                _fireArm.RecoilProfile = _origRecoilProfile;
+                _fireArm.RecoilProfileStocked = _origRecoilProfileStocked;
+                _fireArm.AudioClipSet = _origAudioSet;
 
-                fireArm = null;
+                _fireArm = null;
+            }
+            else if (magazine.State == FVRFireArmMagazine.MagazineState.Locked && _fireArm != null && _fireArm.RoundType != _caliberDefinitionsList[currentCaliberDefinition].RoundType)
+            {
+                if (!SetCartridge(_fireArm.RoundType) && magazine.m_numRounds == 0 && checksFirearmCompatibility)
+                {
+                    _fireArm.EjectMag();
+                }
+            }
+
+            if (alwaysShowText && text != null)
+            {
+                FireArmRoundType roundType = _caliberDefinitionsList[currentCaliberDefinition].RoundType;
+                if (AM.SRoundDisplayDataDic.ContainsKey(roundType))
+                {
+                    string name = AM.SRoundDisplayDataDic[roundType].DisplayName;
+
+                    text.text = name;
+                }
             }
         }
 
         public void NextCartridge()
         {
             currentCaliberDefinition++;
-            if (currentCaliberDefinition >= caliberDefinitionsList.Count)
+            if (currentCaliberDefinition >= _caliberDefinitionsList.Count)
             {
                 currentCaliberDefinition = 0;
             }
-
-            //Debug.Log(currentCaliberDefinition);
 
             ConfigureMagazine(currentCaliberDefinition);
         }
@@ -139,7 +220,7 @@ namespace Cityrobo
             if (magazine.m_numRounds != 0) return false;
             
             int chosenDefinition = 0;
-            foreach (var caliberDefinition in caliberDefinitionsList)
+            foreach (var caliberDefinition in _caliberDefinitionsList)
             {
                 if (caliberDefinition.RoundType != fireArmRoundType)
                 {
@@ -148,7 +229,7 @@ namespace Cityrobo
                 else break;
             }
 
-            if (chosenDefinition == caliberDefinitionsList.Count)
+            if (chosenDefinition == _caliberDefinitionsList.Count)
             {
                 return false;
             }
@@ -162,33 +243,73 @@ namespace Cityrobo
 
         public void ConfigureMagazine(int CaliberDefinitionIndex)
         {
-            magazine.RoundType = caliberDefinitionsList[CaliberDefinitionIndex].RoundType;
-            magazine.m_capacity = caliberDefinitionsList[CaliberDefinitionIndex].capacity;
-            magazine.DisplayBullets = caliberDefinitionsList[CaliberDefinitionIndex].DisplayBullets;
-            magazine.DisplayMeshFilters = caliberDefinitionsList[CaliberDefinitionIndex].DisplayMeshFilters;
-            magazine.DisplayRenderers = caliberDefinitionsList[CaliberDefinitionIndex].DisplayRenderers;
-        }
+            magazine.RoundType = _caliberDefinitionsList[CaliberDefinitionIndex].RoundType;
+            if (_caliberDefinitionsList[CaliberDefinitionIndex].capacity > 0)
+                magazine.m_capacity = _caliberDefinitionsList[CaliberDefinitionIndex].capacity;
+            if (_caliberDefinitionsList[CaliberDefinitionIndex].DisplayBullets.Length > 0)
+            {
+                magazine.m_roundInsertionTarget.localPosition = _caliberDefinitionsList[CaliberDefinitionIndex].DisplayBullets[0].transform.localPosition;
+                magazine.m_roundInsertionTarget.localRotation = _caliberDefinitionsList[CaliberDefinitionIndex].DisplayBullets[0].transform.localRotation;
+                magazine.DisplayBullets = _caliberDefinitionsList[CaliberDefinitionIndex].DisplayBullets;
+                magazine.DisplayMeshFilters = _caliberDefinitionsList[CaliberDefinitionIndex].DisplayMeshFilters;
+                magazine.DisplayRenderers = _caliberDefinitionsList[CaliberDefinitionIndex].DisplayRenderers;
 
+                magazine.m_DisplayStartPositions = new Vector3[_caliberDefinitionsList[CaliberDefinitionIndex].DisplayBullets.Length];
+                for (int i = 0; i < _caliberDefinitionsList[CaliberDefinitionIndex].DisplayBullets.Length; i++)
+                {
+                    if (_caliberDefinitionsList[CaliberDefinitionIndex].DisplayBullets[i] != null)
+                    {
+                        magazine.m_DisplayStartPositions[i] = _caliberDefinitionsList[CaliberDefinitionIndex].DisplayBullets[i].transform.localPosition;
+                    }
+                }
+            }
+            magazine.ObjectWrapper = _caliberDefinitionsList[CaliberDefinitionIndex].objectWrapper;
+        }
+        public void ReplaceFiringSounds(FVRFirearmAudioSet set)
+        {
+            if (set.Shots_Main.Clips.Count > 0) _fireArm.AudioClipSet.Shots_Main = set.Shots_Main;
+            if (set.Shots_Suppressed.Clips.Count > 0) _fireArm.AudioClipSet.Shots_Suppressed = set.Shots_Suppressed;
+            if (set.Shots_LowPressure.Clips.Count > 0) _fireArm.AudioClipSet.Shots_LowPressure = set.Shots_LowPressure;
+        }
         public void Unhook()
         {
+#if !(MEATKIT)
             On.FistVR.FVRFireArmRound.OnTriggerEnter -= FVRFireArmRound_OnTriggerEnter;
+            //On.FistVR.FVRFireArmMagazine.ReloadMagWithList -= FVRFireArmMagazine_ReloadMagWithList;
 
             if (checksFirearmCompatibility)
             {
                 On.FistVR.FVRFireArmReloadTriggerMag.OnTriggerEnter -= FVRFireArmReloadTriggerMag_OnTriggerEnter;
             }
+#endif
         }
 
         public void Hook()
         {
+#if !(MEATKIT)
             On.FistVR.FVRFireArmRound.OnTriggerEnter += FVRFireArmRound_OnTriggerEnter;
+            //On.FistVR.FVRFireArmMagazine.ReloadMagWithList += FVRFireArmMagazine_ReloadMagWithList;
 
             if (checksFirearmCompatibility)
             {
                 On.FistVR.FVRFireArmReloadTriggerMag.OnTriggerEnter += FVRFireArmReloadTriggerMag_OnTriggerEnter;
             }
+#endif
         }
-
+        /*
+        private void FVRFireArmMagazine_ReloadMagWithList(On.FistVR.FVRFireArmMagazine.orig_ReloadMagWithList orig, FVRFireArmMagazine self, List<FireArmRoundClass> list)
+        {
+            if (magazine == self)
+            {
+                for (int i = 0; i < list.Count; i++)
+                {
+                    list[i] = defaultRoundClass;
+                }
+            }
+            orig(self, list);
+        }
+        */
+#if !(MEATKIT)
         private void FVRFireArmReloadTriggerMag_OnTriggerEnter(On.FistVR.FVRFireArmReloadTriggerMag.orig_OnTriggerEnter orig, FVRFireArmReloadTriggerMag self, Collider collider)
         {
             if (this.magazine == self.Magazine)
@@ -254,21 +375,56 @@ namespace Cityrobo
                 return;
             self.HoveredOverRound = component1;
         }
-
+#endif
         public IEnumerator ShowCaliberText()
         {
-            FireArmRoundType roundType = caliberDefinitionsList[currentCaliberDefinition].RoundType;
+            FireArmRoundType roundType = _caliberDefinitionsList[currentCaliberDefinition].RoundType;
             if (AM.SRoundDisplayDataDic.ContainsKey(roundType))
             {
                 string name = AM.SRoundDisplayDataDic[roundType].DisplayName;
 
                 text.text = name;
                 canvas.SetActive(true);
-                yield return new WaitForSeconds(1);
+                yield return new WaitForSeconds(1f);
             }
 
             canvas.SetActive(false);
             yield return null;
+        }
+
+        void PrepareCaliberDefinitions()
+        {
+            foreach (var caliberDefinition in caliberDefinitions)
+            {
+                for (int i = 0; i < caliberDefinition.DisplayMeshFilters.Length; i++)
+                {
+                    if (!magazine.DisplayMeshFilters.Contains(caliberDefinition.DisplayMeshFilters[i])) caliberDefinition.DisplayMeshFilters[i].mesh = null;
+                }
+                for (int i = 0; i < caliberDefinition.DisplayRenderers.Length; i++)
+                {
+                    if (!magazine.DisplayRenderers.Contains(caliberDefinition.DisplayRenderers[i])) caliberDefinition.DisplayRenderers[i].material = null;
+                }
+            }
+        }
+
+        List<CaliberDefinition> CreateListFromMeatKitDefines()
+        {
+            List<CaliberDefinition> caliberDefinitions = new List<CaliberDefinition>();
+            for (int i = 0; i < roundTypes.Length; i++)
+            {
+                CaliberDefinition caliberDefinition = new CaliberDefinition();
+                caliberDefinition.RoundType = roundTypes[i];
+                caliberDefinition.capacity = capacities[i];
+                caliberDefinition.DisplayBullets = DisplayBulletss[i];
+                caliberDefinition.DisplayMeshFilters = DisplayMeshFilterss[i];
+                caliberDefinition.DisplayRenderers = DisplayRendererss[i];
+                caliberDefinition.accuracyClass = accuracyClasses[i];
+                caliberDefinition.recoilProfile = recoilProfiles[i];
+                caliberDefinition.recoilProfileStocked = recoilProfilesStocked[i];
+                caliberDefinition.objectWrapper = objectWrappers[i];
+            }
+
+            return caliberDefinitions;
         }
 #endif
     }

@@ -26,7 +26,7 @@ namespace Cityrobo
             }
             */
         }
-
+#if !DEBUG
         public void Update()
         {
 
@@ -45,5 +45,6 @@ namespace Cityrobo
                 }
             }
         }
+#endif
     }
 }

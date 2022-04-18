@@ -45,22 +45,38 @@ namespace Cityrobo
 
 
         [Header("ItemSpawnerID Options")]
-        [Tooltip("Optional replacement ItemspawnerID, options will only get copied if not empty or for checkboxes, different from the original. (Also not strictly required, can be fetched from \"spawnedByID\"). Or, if original item does not have a ISID, it will use this one.")]
+        [Tooltip("Optional replacement ItemSpawnerID, options will only get copied if not empty or for checkboxes, different from the original. (Also not strictly required, can be fetched from \"spawnedByID\"). Or, if original item does not have a ISID, it will use this one.")]
         public ItemSpawnerID replacementItemSpawnerID;
+        [Tooltip("If true, secondaries list will be replaced with the one in the ItemSpawnerID, else they will be added.")]
+        public bool replaceSecondariesInstead = false;
+        [Tooltip("If true, secondaries by String ID list will be replaced with the one in the ItemSpawnerID instead of being added instead.")]
+        public bool replaceSecondariesStringIDInstead = false;
+        [Tooltip("If true, mod tags list will be replaced with the one in the ItemSpawnerID instead of being added instead.")]
+        public bool replaceModTagsInstead = false;
+        [Tooltip("If true, tutorial blocks list will be replaced with the one in the ItemSpawnerID instead of being added instead.")]
+        public bool replaceTutorialBlocksInstead = false;
+        [Tooltip("If true, checkboxes will be updated with the ones set in the ItemSpawnerID.")]
+        public bool updateCheckboxes = false;
+
+        [Header("ItemSpawnerEntry Options")]
+        [Tooltip("Optional replacement ItemSpawnerEntry, options will only get copied if not empty or for checkboxes, different from the original. (Also not strictly required, can be fetched from the running Otherloader instance). Or, if original item does not have a ItemSpawnerEntry, it will use this one.")]
+        public OtherLoader.ItemSpawnerEntry ReplacementItemSpawnerEntry;
+        [Tooltip("If true, SpawnWithIDs list will be replaced with the one in the ItemSpawnerID, else they will be added.")]
+        public bool ReplaceSpawnWithIDsInstead = false;
+        [Tooltip("If true, SecondaryObjectIDs list will be replaced with the one in the ItemSpawnerID instead of being added instead.")]
+        public bool ReplaceSecondaryObjectIDsInstead = false;
+        [Tooltip("If true, EntryPath will be replaced with the one in the ItemSpawnerEntry.")]
+        public bool UpdateEntryPath = false;
+        [Tooltip("If true, mod tags list will be replaced with the one in the ItemSpawnerEntry instead of being added instead.")]
+        public bool ReplaceModTagsEntryInstead = false;
+        [Tooltip("If true, tutorial blocks list will be replaced with the one in the ItemSpawnerEntry instead of being added instead.")]
+        public bool ReplaceTutorialBlocksEntryInstead = false;
+        [Tooltip("If true, checkboxes will be updated with the ones set in the ItemSpawnerEntry.")]
+        public bool UpdateCheckboxesEntry = false;
         public PrefabReplacerID(string orig, string replacement)
         {
             originalItemID = orig;
             replacementItemID = replacement;
         }
-        [Tooltip("If true, secondaries list will be replaced with the one in the ItemspawnerID, else they will be added.")]
-        public bool replaceSecondariesInstead = false;
-        [Tooltip("If true, secondaries by String ID list will be replaced with the one in the ItemspawnerID instead of being added instead.")]
-        public bool replaceSecondariesStringIDInstead = false;
-        [Tooltip("If true, mod tags list will be replaced with the one in the ItemspawnerID instead of being added instead.")]
-        public bool replaceModTagsInstead = false;
-        [Tooltip("If true, mod tags list will be replaced with the one in the ItemspawnerID instead of being added instead.")]
-        public bool replaceTutorialBlocksInstead = false;
-        [Tooltip("If true, mod tags list will be replaced with the one in the ItemspawnerID instead of being added instead.")]
-        public bool updateCheckboxes = false;
     }
 }

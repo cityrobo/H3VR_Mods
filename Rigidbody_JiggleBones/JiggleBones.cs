@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[Obsolete("Use JiggleBonesMK2 instead!")]
 public class JiggleBones : MonoBehaviour
 {
 	public Rigidbody rootObject;

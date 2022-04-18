@@ -1,3 +1,4 @@
+#if !DEBUG
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +7,7 @@ using BepInEx;
 
 namespace Cityrobo
 {
-    [BepInPlugin("h3vr.cityrobo.typhoon", "Typhoon Scripts", "1.0.0")]
+    [BepInPlugin("h3vr.cityrobo.openscripts.typhoon", "Typhoon Scripts", "1.0.0")]
     class Typhoon_BepInEx : BaseUnityPlugin
     {
         public Typhoon_BepInEx()
@@ -15,3 +16,4 @@ namespace Cityrobo
         }
     }
 }
+#endif

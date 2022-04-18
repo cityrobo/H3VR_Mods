@@ -8,16 +8,27 @@ namespace Cityrobo
 	public class PreattachedForeignAttachments : MonoBehaviour
 	{
 		public FVRFireArmAttachmentMount mount;
-		public List<ItemCallerSet> sets;
-
+		public string[] primaryItemIDs;
+		[Tooltip("If your item fails to spawn, it will spawn the backup ID.")]
+		public string[] backupIDs;
+		[Tooltip("Position and Rotation to spawn the Attachment at.")]
+		public Transform[] attachmentPoints;
 
 		private List<FVRFireArmAttachment> attachments;
+		private List<ItemCallerSet> _sets;
 
 #if !DEBUG
 		public void Start()
 		{
 			attachments = new List<FVRFireArmAttachment>();
-			SpawnAttachments();
+			_sets = new List<ItemCallerSet>();
+			for (int i = 0; i < primaryItemIDs.Length; i++)
+			{
+				_sets.Add(new ItemCallerSet(primaryItemIDs[i], backupIDs[i], attachmentPoints[i]));
+				//Debug.Log(string.Format("Added to Sets: {0}/{1} at position {2}.", _sets[i].primaryItemID, _sets[i].backupID, _sets[i].attachmentPoint));
+			}
+            
+            SpawnAttachments();
 			StartCoroutine("AttachAllToMount");
 		}
 
@@ -27,8 +38,10 @@ namespace Cityrobo
 			
             foreach (var attachment in attachments)
             {
-				attachment.AttachToMount(mount, false);
-				if (attachment.GetType() == typeof(Suppressor))
+                //Debug.Log("Attaching: " + attachment.name);
+
+                attachment.AttachToMount(mount, false);
+				if (attachment is Suppressor)
 				{
 					Suppressor tempSup = attachment as Suppressor;
 					tempSup.AutoMountWell();
@@ -41,7 +54,7 @@ namespace Cityrobo
 			GameObject gameObject;
 			FVRFireArmAttachment spawned_attachment;
 			FVRObject obj;
-			foreach (var set in sets)
+			foreach (var set in _sets)
 			{
 				gameObject = null;
 				spawned_attachment = null;
@@ -51,7 +64,9 @@ namespace Cityrobo
 					obj = IM.OD[set.primaryItemID];
 					gameObject = Instantiate(obj.GetGameObject(), set.attachmentPoint.position, set.attachmentPoint.rotation);
 					spawned_attachment = gameObject.GetComponent<FVRFireArmAttachment>();
-					attachments.Add(spawned_attachment);
+                    //Debug.Log("Spawned: " + spawned_attachment.name);
+
+                    attachments.Add(spawned_attachment);
 				}
 				catch
 				{
@@ -61,6 +76,7 @@ namespace Cityrobo
 						obj = IM.OD[set.backupID];
 						gameObject = Instantiate(obj.GetGameObject(), set.attachmentPoint.position, set.attachmentPoint.rotation);
 						spawned_attachment = gameObject.GetComponent<FVRFireArmAttachment>();
+						//Debug.Log("Spawned: " + spawned_attachment.name);
 						attachments.Add(spawned_attachment);
 					}
 					catch
@@ -71,16 +87,22 @@ namespace Cityrobo
 			}
 
 		}
-#endif
-	}
 
-	[Serializable]
-	public class ItemCallerSet
-	{
-		public string primaryItemID;
-		[Tooltip("If your item fails to spawn, it will spawn the backup ID.")]
-		public string backupID;
-		[Tooltip("Position and Rotation to spawn the Attachment at.")]
-		public Transform attachmentPoint;
+#endif
+		public class ItemCallerSet
+		{
+			public ItemCallerSet(string primaryItemID, string backupID, Transform attachmentPoint)
+			{
+				this.primaryItemID = primaryItemID;
+				this.backupID = backupID;
+				this.attachmentPoint = attachmentPoint;
+			}
+
+			public string primaryItemID;
+			[Tooltip("If your item fails to spawn, it will spawn the backup ID.")]
+			public string backupID;
+			[Tooltip("Position and Rotation to spawn the Attachment at.")]
+			public Transform attachmentPoint;
+		}
 	}
 }

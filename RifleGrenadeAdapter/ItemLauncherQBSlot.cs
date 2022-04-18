@@ -22,6 +22,7 @@ namespace Cityrobo
 		[Tooltip("Should the Launcher automatically align the object in the slot so it points forward?")]
 		public bool AutoAlignZAxis = true;
 
+		private bool _isAlinged = false;
 #if !(UNITY_EDITOR || UNITY_5)
         public void Start()
         {
@@ -61,12 +62,14 @@ namespace Cityrobo
             {
 				CurObject.m_isHardnessed = false;
 			}
-			if (!AllowSpawnLock && CurObject != null && CurObject.m_isHardnessed)
+			if (!AllowSpawnLock && CurObject != null && CurObject.m_isSpawnLock)
 			{
 				CurObject.m_isSpawnLock = false;
 			}
 
-			if (AutoAlignZAxis) AlignHeldObject();
+			if (!_isAlinged && CurObject != null && AutoAlignZAxis) AlignHeldObject();
+
+			if (_isAlinged && CurObject == null) _isAlinged = false;
 		}
 
 		public bool LaunchHeldObject(float speed, Vector3 point)
@@ -147,11 +150,21 @@ namespace Cityrobo
 
 		void AlignHeldObject()
         {
+			/*
 			if (this.CurObject != null && this.CurObject.transform.forward != this.transform.forward)
 			{
 				Quaternion objectRot = this.CurObject.transform.localRotation;
 				this.PoseOverride.transform.localRotation = Quaternion.Inverse(objectRot);
 			}
+			*/
+
+			Quaternion objectRot = Quaternion.identity;
+
+            if (CurObject.QBPoseOverride != null) objectRot = CurObject.QBPoseOverride.localRotation;
+			else if (CurObject.PoseOverride != null) objectRot = CurObject.PoseOverride.localRotation;
+
+			PoseOverride.localRotation = Quaternion.Inverse(objectRot);
+			_isAlinged = true;
 		}
 #endif
 	}

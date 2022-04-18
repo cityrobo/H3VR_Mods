@@ -12,15 +12,25 @@ namespace Rigidbody_JiggleBones
 		public FVRPhysicalObject mainObject;
 		public Transform rootBone;
 		public Rigidbody referenceRigidbody;
+		[Tooltip("Script will ignore these bones and their children when creating joints.")]
+		public List<Transform> boneBlackList;
+
+		public enum Axis
+		{
+			X,
+			Y,
+			Z
+		}
+
+		public bool usesSprings = true;
+		public Axis jointAxis = Axis.Y;
 
 		public float spring_strength;
 		public float spring_dampening;
 
-		public float twistLimit;
-		public float angleLimit;
-
-		public float collider_Radius;
-		public float collider_Height;
+		public float twistLimitX;
+		public float angleLimitY;
+		public float angleLimitZ;
 
 		public List<Collider> addedColliders;
 		public List<Rigidbody> addedRBs;
@@ -29,31 +39,41 @@ namespace Rigidbody_JiggleBones
 		public List<Vector3> rootJointsPos;
 		public List<Quaternion> rootJointsRot;
 
-		public bool useConfigurableJoints = false;
+		public bool useConfigurableJoints = true;
+		public bool hasEndBones = true;
+		[Tooltip("You will want to use this setting for pretty much anything gravity enabled that is only attached on one end. Having all RBs act on gravity gave weird results in testing.")]
+		public bool onlyLastRigidbodyUsesGravity = true;
+		public bool addBasicColliders = true;
+		public float collider_Radius;
+
+
+
+		public Axis colliderAxis = Axis.Y;
+		//public float collider_Height;
 
 		private bool mainRBWasNull = false;
-		private bool isDebug = false;
+
+		private bool IsDebug
+        {
+			get { return false; }
+        }
 
 		public void Start()
-		{			
-            //if (!CreateJointsOnChildren(rootBone, parentRigidbody)) Debug.LogError("No Children for JiggleBones found!");
-
-			Destroy(referenceRigidbody);
-
-			mainObject.RootRigidbody.centerOfMass = Vector3.zero;
+		{
+			referenceRigidbody.gameObject.SetActive(false);
+			
+			FixParenting();
         }
 
 		public void Update()
         {
 			if (!mainRBWasNull && mainObject.RootRigidbody == null)
 			{
-				DebugMessage("attached");
 				SetJiggleboneRootRB(FindNewRigidbody(mainObject.transform.parent));
 				mainRBWasNull = true;
 			}
 			else if (mainRBWasNull && mainObject.RootRigidbody != null) 
 			{
-				DebugMessage("detached");
 				SetJiggleboneRootRB(mainObject.RootRigidbody);
 				mainRBWasNull = false;
 			}
@@ -65,7 +85,20 @@ namespace Rigidbody_JiggleBones
 			joint.projectionMode = JointProjectionMode.PositionAndRotation;
 
 			joint.connectedBody = parent;
-			joint.axis = new Vector3(0, 1, 0);
+            switch (jointAxis)
+            {
+                case Axis.X:
+					joint.axis = new Vector3(1, 0, 0);
+					break;
+                case Axis.Y:
+					joint.axis = new Vector3(0, 1, 0);
+					break;
+                case Axis.Z:
+					joint.axis = new Vector3(0, 0, 1);
+					break;
+                default:
+                    break;
+            }
 
 			//joint.autoConfigureConnectedAnchor = false;
 
@@ -79,9 +112,18 @@ namespace Rigidbody_JiggleBones
 			joint.yMotion = ConfigurableJointMotion.Locked;
 			joint.zMotion = ConfigurableJointMotion.Locked;
 
-			joint.angularXMotion = ConfigurableJointMotion.Limited;
-			joint.angularYMotion = ConfigurableJointMotion.Limited;
-			joint.angularZMotion = ConfigurableJointMotion.Limited;
+            if (usesSprings)
+            {
+				joint.angularXMotion = ConfigurableJointMotion.Limited;
+				joint.angularYMotion = ConfigurableJointMotion.Limited;
+				joint.angularZMotion = ConfigurableJointMotion.Limited;
+			}
+            else
+            {
+				joint.angularXMotion = ConfigurableJointMotion.Free;
+				joint.angularYMotion = ConfigurableJointMotion.Free;
+				joint.angularZMotion = ConfigurableJointMotion.Free;
+			}
 
 			JointDrive drive = new JointDrive();
 			drive.positionSpring = spring_strength;
@@ -92,23 +134,29 @@ namespace Rigidbody_JiggleBones
 			joint.angularYZDrive = drive;
 
 			SoftJointLimit high_twistlimit = new SoftJointLimit();
-			high_twistlimit.limit = twistLimit;
+			high_twistlimit.limit = twistLimitX;
 			high_twistlimit.bounciness = joint.highAngularXLimit.bounciness;
 			high_twistlimit.contactDistance = joint.highAngularXLimit.contactDistance;
 			joint.highAngularXLimit = high_twistlimit;
 
 			SoftJointLimit low_twistlimit = new SoftJointLimit();
-			low_twistlimit.limit = twistLimit;
+			low_twistlimit.limit = -twistLimitX;
 			low_twistlimit.bounciness = joint.lowAngularXLimit.bounciness;
 			low_twistlimit.contactDistance = joint.lowAngularXLimit.contactDistance;
 			joint.lowAngularXLimit = low_twistlimit;
 
-			SoftJointLimit anglelimit = new SoftJointLimit();
-			anglelimit.limit = angleLimit;
-			anglelimit.bounciness = joint.angularYLimit.bounciness;
-			anglelimit.contactDistance = joint.angularYLimit.contactDistance;
-			joint.angularYLimit = anglelimit;
-			joint.angularZLimit = anglelimit;
+			SoftJointLimit anglelimitY = new SoftJointLimit();
+			anglelimitY.limit = angleLimitY;
+			anglelimitY.bounciness = joint.angularYLimit.bounciness;
+			anglelimitY.contactDistance = joint.angularYLimit.contactDistance;
+			joint.angularYLimit = anglelimitY;
+
+
+			SoftJointLimit anglelimitZ = new SoftJointLimit();
+			anglelimitZ.limit = angleLimitZ;
+			anglelimitZ.bounciness = joint.angularZLimit.bounciness;
+			anglelimitZ.contactDistance = joint.angularZLimit.contactDistance;
+			joint.angularZLimit = anglelimitZ;
 		}
 
 
@@ -117,7 +165,20 @@ namespace Rigidbody_JiggleBones
 			joint.enablePreprocessing = false;
 
 			joint.connectedBody = parent;
-			joint.axis = new Vector3(0, 1, 0);
+			switch (jointAxis)
+			{
+				case Axis.X:
+					joint.axis = new Vector3(1, 0, 0);
+					break;
+				case Axis.Y:
+					joint.axis = new Vector3(0, 1, 0);
+					break;
+				case Axis.Z:
+					joint.axis = new Vector3(0, 0, 1);
+					break;
+				default:
+					break;
+			}
 
 			//joint.autoConfigureConnectedAnchor = false;
 
@@ -166,15 +227,16 @@ namespace Rigidbody_JiggleBones
 
 			foreach (var child in immediateChildren)
 			{
-                if (child.childCount > 0)
+				if ( boneBlackList.Contains(child) || child.GetComponent<Collider>() != null) continue;
+                if (child.childCount > 0 || !hasEndBones)
                 {
-					
-
 					Rigidbody RB = child.gameObject.AddComponent<Rigidbody>();
 					CopyRigidBody(RB);
+					if (onlyLastRigidbodyUsesGravity) RB.useGravity = false;
 					addedRBs.Add(RB);
 					//RB = StaticExtras.GetCopyOf(RB, referenceRigidbody);
 					//Rigidbody RB = StaticExtras.CopyComponent(referenceRigidbody, child.gameObject);
+
 
 					if (useConfigurableJoints) 
 					{
@@ -188,21 +250,38 @@ namespace Rigidbody_JiggleBones
 						configureJoint(joint, connectedRB);
 						addedJoints.Add(joint);
 					}
-
 					Transform[] immediateGrandChildren = child.GetComponentsInDirectChildren<Transform>();
 
-                    for (int i = 0; i < immediateGrandChildren.Length; i++)
+                    if (immediateGrandChildren.Length == 1)
                     {
-						GameObject childColliderGO = new GameObject(child.name + "_Collider_" + i);
-						childColliderGO.transform.SetParent(child);
-						childColliderGO.transform.localPosition = immediateGrandChildren[i].localPosition;
-						childColliderGO.transform.localRotation = Quaternion.identity;
+						RB.centerOfMass = immediateGrandChildren[0].localPosition;
 
-						CapsuleCollider collider = childColliderGO.gameObject.AddComponent<CapsuleCollider>();
-						collider.direction = 1;
-						collider.radius = collider_Radius;
-						collider.height = collider_Height;
-						addedColliders.Add(collider);
+					}
+
+					if (addBasicColliders)
+					{
+						for (int i = 0; i < immediateGrandChildren.Length; i++)
+						{
+							GameObject childColliderGO = new GameObject(child.name + "_Collider_" + i);
+							childColliderGO.transform.SetParent(child);
+							childColliderGO.transform.position = Vector3.Lerp(child.position, immediateGrandChildren[i].position, 0.5f);
+							childColliderGO.transform.localRotation = Quaternion.identity;
+
+							CapsuleCollider collider = childColliderGO.gameObject.AddComponent<CapsuleCollider>();
+							collider.direction = (int) colliderAxis;
+							collider.radius = collider_Radius;
+							collider.height = Vector3.Distance(child.position, immediateGrandChildren[i].position);
+							addedColliders.Add(collider);
+						}
+					}
+                    if (onlyLastRigidbodyUsesGravity)
+                    {
+						bool isLastBone = true;
+                        foreach (var grandchild in immediateGrandChildren)
+                        {
+							if (grandchild.GetComponent<Collider>() == null) isLastBone = false;
+                        }
+						if (isLastBone && referenceRigidbody.useGravity) RB.useGravity = true;
 					}
 					CreateJointsOnChildren(child, RB);
 					//child.SetParent(null);
@@ -241,8 +320,6 @@ namespace Rigidbody_JiggleBones
         {
 			rootJoints = new List<Joint>(rootBone.GetComponentsInDirectChildren<Joint>());
 
-			rootJointsPos.Clear();
-			rootJointsRot.Clear();
             foreach (var rootJoint in rootJoints)
             {
 				rootJointsPos.Add(rootJoint.transform.localPosition);
@@ -264,20 +341,37 @@ namespace Rigidbody_JiggleBones
 			}
         }
 
-		[ContextMenu("Create Jigglebones")]
-		public void CreateJigglebones()
+		private void FixParenting()
+        {
+            foreach (var RB in addedRBs)
+            {
+				RB.transform.SetParent(rootBone);
+            }
+        }
+		[ContextMenu("Create JiggleBones")]
+		public void CreateJiggleBones()
+        {
+			ClearJiggleBones();
+
+			if (!CreateJointsOnChildren(rootBone, mainObject.GetComponent<Rigidbody>())) Debug.LogError("No Children for JiggleBones found!");
+
+			SetRootJoints();
+		}
+
+		[ContextMenu("Clear JiggleBones")]
+		public void ClearJiggleBones()
         {
 			if (addedColliders == null) addedColliders = new List<Collider>();
-            foreach (var col in addedColliders)
-            {
+			foreach (var col in addedColliders)
+			{
 				DestroyImmediate(col.gameObject);
-            }
+			}
 			addedColliders.Clear();
 			if (addedJoints == null) addedJoints = new List<Joint>();
-            foreach (var joint in addedJoints)
-            {
+			foreach (var joint in addedJoints)
+			{
 				DestroyImmediate(joint);
-            }
+			}
 			addedJoints.Clear();
 			if (rootJoints == null) rootJoints = new List<Joint>();
 			foreach (var joint in rootJoints)
@@ -286,20 +380,21 @@ namespace Rigidbody_JiggleBones
 			}
 			rootJoints.Clear();
 			if (addedRBs == null) addedRBs = new List<Rigidbody>();
-            foreach (var RB in addedRBs)
-            {
+			foreach (var RB in addedRBs)
+			{
 				DestroyImmediate(RB);
-            }
+			}
 			addedRBs.Clear();
 
-			if (!CreateJointsOnChildren(rootBone, mainObject.GetComponent<Rigidbody>())) Debug.LogError("No Children for JiggleBones found!");
+			rootJoints.Clear();
+			rootJointsPos.Clear();
+			rootJointsRot.Clear();
 
-			SetRootJoints();
 		}
 
 		private void DebugMessage(string message)
         {
-			if (!isDebug) return;
+			if (!IsDebug) return;
             Debug.Log(message);
         }
 		private void CopyRigidBody(Rigidbody RB)

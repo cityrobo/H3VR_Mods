@@ -22,10 +22,10 @@ namespace Cityrobo
             attachmentMount.HasHoverDisablePiece = true;
             if (attachmentMount.DisableOnHover == null)
             {
-                attachmentMount.DisableOnHover = new GameObject();
+                attachmentMount.DisableOnHover = new GameObject("MultipleHideOnAttach_Proxy");
             }
         }
-
+#if !DEBUG
         public void Update()
         {
 
@@ -44,5 +44,6 @@ namespace Cityrobo
                 }
             }
         }
+#endif
     }
 }

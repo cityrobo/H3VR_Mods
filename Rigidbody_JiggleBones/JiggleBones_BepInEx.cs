@@ -7,7 +7,7 @@ using BepInEx;
 
 namespace Cityrobo
 {
-    [BepInPlugin("h3vr.cityrobo.jiggle_bones", "JiggleBones Script", "1.0.0")]
+    [BepInPlugin("h3vr.cityrobo.openscripts.jiggle_bones", "JiggleBones Script", "1.0.0")]
     class JiggleBones_BepInEx : BaseUnityPlugin
     {
         public JiggleBones_BepInEx()

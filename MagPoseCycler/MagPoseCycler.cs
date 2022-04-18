@@ -23,7 +23,7 @@ namespace Cityrobo
 
         private bool offsetCalculated = false;
 
-#if!DEBUG
+#if!(DEBUG || MEATKIT)
         public void Awake()
         {
             //Debug.Log("MagPoseCycler awoken!");

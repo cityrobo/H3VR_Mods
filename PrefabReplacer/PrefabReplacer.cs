@@ -1,5 +1,7 @@
 using FistVR;
 using System;
+using System.IO;
+using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,41 +12,45 @@ namespace Cityrobo
 {
 #if !(DEBUG || UNITY_EDITOR || UNITY_5)
     [BepInPlugin("h3vr.cityrobo.prefab_replacer", "PrefabReplacer Script", "1.0.0")]
+    [BepInDependency("h3vr.otherloader", "1.1.3")]
+    [BepInDependency("nrgill28.Sodalite", "1.2.0")]
     public class PrefabReplacer : BaseUnityPlugin
     {
-        public string origItemID = "G17";
-        public string replancementItemID = "gl";
-        public List<PrefabReplacerID> PRIDs;
-
+        public Dictionary<string, PrefabReplacerID> LoadedPrefabReplacerIDs;
         //private bool otherloaderReady = false;
-        private Dictionary<string, PrefabReplacerID> loadedPrefabReplacerIDs;
+        private List<PrefabReplacerID> _PRIDs;
+        private static readonly string s_sideloaderPath = Path.Combine(Paths.BepInExRootPath, "Sideloader");
         public PrefabReplacer()
         {
             Logger.LogInfo("PrefabReplacer Script loaded!");
 
-            loadedPrefabReplacerIDs = new Dictionary<string, PrefabReplacerID>();
+            LoadedPrefabReplacerIDs = new Dictionary<string, PrefabReplacerID>();
+
+            LoadPrefabReplacerAssets();
+
             StartCoroutine(WaitForOtherloader());
-            
         }
 
-        /*
-        public void Update()
+        void LoadPrefabReplacerAssets()
         {
-            
-            if (OtherLoader.LoaderStatus.GetLoaderProgress() == 1)
+            if (!Directory.Exists(s_sideloaderPath))
             {
-                Logger.LogInfo("Starting PrefabReplacement!");
-                PRIDs = new List<PrefabReplacerID>(Resources.FindObjectsOfTypeAll<PrefabReplacerID>());
-                PRIDs.Add(new PrefabReplacerID("FTW.50BMGFAKE.SLAP", "FTW.50BMG.SLAP"));
-                PRIDs.Add(new PrefabReplacerID(origItemID, replancementItemID));
-                foreach (var PRID in PRIDs)
+                Logger.LogWarning("Sideloader folder not found. Skipping loading of standalone PrefabReplacer packages!");
+                return;
+            }
+            DirectoryInfo directoryInfo = new DirectoryInfo(s_sideloaderPath);
+            FileInfo[] filesInDir = directoryInfo.GetFiles("pr_*");
+
+            if (filesInDir.Length > 0)
+            {
+                Logger.LogInfo($"Loading {filesInDir.Length} standalone PrefabReplacer asset bundles!");
+                foreach (FileInfo foundFile in filesInDir)
                 {
-                    ReplacePrefabViaID(PRID);
+                    Logger.LogInfo($"Loading asset bundle {foundFile.Name}.");
+                    Sodalite.Api.GameAPI.PreloadAllAssets(foundFile.FullName);
                 }
             }
-            
         }
-        */
 
         IEnumerator WaitForOtherloader()
         {
@@ -54,10 +60,8 @@ namespace Cityrobo
             }
 
             Logger.LogInfo("Starting PrefabReplacement!");
-            PRIDs = new List<PrefabReplacerID>(Resources.FindObjectsOfTypeAll<PrefabReplacerID>());
-            //PRIDs.Add(new PrefabReplacerID("FTW.50BMGFAKE.SLAP", "FTW.50BMG.SLAP"));
-            //PRIDs.Add(new PrefabReplacerID(origItemID, replancementItemID));
-            foreach (var PRID in PRIDs)
+            _PRIDs = new List<PrefabReplacerID>(Resources.FindObjectsOfTypeAll<PrefabReplacerID>());
+            foreach (var PRID in _PRIDs)
             {
                 ReplacePrefabViaID(PRID);
             }
@@ -65,19 +69,30 @@ namespace Cityrobo
 
         void ReplacePrefabViaID(PrefabReplacerID PRID)
         {
-            loadedPrefabReplacerIDs.Add(PRID.originalItemID, PRID);
-
-            FVRObject origFVRObject = IM.OD[PRID.originalItemID];
-            FVRObject replacementFVRObject;
-            if (PRID.replacementFVRObject != null) replacementFVRObject = PRID.replacementFVRObject;
-            else replacementFVRObject = IM.OD[PRID.replacementItemID];
-
+            LoadedPrefabReplacerIDs.Add(PRID.originalItemID, PRID);
             
+            FVRObject origFVRObject = null;
+            IM.OD.TryGetValue(PRID.originalItemID, out origFVRObject);
+            if (origFVRObject == null)
+            {
+                Logger.LogError($"Could not find original FVRObject with ItemID {PRID.originalItemID}.");
+                return;
+            }
+
+            FVRObject replacementFVRObject = null;
+            if (PRID.replacementFVRObject != null) replacementFVRObject = PRID.replacementFVRObject;
+            else IM.OD.TryGetValue(PRID.replacementItemID, out replacementFVRObject);
+
+            if (replacementFVRObject == null)
+            {
+                Logger.LogError($"Could not find replacement FVRObject with ItemID {PRID.replacementItemID}.");
+                return;
+            }
 
             origFVRObject.m_anvilPrefab.Guid = replacementFVRObject.m_anvilPrefab.Guid;
             origFVRObject.m_anvilPrefab.Bundle = replacementFVRObject.m_anvilPrefab.Bundle;
             origFVRObject.m_anvilPrefab.AssetName = replacementFVRObject.m_anvilPrefab.AssetName;
-            if (replacementFVRObject.DisplayName != String.Empty) origFVRObject.DisplayName = replacementFVRObject.DisplayName;
+            if (replacementFVRObject.DisplayName != string.Empty) origFVRObject.DisplayName = replacementFVRObject.DisplayName;
 
             if (PRID.copyTags)
             {
@@ -126,19 +141,19 @@ namespace Cityrobo
                 if (replacementFVRObject.MinCapacityRelated != -1) origFVRObject.MinCapacityRelated = replacementFVRObject.MinCapacityRelated;
                 if (replacementFVRObject.MaxCapacityRelated != -1) origFVRObject.MaxCapacityRelated = replacementFVRObject.MaxCapacityRelated;
             }
-            ItemSpawnerID replacementISID;
+            ItemSpawnerID replacementISID = null;
             if (PRID.replacementItemSpawnerID != null) replacementISID = PRID.replacementItemSpawnerID;
             else ManagerSingleton<IM>.Instance.SpawnerIDDic.TryGetValue(replacementFVRObject.SpawnedFromId, out replacementISID);
 
             ItemSpawnerID origISID = null;
             if (replacementISID != null)
             {
-                Debug.Log(replacementISID);
+                //Debug.Log(replacementISID);
                 if (origFVRObject.SpawnedFromId != string.Empty && ManagerSingleton<IM>.Instance.SpawnerIDDic.TryGetValue(origFVRObject.SpawnedFromId, out origISID))
                 {
-                    if (replacementISID.DisplayName != String.Empty) origISID.DisplayName = replacementISID.DisplayName;
-                    if (replacementISID.SubHeading != String.Empty) origISID.SubHeading = replacementISID.SubHeading;
-                    if (replacementISID.Description != String.Empty) origISID.Description = replacementISID.Description;
+                    if (replacementISID.DisplayName != string.Empty) origISID.DisplayName = replacementISID.DisplayName;
+                    if (replacementISID.SubHeading != string.Empty) origISID.SubHeading = replacementISID.SubHeading;
+                    if (replacementISID.Description != string.Empty) origISID.Description = replacementISID.Description;
                     if (replacementISID.Sprite != null) origISID.Sprite = replacementISID.Sprite;
                     if (replacementISID.Infographic != null) origISID.Infographic = replacementISID.Infographic;
                     if (replacementISID.MainObject != null) origISID.MainObject = replacementISID.MainObject;
@@ -168,7 +183,46 @@ namespace Cityrobo
 
             if (PRID.updateOSple) origFVRObject.OSple = replacementFVRObject.OSple;
 
-            Logger.LogInfo("PrefabRepacerID " + PRID.name + " replaced " + PRID.originalItemID + " with " + PRID.replacementItemID);
+            OtherLoader.ItemSpawnerEntry replacementSpawnerEntry = null;
+            if (PRID.ReplacementItemSpawnerEntry != null) replacementSpawnerEntry = PRID.ReplacementItemSpawnerEntry;
+            else OtherLoader.OtherLoader.SpawnerEntriesByID.TryGetValue(replacementFVRObject.SpawnedFromId, out replacementSpawnerEntry);
+
+            OtherLoader.ItemSpawnerEntry origSpawnerEntry = null;
+            if (replacementSpawnerEntry != null)
+            {
+                if (origFVRObject.SpawnedFromId != string.Empty && OtherLoader.OtherLoader.SpawnerEntriesByID.TryGetValue(origFVRObject.SpawnedFromId, out origSpawnerEntry))
+                {
+                    if (replacementSpawnerEntry.EntryIcon != null) origSpawnerEntry.EntryIcon = replacementSpawnerEntry.EntryIcon;
+                    if (replacementSpawnerEntry.DisplayName != string.Empty) origSpawnerEntry.DisplayName = replacementSpawnerEntry.DisplayName;
+                    if (PRID.UpdateCheckboxesEntry)
+                    {
+                        origSpawnerEntry.IsDisplayedInMainEntry = replacementSpawnerEntry.IsDisplayedInMainEntry;
+                        origSpawnerEntry.UsesLargeSpawnPad = replacementSpawnerEntry.UsesLargeSpawnPad;
+                        origSpawnerEntry.IsReward = replacementSpawnerEntry.IsReward;
+                    }
+                    if (PRID.ReplaceSpawnWithIDsInstead) origSpawnerEntry.SpawnWithIDs = replacementSpawnerEntry.SpawnWithIDs;
+                    else origSpawnerEntry.SpawnWithIDs.AddRange(replacementSpawnerEntry.SpawnWithIDs);
+                    if (PRID.ReplaceSecondaryObjectIDsInstead) origSpawnerEntry.SecondaryObjectIDs = replacementSpawnerEntry.SecondaryObjectIDs;
+                    else origSpawnerEntry.SecondaryObjectIDs.AddRange(replacementSpawnerEntry.SecondaryObjectIDs);
+                    if (PRID.UpdateEntryPath)
+                    {
+                        origSpawnerEntry.EntryPath = replacementSpawnerEntry.EntryPath;
+                        origSpawnerEntry.Page = replacementSpawnerEntry.Page;
+                        origSpawnerEntry.SubCategory = replacementSpawnerEntry.SubCategory;
+                    }
+
+                    if (PRID.ReplaceModTagsEntryInstead) origSpawnerEntry.ModTags = replacementSpawnerEntry.ModTags;
+                    else origSpawnerEntry.ModTags.AddRange(replacementSpawnerEntry.ModTags);
+                    if (PRID.ReplaceTutorialBlocksEntryInstead) origSpawnerEntry.TutorialBlockIDs = replacementSpawnerEntry.TutorialBlockIDs;
+                    else origSpawnerEntry.TutorialBlockIDs.AddRange(replacementSpawnerEntry.TutorialBlockIDs);
+                }
+                else
+                {
+                    origFVRObject.SpawnedFromId = replacementSpawnerEntry.MainObjectID;
+                }
+            }
+
+            Logger.LogInfo($"PrefabRepacerID {PRID.name} replaced {PRID.originalItemID} with {PRID.replacementItemID}.");
         }
     }
 #endif

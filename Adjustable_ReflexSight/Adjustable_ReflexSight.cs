@@ -2,7 +2,6 @@ using FistVR;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
-using Mono.Cecil;
 
 
 namespace Cityrobo
@@ -38,11 +37,16 @@ namespace Cityrobo
         [Tooltip("In meters. Miss me with that imperial shit!")]
         public float[] zeroDistances = new float[7] { 2, 5, 10, 15, 25, 50, 100 };
         //public float dotSizeAt100mDistance = 2;
-        [Header("Standalone configuration")]
+        [Header("Intergrated Sight configuration")]
+        [Tooltip("Check this box if integrated. (sorry, bad naming.)")]
         public bool isStandalone = false;
         public FVRFireArm fireArm;
+
+        [Header("Reticle Occlusion culling")]
         [Tooltip("Use this for extra performant reticle occlusion culling")]
         public Collider lensCollider;
+        public bool disableOcclusionCulling = false;
+
         private FVRViveHand hand;
         private int currentMenu = 0;
 
@@ -64,7 +68,7 @@ namespace Cityrobo
         {
             if (currentTexture >= textures.Length) currentTexture = 0;
             if (currentZeroDistance >= zeroDistances.Length) currentZeroDistance = 0;
-            reticle.material.SetTexture(nameOfTexture, textures[currentTexture]);
+            if (textures.Length != 0) reticle.material.SetTexture(nameOfTexture, textures[currentTexture]);
             reticle.material.SetFloat(nameOfDistanceVariable, zeroDistances[currentZeroDistance]);
             //lens.material.SetFloat(nameOfDotSizeVariable, dotSizeAt100mDistance * (zeroDistances[currentZeroDistance] / 100) );
 
@@ -131,8 +135,6 @@ namespace Cityrobo
 
                     reticle.material.SetFloat(nameOfXOffset, -muzzleOffset.x);
                     reticle.material.SetFloat(nameOfYOffset, -muzzleOffset.y);
-
-
                 }
             }
             else if (!isStandalone && attachment.curMount == null && attached)
@@ -143,7 +145,11 @@ namespace Cityrobo
                 fireArm = null;
                 muzzlePos = null;
             }
-            if (isStandalone || attached) CheckReticleVisibility();
+
+            leftEye = GM.CurrentPlayerBody.Head.position + GM.CurrentPlayerBody.Head.right * -0.032f;
+            rightEye = GM.CurrentPlayerBody.Head.position + GM.CurrentPlayerBody.Head.right * +0.032f;
+
+            if (!disableOcclusionCulling && (isStandalone || attached)) CheckReticleVisibility();
         }
 #endif
         public void UseNextTexture()
@@ -202,6 +208,11 @@ namespace Cityrobo
                 if (textFrame != null) textFrame.localPosition = reticleTextScreen.transform.localPosition;
                 reticleTextScreen.text = reticleTestPrefix + reticleText[currentTexture];
             }
+            else if (reticleTextScreen == null)
+            {
+                currentMenu = 1;
+            }
+
             if (zeroTextScreen != null && currentMenu == 1)
             {
                 if (textFrame != null) textFrame.localPosition = zeroTextScreen.transform.localPosition;
@@ -217,7 +228,7 @@ namespace Cityrobo
         }
         public void UseNextZeroDistance()
         {
-            if (currentZeroDistance < zeroDistances.Length) currentZeroDistance++;
+            if (currentZeroDistance < zeroDistances.Length - 1) currentZeroDistance++;
             reticle.material.SetFloat(nameOfDistanceVariable, zeroDistances[currentZeroDistance]);
             //lens.material.SetFloat(nameOfDotSizeVariable, dotSizeAt100mDistance * (zeroDistances[currentZeroDistance] / 100));
             UpdateScreen();
@@ -255,7 +266,7 @@ namespace Cityrobo
             if (!scopeHit) reticle.gameObject.SetActive(false);
 
             */
-            if (lensCollider == null)
+            if (lensCollider == null && scopeColliders.Count > 0)
             {
                 RaycastHit[] raycastHits;
                 float distance = Vector3.Distance(this.gameObject.transform.position, GM.CurrentPlayerBody.Head.position) + 0.2f;
@@ -301,7 +312,7 @@ namespace Cityrobo
 
                 if (!scopeHit) reticle.gameObject.SetActive(false);
             }
-            else
+            else if (lensCollider != null)
             {
                 float distance = Vector3.Distance(this.gameObject.transform.position, GM.CurrentPlayerBody.Head.position) + 0.2f;
                 Vector3 direction = muzzlePos.position + this.transform.forward * zeroDistances[currentZeroDistance] - rightEye;
@@ -335,24 +346,29 @@ namespace Cityrobo
 
                 if (!scopeHit) reticle.gameObject.SetActive(false);
             }
+            else
+            {
+                Debug.LogWarning("No usable colliders for reticle occlusion found! If you are a modmaker, please add colliders or a lens collider, or disable occlusion culling with the checkbox!\n Disabling Occlusion culling now!");
+                disableOcclusionCulling = true;
+            }
         }
 
         private void Unhook()
         {
-#if !DEBUG
+#if !(DEBUG || MEATKIT)
             On.FistVR.FVRInteractiveObject.SimpleInteraction -= FVRInteractiveObject_SimpleInteraction;
 #endif
         }
 
         private void Hook()
         {
-#if !DEBUG
+#if !(DEBUG || MEATKIT)
             On.FistVR.FVRInteractiveObject.SimpleInteraction += FVRInteractiveObject_SimpleInteraction;
 #endif
         }
 
 
-#if !DEBUG
+#if !(DEBUG || MEATKIT)
         private void FVRInteractiveObject_SimpleInteraction(On.FistVR.FVRInteractiveObject.orig_SimpleInteraction orig, FVRInteractiveObject self, FVRViveHand hand)
         {
             orig(self, hand);
