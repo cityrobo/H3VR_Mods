@@ -12,10 +12,12 @@ namespace Cityrobo
     {
 		public FVRFireArm FireArm;
 
-        public LayerMask TargetMask;
+		public LayerMask LM_OverlapCapsuleTargetMask;
+		public LayerMask LM_RaycastTargetMask;
 		public float MaxRange = 2000f;
+		public float ObjectTargetingFOV = 1f;
 
-        private Vector3? _targetPoint = null;
+		private Vector3? _targetPoint = null;
 		private Rigidbody _targetRB;
 
 		public TopAttackProjectile.EAttackMode AttackMode;
@@ -41,13 +43,20 @@ namespace Cityrobo
 		private string[] _modeTexts;
 		private const string _removeFromName = "(Clone)";
 
+
+		private float _overlapCapsuleRadius;
+
+		private RaycastHit _raycastHit;
+		private Collider[] _targetArray = new Collider[32];
+		private LayerMask LM_BlockMask = LayerMask.GetMask("Environment");
+
 #if !(DEBUG || MEATKIT)
 
 		public void Awake()
 		{
 			Hook();
 			_modeTexts = new string[]{ TopAttackModeText, FrontalAttackModeText };
-
+			_overlapCapsuleRadius = Mathf.Tan(ObjectTargetingFOV * Mathf.Deg2Rad) * MaxRange;
 		}
 		public void OnDestroy()
 		{
@@ -56,21 +65,49 @@ namespace Cityrobo
 
 		public void Update()
         {
-            RaycastHit hit;
+			int numTargets = Physics.OverlapCapsuleNonAlloc(transform.position, transform.position + MaxRange * transform.forward, _overlapCapsuleRadius, _targetArray, LM_OverlapCapsuleTargetMask, QueryTriggerInteraction.Collide);
 
-            if (Physics.Raycast(transform.position, transform.forward, out hit, MaxRange, TargetMask,QueryTriggerInteraction.Collide))
-            {
-				RangeTextField.text = string.Format("{0:F0}m", hit.distance);
+			float distance = MaxRange + 100f;
 
-                if (AttackMode == TopAttackProjectile.EAttackMode.Top && hit.distance > MinRangeTopAttackMode)
-                {
-					_targetPoint = hit.point;
-					_targetRB = hit.rigidbody;
+			Collider finalTarget = null;
+			Vector3 direction;
+
+			for (int i = 0; i < numTargets; i++)
+			{
+				direction = _targetArray[i].transform.position - transform.position;
+
+				if (Vector3.Angle(direction, transform.forward) > ObjectTargetingFOV) continue;
+				if (direction.magnitude < distance && !Physics.Linecast(transform.position, _targetArray[i].transform.position, LM_BlockMask))
+				{
+					distance = Vector3.Distance(_targetArray[i].transform.position, transform.position);
+
+					finalTarget = _targetArray[i];
 				}
-				else if (AttackMode == TopAttackProjectile.EAttackMode.Direct && hit.distance > MinRangeFrontalAttackMode)
+			}
+
+			if (finalTarget != null)
+			{
+				_targetRB = finalTarget.attachedRigidbody;
+			}
+			else
+			{
+				_targetRB = null;
+
+			}
+
+			
+
+            if (Physics.Raycast(transform.position, transform.forward, out _raycastHit, MaxRange, LM_RaycastTargetMask,QueryTriggerInteraction.Collide))
+            {
+				RangeTextField.text = string.Format("{0:F0}m", _raycastHit.distance);
+
+                if (AttackMode == TopAttackProjectile.EAttackMode.Top && _raycastHit.distance > MinRangeTopAttackMode)
                 {
-					_targetPoint = hit.point;
-					_targetRB = hit.rigidbody;
+					_targetPoint = _raycastHit.point;
+				}
+				else if (AttackMode == TopAttackProjectile.EAttackMode.Direct && _raycastHit.distance > MinRangeFrontalAttackMode)
+                {
+					_targetPoint = _raycastHit.point;
 				}
 
 				if (_targetRB != null)
@@ -80,7 +117,7 @@ namespace Cityrobo
 				}
 				else
 				{
-					TargetTextField.text = string.Format(PositionTargetText, hit.point.x, hit.point.y, hit.point.z);
+					TargetTextField.text = string.Format(PositionTargetText, _raycastHit.point.x, _raycastHit.point.y, _raycastHit.point.z);
 				}
 			}
             else
