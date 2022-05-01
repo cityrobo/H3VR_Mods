@@ -32,7 +32,7 @@ namespace Cityrobo
 		private bool isLocked;
 		private int lastSelectorPos;
 
-#if !DEBUG
+#if !(DEBUG || MEATKIT)
 		public void Start()
         {
 			Hook();

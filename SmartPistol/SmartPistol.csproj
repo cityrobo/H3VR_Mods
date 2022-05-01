@@ -33,7 +33,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'MeatKit|AnyCPU'">
     <OutputPath>bin\MeatKit\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;MEATKIT</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -84,6 +84,9 @@
     <Reference Include="MonoMod.Utils, Version=21.10.10.1, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MonoMod.Utils.21.10.10.1\lib\net35\MonoMod.Utils.dll</HintPath>
     </Reference>
+    <Reference Include="ScopeShaderZoom">
+      <HintPath>..\Releases\ScopeShaderZoom.dll</HintPath>
+    </Reference>
     <Reference Include="SemanticVersioning, Version=2.0.0.0, Culture=neutral, PublicKeyToken=a89bb7dc6f7a145c, processorArchitecture=MSIL">
       <HintPath>..\packages\SemanticVersioning.2.0.0\lib\net35\SemanticVersioning.dll</HintPath>
     </Reference>
@@ -107,9 +110,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Javelin.cs" />
+    <Compile Include="TopAttackSystem.cs" />
+    <Compile Include="LaserGuidanceSystem.cs" />
+    <Compile Include="LaserGuidedProjectile.cs" />
+    <Compile Include="SmartWeapon.cs" />
+    <Compile Include="TopAttackProjectile.cs" />
+    <Compile Include="SmartProjectile.cs" />
     <Compile Include="SmartRevolver.cs" />
     <Compile Include="SmartRifle.cs" />
-    <Compile Include="SmartPistol_BepInEx.cs" />
     <Compile Include="SmartPistol.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -119,6 +128,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if $(ConfigurationName) == Debug copy $(TargetPath) $(SolutionDir)Releases\unity_code\$(TargetName).dll
+if $(ConfigurationName) == MeatKit copy $(TargetPath) $(SolutionDir)Releases\MeatKit\$(TargetName).dll
 if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\$(TargetName).dll</PostBuildEvent>
   </PropertyGroup>
 </Project>

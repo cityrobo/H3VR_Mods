@@ -26,7 +26,7 @@ namespace Cityrobo
 		//constants
 		private string nameOfDistanceVariable = "_RedDotDist";
 
-#if !DEBUG
+#if !(DEBUG || MEATKIT)
 		public void Start()
         {
 			Hook();
