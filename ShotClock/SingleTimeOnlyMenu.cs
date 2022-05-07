@@ -80,7 +80,7 @@ namespace ShotTimer
 		}
 		private void OnEnable()
 		{
-			Debug.Log("SingleTimeOnlyMenu: Start!");
+			//Debug.Log("SingleTimeOnlyMenu: Start!");
 			this.StartCoroutine("Run");
 		}
 	}

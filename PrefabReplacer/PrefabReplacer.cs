@@ -11,18 +11,26 @@ using BepInEx;
 namespace Cityrobo
 {
 #if !(DEBUG || UNITY_EDITOR || UNITY_5)
-    [BepInPlugin("h3vr.cityrobo.prefab_replacer", "PrefabReplacer Script", "1.0.0")]
+    [BepInPlugin("h3vr.cityrobo.prefab_replacer", "PrefabReplacer", "1.0.1")]
     [BepInDependency("h3vr.otherloader", "1.1.3")]
     [BepInDependency("nrgill28.Sodalite", "1.2.0")]
     public class PrefabReplacer : BaseUnityPlugin
     {
         public Dictionary<string, PrefabReplacerID> LoadedPrefabReplacerIDs;
+
+        public static float Progress
+        {
+            get { return _progress; }
+        }
         //private bool otherloaderReady = false;
         private List<PrefabReplacerID> _PRIDs;
         private static readonly string s_sideloaderPath = Path.Combine(Paths.BepInExRootPath, "Sideloader");
+
+        private static float _progress = 0f;
+        private float _percentagePerPRID;
         public PrefabReplacer()
         {
-            Logger.LogInfo("PrefabReplacer Script loaded!");
+            //Logger.LogInfo("PrefabReplacer Script loaded!");
 
             LoadedPrefabReplacerIDs = new Dictionary<string, PrefabReplacerID>();
 
@@ -46,12 +54,14 @@ namespace Cityrobo
                 Logger.LogInfo($"Loading {filesInDir.Length} standalone PrefabReplacer asset bundles!");
                 foreach (FileInfo foundFile in filesInDir)
                 {
-                    Logger.LogInfo($"Loading asset bundle {foundFile.Name}.");
+                    Logger.LogInfo($"Loading standalone PrefabReplacer asset bundle {foundFile.Name}.");
                     Sodalite.Api.GameAPI.PreloadAllAssets(foundFile.FullName);
                 }
+                Logger.LogInfo($"Standalone PrefabReplacer asset bundle loading complete!");
             }
         }
 
+        // Wait for Otherloader to finish loading assets before starting prefab replacement.
         IEnumerator WaitForOtherloader()
         {
             while (OtherLoader.LoaderStatus.GetLoaderProgress() != 1)
@@ -59,18 +69,32 @@ namespace Cityrobo
                 yield return null;
             }
 
-            Logger.LogInfo("Starting PrefabReplacement!");
-            _PRIDs = new List<PrefabReplacerID>(Resources.FindObjectsOfTypeAll<PrefabReplacerID>());
-            foreach (var PRID in _PRIDs)
-            {
-                ReplacePrefabViaID(PRID);
-            }
+            PrefabReplacement();
         }
 
-        void ReplacePrefabViaID(PrefabReplacerID PRID)
+        private void PrefabReplacement()
         {
+            Logger.LogInfo("Starting Prefab Replacement!");
+            _PRIDs = new List<PrefabReplacerID>(Resources.FindObjectsOfTypeAll<PrefabReplacerID>());
+
+            if (_PRIDs.Count != 0) _percentagePerPRID = 1f / _PRIDs.Count;
+            foreach (var PRID in _PRIDs)
+            {
+                if (PRID.PrefabReplacerIDActivated == true) ReplacePrefabViaID(PRID);
+                _progress += _percentagePerPRID;
+            }
+            if (_PRIDs.Count == 0) Logger.LogInfo("No PrefabReplacerIDs found. Have a nice day!");
+            _progress = 1f;
+        }
+
+        private void ReplacePrefabViaID(PrefabReplacerID PRID)
+        {
+            
+
             LoadedPrefabReplacerIDs.Add(PRID.originalItemID, PRID);
             
+
+            // FVRObject Replacement
             FVRObject origFVRObject = null;
             IM.OD.TryGetValue(PRID.originalItemID, out origFVRObject);
             if (origFVRObject == null)
@@ -89,6 +113,43 @@ namespace Cityrobo
                 return;
             }
 
+            FVRObjectReplacement(PRID, origFVRObject, replacementFVRObject);
+
+            // ItemSpawnerID Replacement
+            ItemSpawnerID replacementISID = null;
+            if (PRID.replacementItemSpawnerID != null) replacementISID = PRID.replacementItemSpawnerID;
+            else ManagerSingleton<IM>.Instance.SpawnerIDDic.TryGetValue(replacementFVRObject.SpawnedFromId, out replacementISID);
+
+            ItemSpawnerID origISID = null;
+
+            ISIDReplacement(PRID, origISID, replacementISID, origFVRObject);
+
+            // ItemSpawnerEntry Replacement
+            OtherLoader.ItemSpawnerEntry replacementSpawnerEntry = null;
+            if (PRID.ReplacementItemSpawnerEntry != null) replacementSpawnerEntry = PRID.ReplacementItemSpawnerEntry;
+            else OtherLoader.OtherLoader.SpawnerEntriesByID.TryGetValue(replacementFVRObject.SpawnedFromId, out replacementSpawnerEntry);
+
+            OtherLoader.ItemSpawnerEntry origSpawnerEntry = null;
+
+            ItemSpawnerEntryReplacement(PRID, origSpawnerEntry, replacementSpawnerEntry, origFVRObject);
+
+            // Additional Operations
+            if (PRID.DisableReplacementObjectInItemSpawner)
+            { 
+                if (replacementISID != null) replacementISID.IsDisplayedInMainEntry = false;
+                if (replacementSpawnerEntry != null) replacementSpawnerEntry.IsDisplayedInMainEntry = false;
+            }
+            if (PRID.DisableReplacementObjectInTnH)
+            {
+                if (replacementFVRObject != null) replacementFVRObject.OSple = false;
+            }
+
+            Logger.LogInfo($"PrefabRepacerID {PRID.name} replaced {PRID.originalItemID} with {PRID.replacementItemID}. {_percentagePerPRID + _progress}% done.");
+        }
+
+
+        private void FVRObjectReplacement(PrefabReplacerID PRID, FVRObject origFVRObject, FVRObject replacementFVRObject)
+        {
             origFVRObject.m_anvilPrefab.Guid = replacementFVRObject.m_anvilPrefab.Guid;
             origFVRObject.m_anvilPrefab.Bundle = replacementFVRObject.m_anvilPrefab.Bundle;
             origFVRObject.m_anvilPrefab.AssetName = replacementFVRObject.m_anvilPrefab.AssetName;
@@ -141,11 +202,11 @@ namespace Cityrobo
                 if (replacementFVRObject.MinCapacityRelated != -1) origFVRObject.MinCapacityRelated = replacementFVRObject.MinCapacityRelated;
                 if (replacementFVRObject.MaxCapacityRelated != -1) origFVRObject.MaxCapacityRelated = replacementFVRObject.MaxCapacityRelated;
             }
-            ItemSpawnerID replacementISID = null;
-            if (PRID.replacementItemSpawnerID != null) replacementISID = PRID.replacementItemSpawnerID;
-            else ManagerSingleton<IM>.Instance.SpawnerIDDic.TryGetValue(replacementFVRObject.SpawnedFromId, out replacementISID);
 
-            ItemSpawnerID origISID = null;
+            if (PRID.updateOSple) origFVRObject.OSple = replacementFVRObject.OSple;
+        }
+        private void ISIDReplacement(PrefabReplacerID PRID, ItemSpawnerID origISID, ItemSpawnerID replacementISID, FVRObject origFVRObject)
+        {
             if (replacementISID != null)
             {
                 //Debug.Log(replacementISID);
@@ -180,14 +241,10 @@ namespace Cityrobo
                     origFVRObject.SpawnedFromId = replacementISID.ItemID;
                 }
             }
+        }
 
-            if (PRID.updateOSple) origFVRObject.OSple = replacementFVRObject.OSple;
-
-            OtherLoader.ItemSpawnerEntry replacementSpawnerEntry = null;
-            if (PRID.ReplacementItemSpawnerEntry != null) replacementSpawnerEntry = PRID.ReplacementItemSpawnerEntry;
-            else OtherLoader.OtherLoader.SpawnerEntriesByID.TryGetValue(replacementFVRObject.SpawnedFromId, out replacementSpawnerEntry);
-
-            OtherLoader.ItemSpawnerEntry origSpawnerEntry = null;
+        private void ItemSpawnerEntryReplacement(PrefabReplacerID PRID, OtherLoader.ItemSpawnerEntry origSpawnerEntry, OtherLoader.ItemSpawnerEntry replacementSpawnerEntry, FVRObject origFVRObject)
+        {
             if (replacementSpawnerEntry != null)
             {
                 if (origFVRObject.SpawnedFromId != string.Empty && OtherLoader.OtherLoader.SpawnerEntriesByID.TryGetValue(origFVRObject.SpawnedFromId, out origSpawnerEntry))
@@ -221,8 +278,6 @@ namespace Cityrobo
                     origFVRObject.SpawnedFromId = replacementSpawnerEntry.MainObjectID;
                 }
             }
-
-            Logger.LogInfo($"PrefabRepacerID {PRID.name} replaced {PRID.originalItemID} with {PRID.replacementItemID}.");
         }
     }
 #endif

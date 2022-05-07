@@ -29,6 +29,8 @@ namespace Cityrobo
             GameObject[] rootGameObjects = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects();
             if (rootWorldObject != null && rootWorldObject.GetComponent<ThermalBody>() == null)
             {
+                bool wasActive = rootWorldObject.activeSelf;
+
                 rootWorldObject.SetActive(false);
                 thermalBody = rootWorldObject.AddComponent<ThermalBody>();
 
@@ -36,7 +38,7 @@ namespace Cityrobo
                 thermalBody.MaximumTemperature = this.MaximumTemperature;
                 thermalBody.MinimumTemperature = this.MinimumTemperature;
 
-                rootWorldObject.SetActive(true);
+                rootWorldObject.SetActive(wasActive);
             }
             else if (rootWorldObject == null)
             {
@@ -62,7 +64,7 @@ namespace Cityrobo
             List<GameObject> sosigs = new List<GameObject>();
             List<GameObject> rigidbodies = new List<GameObject>();
             foreach (GameObject gameObject in rootGameObjects)
-            {
+            {              
                 Rigidbody RB = gameObject.GetComponent<Rigidbody>();
                 Sosig sosig = gameObject.GetComponent<Sosig>();
 
@@ -73,33 +75,37 @@ namespace Cityrobo
             foreach (var rigidbody in rigidbodies)
             {
                 if (rigidbody.GetComponent<ThermalBody>() != null) continue;
-                rigidbody.SetActive(false);
+                bool wasActive = rigidbody.gameObject.activeSelf;
+
+                rigidbody.gameObject.SetActive(false);
                 thermalBody = rigidbody.AddComponent<ThermalBody>();
 
-                thermalBody.ThermalDistribution = ThermalBody_Hooks.physicalObject_tempDist;
-                thermalBody.MaximumTemperature = ThermalBody_Hooks.physicalObject_maxTemp;
-                thermalBody.MinimumTemperature = ThermalBody_Hooks.physicalObject_minTemp;
+                thermalBody.ThermalDistribution = ThermalVision_Hooks.physicalObject_tempDist;
+                thermalBody.MaximumTemperature = ThermalVision_Hooks.physicalObject_maxTemp;
+                thermalBody.MinimumTemperature = ThermalVision_Hooks.physicalObject_minTemp;
 
-                rigidbody.SetActive(true);
+                rigidbody.gameObject.SetActive(wasActive);
             }
             foreach (var sosig in sosigs)
             {
                 if (sosig.GetComponent<ThermalBody>() != null) continue;
-                sosig.SetActive(false);
+
+                bool wasActive = sosig.gameObject.activeSelf;
+                sosig.gameObject.SetActive(false);
                 thermalBody = sosig.AddComponent<ThermalBody>();
 
-                thermalBody.ThermalDistribution = ThermalBody_Hooks.sosig_tempDist;
-                thermalBody.MaximumTemperature = ThermalBody_Hooks.sosig_maxTemp;
-                thermalBody.MinimumTemperature = ThermalBody_Hooks.sosig_minTemp;
+                thermalBody.ThermalDistribution = ThermalVision_Hooks.sosig_tempDist;
+                thermalBody.MaximumTemperature = ThermalVision_Hooks.sosig_maxTemp;
+                thermalBody.MinimumTemperature = ThermalVision_Hooks.sosig_minTemp;
 
-                sosig.SetActive(true);
+                sosig.gameObject.SetActive(wasActive);
             }
 
 
-            if (!ThermalBody_Hooks.IsHooked)
+            if (!ThermalVision_Hooks.IsHooked)
             {
-                if (ThermalBody_BepInEx.ThermalPlugin.enableThermalVision.Value) ThermalBody_BepInEx.ThermalHooks.Hook(ThermalBody_BepInEx.ThermalPlugin.TemperatureData);
-                else ThermalBody_BepInEx.ThermalHooks.EssentialsHook(ThermalBody_BepInEx.ThermalPlugin.TemperatureData);
+                if (ThermalVision_BepInEx.ThermalPlugin.enableThermalVision.Value) ThermalVision_BepInEx.ThermalHooks.Hook(ThermalVision_BepInEx.ThermalPlugin.TemperatureData);
+                else ThermalVision_BepInEx.ThermalHooks.EssentialsHook(ThermalVision_BepInEx.ThermalPlugin.TemperatureData);
             }
         }
 
@@ -109,7 +115,7 @@ namespace Cityrobo
 
             if (ThermalVisionsInScene.Count == 0)
             {
-                ThermalBody_BepInEx.ThermalHooks.Unhook();
+                ThermalVision_BepInEx.ThermalHooks.Unhook();
             }
         }
 #endif

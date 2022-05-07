@@ -104,6 +104,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Ejector.cs" />
     <Compile Include="Diffuser.cs" />
     <Compile Include="AssaultBarrel.cs" />
     <Compile Include="FO4_LaserRifle_BepInEx.cs" />

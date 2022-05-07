@@ -43,7 +43,6 @@ namespace Cityrobo
         [Tooltip("If true, will replace existing OSple.")]
         public bool updateOSple = false;
 
-
         [Header("ItemSpawnerID Options")]
         [Tooltip("Optional replacement ItemSpawnerID, options will only get copied if not empty or for checkboxes, different from the original. (Also not strictly required, can be fetched from \"spawnedByID\"). Or, if original item does not have a ISID, it will use this one.")]
         public ItemSpawnerID replacementItemSpawnerID;
@@ -73,6 +72,23 @@ namespace Cityrobo
         public bool ReplaceTutorialBlocksEntryInstead = false;
         [Tooltip("If true, checkboxes will be updated with the ones set in the ItemSpawnerEntry.")]
         public bool UpdateCheckboxesEntry = false;
+
+        [Header("Ammunition related Options")]
+        public bool IsAmmo = false;
+        public bool ReplaceAmmoPanelName = false;
+        public bool ReplaceAmmoRoundClass = false;
+
+        [Header("Miscellaneous Options")]
+        [Tooltip("This checkbox makes it so that only the replaced Item shows up in the ItemSpawner. Removes the duplicate replacement from the ItemSpawner.")]
+        public bool DisableReplacementObjectInItemSpawner = true;
+        [Tooltip("This checkbox makes it so that only the replaced Item shows up in the Take and Hold. Removes the duplicate replacement from the Take and Hold loot pool.")]
+        public bool DisableReplacementObjectInTnH = true;
+
+
+
+        [HideInInspector]
+        public bool PrefabReplacerIDActivated = true;
+
         public PrefabReplacerID(string orig, string replacement)
         {
             originalItemID = orig;

@@ -14,6 +14,7 @@ namespace Cityrobo
 
 		public LayerMask LM_OverlapCapsuleTargetMask;
 		public LayerMask LM_RaycastTargetMask;
+		public LayerMask LM_BlockMask;
 		public float MaxRange = 2000f;
 		public float ObjectTargetingFOV = 1f;
 
@@ -53,7 +54,7 @@ namespace Cityrobo
 
 		private RaycastHit _raycastHit;
 		private Collider[] _targetArray = new Collider[32];
-		private LayerMask LM_BlockMask = LayerMask.GetMask("Environment");
+		
 
 #if !(DEBUG || MEATKIT)
 
@@ -99,7 +100,7 @@ namespace Cityrobo
 				if (Vector3.Angle(direction, transform.forward) > ObjectTargetingFOV) continue;
 				if (direction.magnitude < distance && !Physics.Linecast(transform.position, _targetArray[i].transform.position, LM_BlockMask))
 				{
-					distance = Vector3.Distance(_targetArray[i].transform.position, transform.position);
+					distance = direction.magnitude;
 
 					finalTarget = _targetArray[i];
 				}

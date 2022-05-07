@@ -12,7 +12,7 @@ namespace Cityrobo
     {
         public AttachmentStock_BepInEx()
         {
-            Logger.LogInfo("OpenScripts: AttachmentStock Script loaded!");
+            //Logger.LogInfo("OpenScripts: AttachmentStock Script loaded!");
         }
     }
 }

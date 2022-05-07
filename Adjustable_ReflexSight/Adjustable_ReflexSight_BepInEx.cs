@@ -13,7 +13,7 @@ namespace Cityrobo
     {
         public Adjustable_ReflexSight_BepInEx()
         {
-            Logger.LogInfo("OpenScripts: Adjustable_ReflexSight Script loaded!");
+            //Logger.LogInfo("OpenScripts: Adjustable_ReflexSight Script loaded!");
         }
     }
 }

@@ -28,6 +28,8 @@ namespace Cityrobo
         public Text ZeroText;
         public Text ElevationText;
         public Text WindageText;
+        [Tooltip("The existence of this text enables the reticle change functionality.")]
+        public Text ReticleText;
         public GameObject TextFrame;
 
         public string ZoomPrefix = "Zoom: ";
@@ -58,15 +60,15 @@ namespace Cityrobo
         public float WindageIncreasePerClick = 0.25f;
 
         [Header("Reticle Change System Settings")]
-        [Tooltip("The existence of this text enables the reticle change functionality.")]
-        public Text ReticleText;
+
         public string ReticlePrefix = "Reticle: ";
-        [Tooltip("Additional reticles. Default reticle is first entry.")]
+        [Tooltip("All reticle textures. Default reticle is first entry.")]
         public List<Texture2D> Reticles;
-        [Tooltip("Names of additional reticles. Default reticle name is first entry.")]
-        public string[] ReticleNames;
-        [Tooltip("Additional reticle colors")]
+        [Tooltip("Colors of all reticles. Default reticle name is first entry.")]
+        [ColorUsage(true, true, float.MaxValue, float.MaxValue, 0f, 0f)]
         public List<Color> ReticleColors;
+        [Tooltip("Names of all reticles. Default reticle name is first entry.")]
+        public string[] ReticleNames;
 
         public int CurrentReticle = 0;
 

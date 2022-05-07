@@ -104,7 +104,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="QBArmorPiece_BepInEx.cs" />
     <Compile Include="QBArmorPiece_Headgear.cs" />
     <Compile Include="QBArmorPiece_Backpack.cs" />
     <Compile Include="QBArmorPiece.cs" />
@@ -116,7 +115,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if $(ConfigurationName) == MeatKit copy $(TargetPath) $(SolutionDir)Releases\MeatKit\$(TargetName).dll
-if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\Assembly-CSharp.$(TargetName).mm.dll
-if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\$(TargetName).dll</PostBuildEvent>
+if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\OpenScriptsMonomod\Assembly-CSharp.$(TargetName).mm.dll
+if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\OpenScripts\$(TargetName).dll</PostBuildEvent>
   </PropertyGroup>
 </Project>

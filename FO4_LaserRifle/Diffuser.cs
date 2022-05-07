@@ -66,7 +66,7 @@ namespace Cityrobo
                             Vector2 vector2 = (UnityEngine.Random.insideUnitCircle + UnityEngine.Random.insideUnitCircle + UnityEngine.Random.insideUnitCircle) * 0.33333334f * d;
                             gameObject.transform.Rotate(new Vector3(vector2.x + vector.y + num, vector2.y + vector.x, 0f));
                             BallisticProjectile component = gameObject.GetComponent<BallisticProjectile>();
-                            component.Fire(component.MuzzleVelocityBase * chamber.ChamberVelocityMultiplier * velMult/muzzles.Length * chamberVelMult, gameObject.transform.forward, fireArm);
+                            component.Fire(component.MuzzleVelocityBase * chamber.ChamberVelocityMultiplier * (velMult/muzzles.Length) * chamberVelMult, gameObject.transform.forward, fireArm);
                         }
                     }
                 }

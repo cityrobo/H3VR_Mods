@@ -93,7 +93,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SwitchBlade_BepInEx.cs" />
     <Compile Include="SwitchBladeProxy.cs" />
     <Compile Include="SwitchBlade.cs" />
     <Compile Include="SwitchBladeWeapon.cs" />
@@ -104,6 +103,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy $(TargetPath) $(SolutionDir)Releases\$(TargetFileName)</PostBuildEvent>
+    <PostBuildEvent>if $(ConfigurationName) == Debug copy $(TargetPath) $(SolutionDir)Releases\unity_code\$(TargetName).dll
+if $(ConfigurationName) == MeatKit copy $(TargetPath) $(SolutionDir)Releases\MeatKit\$(TargetName).dll
+if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\OpenScripts\$(TargetName).dll</PostBuildEvent>
   </PropertyGroup>
 </Project>

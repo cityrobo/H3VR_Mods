@@ -93,7 +93,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FireModeAttachment.cs" />
-    <Compile Include="OpenBoltBurst_BepInEx.cs" />
     <Compile Include="OpenBoltBurstFire.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -103,6 +102,6 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if $(ConfigurationName) == Debug copy $(TargetPath) $(SolutionDir)Releases\unity_code\$(TargetName).dll
-if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\$(TargetName).dll</PostBuildEvent>
+if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\OpenScripts\$(TargetName).dll</PostBuildEvent>
   </PropertyGroup>
 </Project>

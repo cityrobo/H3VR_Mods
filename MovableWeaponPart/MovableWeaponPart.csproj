@@ -112,7 +112,6 @@
     <Compile Include="MovableWeaponPartMk2.cs" />
     <Compile Include="MovableWeaponPart.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="MovableWeaponPart_BepInEx.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -120,7 +119,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if $(ConfigurationName) == MeatKit copy $(TargetPath) $(SolutionDir)Releases\MeatKit\$(TargetName).dll
-if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\Assembly-CSharp.$(TargetName).mm.dll
-if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\$(TargetName).dll</PostBuildEvent>
+if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\OpenScriptsMonomod\Assembly-CSharp.$(TargetName).mm.dll
+if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\OpenScripts\$(TargetName).dll</PostBuildEvent>
   </PropertyGroup>
 </Project>

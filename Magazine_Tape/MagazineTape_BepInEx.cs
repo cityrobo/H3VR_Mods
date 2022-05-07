@@ -7,12 +7,12 @@ using BepInEx;
 
 namespace Cityrobo
 {
-    [BepInPlugin("h3vr.cityrobo.openscripts.magazine_tape", "OpenScripts: MagazineTape Script", "1.0.0")]
+    [BepInPlugin("h3vr.cityrobo.openscripts.MagazineTape", "OpenScripts: MagazineTape Script", "1.0.0")]
     class MagazineTape_BepInEx : BaseUnityPlugin
     {
         public MagazineTape_BepInEx()
         {
-            Logger.LogInfo("OpenScripts: MagazineTape Script loaded!");
+            //Logger.LogInfo("OpenScripts: MagazineTape Script loaded!");
         }
     }
 }

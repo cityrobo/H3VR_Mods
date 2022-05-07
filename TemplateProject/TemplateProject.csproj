@@ -104,7 +104,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if $(ConfigurationName) == Debug copy $(TargetPath) $(SolutionDir)Releases\unity_code\$(TargetName).dll
-if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\$(TargetName).dll
+if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\OpenScripts\$(TargetName).dll
 if $(ConfigurationName) == MeatKit copy $(TargetPath) $(SolutionDir)Releases\MeatKit\$(TargetName).dll</PostBuildEvent>
   </PropertyGroup>
 </Project>

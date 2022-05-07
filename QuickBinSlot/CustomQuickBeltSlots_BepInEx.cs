@@ -7,12 +7,12 @@ using BepInEx;
 
 namespace Cityrobo
 {
-    [BepInPlugin("h3vr.cityrobo.openscripts.custom_quickbelt_slots", "OpenScripts: CustomQuickBeltSlots Scripts", "1.0.0")]
-    class MagazineTape_BepInEx : BaseUnityPlugin
+    [BepInPlugin("h3vr.cityrobo.openscripts.CustomQuickBeltSlots", "OpenScripts: CustomQuickBeltSlots Scripts", "1.0.0")]
+    class CustomQuickBeltSlots_BepInEx : BaseUnityPlugin
     {
-        public MagazineTape_BepInEx()
+        public CustomQuickBeltSlots_BepInEx()
         {
-            Logger.LogInfo("OpenScripts: CustomQuickBeltSlots Scripts loaded!");
+            //Logger.LogInfo("OpenScripts: CustomQuickBeltSlots Scripts loaded!");
         }
     }
 }

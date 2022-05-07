@@ -12,7 +12,7 @@ namespace Cityrobo
     {
         public MagazineScripts_BepInEx()
         {
-            Logger.LogInfo("OpenScripts: MagazineScripts Script loaded!");
+            //Logger.LogInfo("OpenScripts: MagazineScripts Script loaded!");
         }
     }
 }

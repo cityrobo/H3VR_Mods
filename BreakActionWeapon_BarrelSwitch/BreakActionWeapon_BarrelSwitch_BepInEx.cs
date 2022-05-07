@@ -12,7 +12,7 @@ namespace Cityrobo
     {
         public BreakActionWeapon_BarrelSwitch_BepInEx()
         {
-            Logger.LogInfo("OpenScripts: BreakActionWeapon_BarrelSwitch Script loaded!");
+            //Logger.LogInfo("OpenScripts: BreakActionWeapon_BarrelSwitch Script loaded!");
         }
     }
 }

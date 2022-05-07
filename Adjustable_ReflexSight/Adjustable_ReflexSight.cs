@@ -14,12 +14,16 @@ namespace Cityrobo
         public FVRInteractiveObject reflexSightInterface;
         public MeshRenderer reticle;
 
-        [Tooltip("Switch that moves with the selected texture")]
-        public Transform buttonSwitch;
 
-        public Vector3[] switchPositions;
 
+        [Header("Reticle Settings")]
+        [Tooltip("All reticle textures. Default reticle is first entry.")]
         public Texture2D[] textures;
+        [Tooltip("Colors of all reticles. Default reticle name is first entry.")]
+        [ColorUsage(true, true, float.MaxValue, float.MaxValue, 0f, 0f)]
+        public Color[] reticleColors;
+        [Tooltip("Names of all reticles. Default reticle name is first entry.")]
+        public string[] reticleText;
 
         public int currentTexture = 0;
 
@@ -29,7 +33,7 @@ namespace Cityrobo
         public Text zeroTextScreen;
 
         public string reticleTestPrefix = "Reticle: ";
-        public string[] reticleText;
+
 
         public string zeroTextPrefix = "Zero Distance: ";
         [Tooltip("Index of the Array below, not the actual value")]
@@ -46,6 +50,11 @@ namespace Cityrobo
         [Tooltip("Use this for extra performant reticle occlusion culling")]
         public Collider lensCollider;
         public bool disableOcclusionCulling = false;
+
+        [Header("Moving Switch Settings")]
+        [Tooltip("Switch that moves with the selected texture")]
+        public Transform buttonSwitch;
+        public Vector3[] switchPositions;
 
         private FVRViveHand hand;
         private int currentMenu = 0;
@@ -66,8 +75,8 @@ namespace Cityrobo
         private Vector3 rightEye;
         public void Start()
         {
-            if (currentTexture >= textures.Length) currentTexture = 0;
-            if (currentZeroDistance >= zeroDistances.Length) currentZeroDistance = 0;
+            if (currentTexture >= textures.Length || currentTexture < 0) currentTexture = 0;
+            if (currentZeroDistance >= zeroDistances.Length || currentZeroDistance < 0) currentZeroDistance = 0;
             if (textures.Length != 0) reticle.material.SetTexture(nameOfTexture, textures[currentTexture]);
             reticle.material.SetFloat(nameOfDistanceVariable, zeroDistances[currentZeroDistance]);
             //lens.material.SetFloat(nameOfDotSizeVariable, dotSizeAt100mDistance * (zeroDistances[currentZeroDistance] / 100) );

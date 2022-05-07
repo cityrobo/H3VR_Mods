@@ -14,7 +14,7 @@ namespace Cityrobo
         {
             Translation,
             Rotation,
-            Tilt
+            Folding
         }
 		public Mode MovementMode = Mode.Translation;
 
@@ -97,7 +97,7 @@ namespace Cityrobo
 							break;
 					}
 					break;
-                case Mode.Tilt:
+                case Mode.Folding:
 					switch (MovementAxis)
 					{
 						case Axis.X:
@@ -117,7 +117,7 @@ namespace Cityrobo
                     break;
             }
 
-            if (MovementMode == Mode.Rotation || MovementMode == Mode.Tilt)
+            if (MovementMode == Mode.Rotation || MovementMode == Mode.Folding)
             {
 				if (UpperLimit >= 180f) UpperLimit = 180f - float.Epsilon;
 				if (LowerLimit <= -180f) LowerLimit = -180f + float.Epsilon;
@@ -143,8 +143,8 @@ namespace Cityrobo
                 case Mode.Rotation:
 					RotationMode(hand);
                     break;
-                case Mode.Tilt:
-                    TiltMode(hand);
+                case Mode.Folding:
+                    FoldingMode(hand);
                     break;
                 default:
                     break;
@@ -335,7 +335,7 @@ namespace Cityrobo
 			CheckSound(lerp);
         }
 
-		private void TiltMode(FVRViveHand hand)
+		private void FoldingMode(FVRViveHand hand)
 		{
 			Vector3 vector = base.m_handPos - this.StationaryRoot.position;
 			Vector3 lhs = new Vector3();

@@ -97,7 +97,6 @@
   <ItemGroup>
     <Compile Include="HandDependentPoseOverride.cs" />
     <Compile Include="MagPoseCycler.cs" />
-    <Compile Include="MagPoseCycler_BepInEx.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -107,6 +106,6 @@
   <PropertyGroup>
     <PostBuildEvent>if $(ConfigurationName) == MeatKit copy $(TargetPath) $(SolutionDir)Releases\MeatKit\$(TargetName).dll
 if $(ConfigurationName) == Debug copy $(TargetPath) $(SolutionDir)Releases\unity_code\$(TargetName).dll
-if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\$(TargetName).dll</PostBuildEvent>
+if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\OpenScripts\$(TargetName).dll</PostBuildEvent>
   </PropertyGroup>
 </Project>

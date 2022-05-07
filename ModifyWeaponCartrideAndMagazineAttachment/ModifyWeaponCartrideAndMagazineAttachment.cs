@@ -49,6 +49,7 @@ namespace Cityrobo
 
         private FireArmRoundType origRoundType;
         private FireArmMagazineType origMagType;
+
         private FVRFireArmRecoilProfile origRecoilProfile;
         private FVRFireArmRecoilProfile origRecoilProfileStocked;
 

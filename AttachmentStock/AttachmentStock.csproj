@@ -92,7 +92,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AttachmentStock_BepInEx.cs" />
     <Compile Include="AttachmentStock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -101,7 +100,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\Assembly-CSharp.$(TargetName).mm.dll
-if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\$(TargetName).dll</PostBuildEvent>
+    <PostBuildEvent>if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\OpenScriptsMonomod\Assembly-CSharp.$(TargetName).mm.dll
+if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\OpenScripts\$(TargetName).dll</PostBuildEvent>
   </PropertyGroup>
 </Project>

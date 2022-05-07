@@ -7,12 +7,12 @@ using BepInEx;
 
 namespace Cityrobo
 {
-    [BepInPlugin("h3vr.cityrobo.fg42_selectorswitch", "FG-42 Scripts", "1.0.0")]
+    [BepInPlugin("h3vr.cityrobo.FG42_SelectorSwitch", "FG-42 Scripts", "1.0.0")]
     class FG42_SelectorSwitch_BepInEx : BaseUnityPlugin
     {
         public FG42_SelectorSwitch_BepInEx()
         {
-            Logger.LogInfo("FG-42 Scripts loaded!");
+            //Logger.LogInfo("FG-42 Scripts loaded!");
         }
     }
 }

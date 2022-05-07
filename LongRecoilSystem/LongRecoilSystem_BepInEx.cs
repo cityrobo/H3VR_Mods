@@ -7,12 +7,12 @@ using BepInEx;
 
 namespace Cityrobo
 {
-    [BepInPlugin("h3vr.cityrobo.openscripts.long_recoil_system", "OpenScripts: LongRecoilSystem Script", "1.0.0")]
+    [BepInPlugin("h3vr.cityrobo.openscripts.LongRecoilSystem", "OpenScripts: LongRecoilSystem Script", "1.0.0")]
     class LongRecoilSystem_BepInEx : BaseUnityPlugin
     {
         public LongRecoilSystem_BepInEx()
         {
-            Logger.LogInfo("OpenScripts: LongRecoilSystem Script loaded!");
+            //Logger.LogInfo("OpenScripts: LongRecoilSystem Script loaded!");
         }
     }
 }

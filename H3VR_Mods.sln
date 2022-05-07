@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31229.75
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32407.343
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SwitchBlade", "SwitchBlade\SwitchBlade.csproj", "{8937393D-75F3-4D80-8CA4-25D652985015}"
 EndProject
@@ -95,21 +95,25 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpectatorPreconfigurator", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LongRecoilSystem", "LongRecoilSystem\LongRecoilSystem.csproj", "{A884ED99-57D2-4F6B-AF43-06CC44340FC0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSC_MagazineFollower", "..\Code_Commissions\RSC-MagazineFollower\RSC_MagazineFollower.csproj", "{78A38910-4F5C-417D-9D32-1F5BF820BA60}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeatyPages", "MeatyPages\MeatyPages.csproj", "{6611FE91-3E6D-4E72-8581-926F9D531C5B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MagazineScripts", "MagazineScripts\MagazineScripts.csproj", "{F69E0DA0-7CA5-44F7-AD21-E51D241ED7B2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrefabReplacer", "PrefabReplacer\PrefabReplacer.csproj", "{8E428AC3-3929-4F64-9D71-D7B4C0F91D22}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeatBeatScanner", "..\Code_Commissions\MeatBeatScanner\MeatBeatScanner.csproj", "{3F33C54A-7BCB-4398-8643-82AB4C47C6F8}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RifleGrenadeAdapter", "RifleGrenadeAdapter\RifleGrenadeAdapter.csproj", "{A88B3506-6EA0-4787-820C-71794BE18715}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HK_P7_SqueezeCocker", "HK_P7_SqueezeCocker\HK_P7_SqueezeCocker.csproj", "{63E1FEF7-B010-40C8-BFB8-06B246944917}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TriggerModification", "TriggerModification\TriggerModification.csproj", "{449775CF-4DBB-44C6-BC8E-C21370B3FD3A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenScriptsBepInEx", "OpenScriptsBepInEx\OpenScriptsBepInEx.csproj", "{3ABA2D0F-B136-4A9E-8519-E9AE7AF1224F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpenScripts", "OpenScripts\OpenScripts.csproj", "{5DCD3BEB-162C-4492-BA08-FD5832E28E5E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSC_MagazineFollower", "RSC-MagazineFollower\RSC_MagazineFollower.csproj", "{78A38910-4F5C-417D-9D32-1F5BF820BA60}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeatBeatScanner", "MeatBeatScanner\MeatBeatScanner.csproj", "{3F33C54A-7BCB-4398-8643-82AB4C47C6F8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -394,12 +398,6 @@ Global
 		{A884ED99-57D2-4F6B-AF43-06CC44340FC0}.MeatKit|Any CPU.Build.0 = MeatKit|Any CPU
 		{A884ED99-57D2-4F6B-AF43-06CC44340FC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A884ED99-57D2-4F6B-AF43-06CC44340FC0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{78A38910-4F5C-417D-9D32-1F5BF820BA60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{78A38910-4F5C-417D-9D32-1F5BF820BA60}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{78A38910-4F5C-417D-9D32-1F5BF820BA60}.MeatKit|Any CPU.ActiveCfg = MeatKit|Any CPU
-		{78A38910-4F5C-417D-9D32-1F5BF820BA60}.MeatKit|Any CPU.Build.0 = MeatKit|Any CPU
-		{78A38910-4F5C-417D-9D32-1F5BF820BA60}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{78A38910-4F5C-417D-9D32-1F5BF820BA60}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6611FE91-3E6D-4E72-8581-926F9D531C5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6611FE91-3E6D-4E72-8581-926F9D531C5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6611FE91-3E6D-4E72-8581-926F9D531C5B}.MeatKit|Any CPU.ActiveCfg = MeatKit|Any CPU
@@ -418,12 +416,6 @@ Global
 		{8E428AC3-3929-4F64-9D71-D7B4C0F91D22}.MeatKit|Any CPU.Build.0 = Debug|Any CPU
 		{8E428AC3-3929-4F64-9D71-D7B4C0F91D22}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8E428AC3-3929-4F64-9D71-D7B4C0F91D22}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3F33C54A-7BCB-4398-8643-82AB4C47C6F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3F33C54A-7BCB-4398-8643-82AB4C47C6F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3F33C54A-7BCB-4398-8643-82AB4C47C6F8}.MeatKit|Any CPU.ActiveCfg = Debug|Any CPU
-		{3F33C54A-7BCB-4398-8643-82AB4C47C6F8}.MeatKit|Any CPU.Build.0 = Debug|Any CPU
-		{3F33C54A-7BCB-4398-8643-82AB4C47C6F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3F33C54A-7BCB-4398-8643-82AB4C47C6F8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A88B3506-6EA0-4787-820C-71794BE18715}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A88B3506-6EA0-4787-820C-71794BE18715}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A88B3506-6EA0-4787-820C-71794BE18715}.MeatKit|Any CPU.ActiveCfg = MeatKit|Any CPU
@@ -442,6 +434,30 @@ Global
 		{449775CF-4DBB-44C6-BC8E-C21370B3FD3A}.MeatKit|Any CPU.Build.0 = MeatKit|Any CPU
 		{449775CF-4DBB-44C6-BC8E-C21370B3FD3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{449775CF-4DBB-44C6-BC8E-C21370B3FD3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3ABA2D0F-B136-4A9E-8519-E9AE7AF1224F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3ABA2D0F-B136-4A9E-8519-E9AE7AF1224F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3ABA2D0F-B136-4A9E-8519-E9AE7AF1224F}.MeatKit|Any CPU.ActiveCfg = MeatKit|Any CPU
+		{3ABA2D0F-B136-4A9E-8519-E9AE7AF1224F}.MeatKit|Any CPU.Build.0 = MeatKit|Any CPU
+		{3ABA2D0F-B136-4A9E-8519-E9AE7AF1224F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3ABA2D0F-B136-4A9E-8519-E9AE7AF1224F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5DCD3BEB-162C-4492-BA08-FD5832E28E5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DCD3BEB-162C-4492-BA08-FD5832E28E5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DCD3BEB-162C-4492-BA08-FD5832E28E5E}.MeatKit|Any CPU.ActiveCfg = MeatKit|Any CPU
+		{5DCD3BEB-162C-4492-BA08-FD5832E28E5E}.MeatKit|Any CPU.Build.0 = MeatKit|Any CPU
+		{5DCD3BEB-162C-4492-BA08-FD5832E28E5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DCD3BEB-162C-4492-BA08-FD5832E28E5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78A38910-4F5C-417D-9D32-1F5BF820BA60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78A38910-4F5C-417D-9D32-1F5BF820BA60}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78A38910-4F5C-417D-9D32-1F5BF820BA60}.MeatKit|Any CPU.ActiveCfg = MeatKit|Any CPU
+		{78A38910-4F5C-417D-9D32-1F5BF820BA60}.MeatKit|Any CPU.Build.0 = MeatKit|Any CPU
+		{78A38910-4F5C-417D-9D32-1F5BF820BA60}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78A38910-4F5C-417D-9D32-1F5BF820BA60}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3F33C54A-7BCB-4398-8643-82AB4C47C6F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F33C54A-7BCB-4398-8643-82AB4C47C6F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3F33C54A-7BCB-4398-8643-82AB4C47C6F8}.MeatKit|Any CPU.ActiveCfg = Debug|Any CPU
+		{3F33C54A-7BCB-4398-8643-82AB4C47C6F8}.MeatKit|Any CPU.Build.0 = Debug|Any CPU
+		{3F33C54A-7BCB-4398-8643-82AB4C47C6F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3F33C54A-7BCB-4398-8643-82AB4C47C6F8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

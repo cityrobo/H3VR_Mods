@@ -99,7 +99,6 @@
     <Compile Include="MagazineCutoff_Auto5.cs" />
     <Compile Include="MagazineCutoff.cs" />
     <Compile Include="ForceMagazineMountingToMagMountPos.cs" />
-    <Compile Include="MagazineScripts_BepInEx.cs" />
     <Compile Include="MagSafety.cs" />
     <Compile Include="AutomaticStripperClip.cs" />
     <Compile Include="MultiCaliberMagazine.cs" />
@@ -110,8 +109,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\Assembly-CSharp.$(TargetName).mm.dll
-if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\$(TargetName).dll
+    <PostBuildEvent>if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\OpenScriptsMonomod\Assembly-CSharp.$(TargetName).mm.dll
+if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\OpenScripts\$(TargetName).dll
 if $(ConfigurationName) == MeatKit copy $(TargetPath) $(SolutionDir)Releases\MeatKit\$(TargetName).dll</PostBuildEvent>
   </PropertyGroup>
 </Project>

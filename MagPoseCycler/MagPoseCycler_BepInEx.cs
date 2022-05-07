@@ -7,12 +7,12 @@ using BepInEx;
 
 namespace Cityrobo
 {
-    [BepInPlugin("h3vr.cityrobo.openscripts.mag_pose_cycler", "OpenScripts: MagPoseCycler Script", "1.0.0")]
+    [BepInPlugin("h3vr.cityrobo.openscripts.MagPoseCycler", "OpenScripts: MagPoseCycler Script", "1.0.0")]
     class MagPoseCycler_BepInEx : BaseUnityPlugin
     {
         public MagPoseCycler_BepInEx()
         {
-            Logger.LogInfo("OpenScripts: MagPoseCycler Script loaded!");
+            //Logger.LogInfo("OpenScripts: MagPoseCycler Script loaded!");
         }
     }
 }

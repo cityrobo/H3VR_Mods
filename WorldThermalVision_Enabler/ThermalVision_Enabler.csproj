@@ -102,8 +102,8 @@
     <Compile Include="HeatingUpAttachmentPart.cs" />
     <Compile Include="HeatingUpWeaponPart.cs" />
     <Compile Include="StaticExtras.cs" />
-    <Compile Include="ThermalBody_BepInEx.cs" />
-    <Compile Include="ThermalBody_Hooks.cs" />
+    <Compile Include="ThermalVision_BepInEx.cs" />
+    <Compile Include="ThermalVision_Hooks.cs" />
     <Compile Include="ThermalBody.cs" />
     <Compile Include="ThermalVisionMode.cs" />
     <Compile Include="ThermalVision_Enabler_World.cs" />
@@ -117,6 +117,6 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if $(ConfigurationName) == Debug copy $(TargetPath) $(SolutionDir)Releases\unity_code\$(TargetName).dll
-if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\$(TargetName).dll</PostBuildEvent>
+if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\OpenScripts\$(TargetName).dll</PostBuildEvent>
   </PropertyGroup>
 </Project>

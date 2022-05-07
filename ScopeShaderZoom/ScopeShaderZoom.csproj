@@ -93,7 +93,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ScopeShaderLinearZoom.cs" />
-    <Compile Include="ScopeShaderZoom_BepInEx.cs" />
     <Compile Include="ScopeShaderZoom.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScopeZoomRotate.cs" />
@@ -104,6 +103,6 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if $(ConfigurationName) == Debug copy $(TargetPath) $(SolutionDir)Releases\unity_code\$(TargetName).dll
-if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\$(TargetName).dll</PostBuildEvent>
+if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\OpenScripts\$(TargetName).dll</PostBuildEvent>
   </PropertyGroup>
 </Project>

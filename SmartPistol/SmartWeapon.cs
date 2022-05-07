@@ -25,12 +25,21 @@ namespace Cityrobo
 		public bool DoesRandomRotationOfBarrelForCinematicBulletTrails = true;
 		public float RandomAngleMagnitude = 5f;
 
-		[Tooltip("Use this if you want the last target to stay locked on for a certain period. good for shooting around corners!")]
+		[Tooltip("Use this if you want the last target to stay locked on for a certain period. Good for shooting around corners!")]
 		public float LastTargetTimeout = 1f;
+
+		[HideInInspector]
+		public bool WasManuallyAdded = false;
+
+		[HideInInspector]
+		public SmartProjectile.SmartProjectileData ProjectileData;
+
+		[HideInInspector]
+		public float BulletVelocityModifier = 1f;
 		//constants
 		private const string _nameOfDistanceVariable = "_RedDotDist";
 
-		private Rigidbody _lastTarget;
+		private SosigLink _lastTarget;
 
 		private GameObject _origMuzzlePos;
 
@@ -89,21 +98,34 @@ namespace Cityrobo
 					if (chamber.GetRound().BallisticProjectilePrefab != null)
 					{
 						Vector3 b = muzzle.forward * 0.005f;
-						GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(chamber.GetRound().BallisticProjectilePrefab, muzzle.position - b, muzzle.rotation);
+						GameObject gameObject = Instantiate(chamber.GetRound().BallisticProjectilePrefab, muzzle.position - b, muzzle.rotation);
 						Vector2 vector2 = (UnityEngine.Random.insideUnitCircle + UnityEngine.Random.insideUnitCircle + UnityEngine.Random.insideUnitCircle) * 0.33333334f * d;
 						gameObject.transform.Rotate(new Vector3(vector2.x + vector.y + num, vector2.y + vector.x, 0f));
 						BallisticProjectile component = gameObject.GetComponent<BallisticProjectile>();
-						component.Fire(component.MuzzleVelocityBase * chamber.ChamberVelocityMultiplier * velMult * chamberVelMult, gameObject.transform.forward, self, true);
+
+						float baseVelocity = component.MuzzleVelocityBase * chamber.ChamberVelocityMultiplier * velMult * chamberVelMult;
+						component.Fire(baseVelocity * BulletVelocityModifier, gameObject.transform.forward, self, true);
 
 						SmartProjectile smartProjectile = gameObject.GetComponent<SmartProjectile>();
-                        if (smartProjectile != null)
+						if (smartProjectile == null && WasManuallyAdded)
+						{
+							smartProjectile = gameObject.AddComponent<SmartProjectile>();
+							smartProjectile.Projectile = component;
+							smartProjectile.ConfigureFromData(ProjectileData);
+						}
+						if (smartProjectile != null)
                         {
-							smartProjectile.TargetRB = _lastTarget;
+							smartProjectile.TargetLink = _lastTarget;
                         }
 						if (rangeOverride > 0f)
 						{
 							component.ForceSetMaxDist(rangeOverride);
 						}
+                        if (BulletVelocityModifier != 1f)
+                        {
+							component.Mass = (Mathf.Pow(baseVelocity, 2f) * component.Mass) / Mathf.Pow(baseVelocity * BulletVelocityModifier, 2f);
+						}
+						
 					}
 				}
 			}
@@ -114,7 +136,7 @@ namespace Cityrobo
         {
             if (FireArm.IsHeld)
             {
-				Rigidbody _target = FindTarget();
+				SosigLink _target = FindTarget();
 
 				if (_target != null)
                 {
@@ -135,8 +157,8 @@ namespace Cityrobo
 
 				if (_lastTarget != null && ReticleMesh != null)
                 {
-					ReticleMesh.transform.LookAt(_lastTarget.position);
-					ReticleMesh.material.SetFloat(_nameOfDistanceVariable, Vector3.Distance(_lastTarget.position, ReticleMesh.transform.position));
+					ReticleMesh.transform.LookAt(_lastTarget.transform.position);
+					ReticleMesh.material.SetFloat(_nameOfDistanceVariable, Vector3.Distance(_lastTarget.transform.position, ReticleMesh.transform.position));
 					if (DisableReticleWithoutTarget) ReticleMesh.gameObject.SetActive(true);
 				}
 				else if (_lastTarget == null && ReticleMesh != null)
@@ -164,7 +186,7 @@ namespace Cityrobo
 			_lastTarget = null;
         }
 
-		private Rigidbody FindTarget()
+		private SosigLink FindTarget()
         {
 			float radius = EngageRange * Mathf.Tan(0.5f * EngageAngle * Mathf.Deg2Rad);
 			Collider[] colliderArray = Physics.OverlapCapsule(FireArm.CurrentMuzzle.position, FireArm.CurrentMuzzle.position + _origMuzzlePos.transform.forward * EngageRange, radius, LatchingMask);
@@ -203,7 +225,7 @@ namespace Cityrobo
 				}
 
 			}
-			return targetSosigLink.R;
+			return targetSosigLink;
 		}
 #endif
 	}

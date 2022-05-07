@@ -96,7 +96,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MagazineTape_BepInEx.cs" />
     <Compile Include="MagazineTapeMK2.cs" />
     <Compile Include="Magazine_Tape.cs" />
     <Compile Include="Magazine_Tape_Proxy.cs" />
@@ -109,6 +108,6 @@
   <PropertyGroup>
     <PostBuildEvent>if $(ConfigurationName) == MeatKit copy $(TargetPath) $(SolutionDir)Releases\MeatKit\$(TargetName).dll
 if $(ConfigurationName) == Debug copy $(TargetPath) $(SolutionDir)Releases\unity_code\$(TargetName).dll
-if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\$(TargetName).dll</PostBuildEvent>
+if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\OpenScripts\$(TargetName).dll</PostBuildEvent>
   </PropertyGroup>
 </Project>

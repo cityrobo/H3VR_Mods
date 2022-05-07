@@ -49,6 +49,7 @@ public class ThermalBody : MonoBehaviour {
 						{
 							if (material != null)
 							{
+								if (material.renderQueue != 2000) continue;
 								if (MaximumTemperature > 0.3f)
 								{
 									material.SetOverrideTag("Thermal", "Hot");

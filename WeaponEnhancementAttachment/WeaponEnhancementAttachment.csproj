@@ -95,7 +95,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="WeaponEnhancementAttachment_BepInEx.cs" />
     <Compile Include="RecoilPercentage.cs" />
     <Compile Include="WeaponEnhancementAttachment.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -105,7 +104,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy $(TargetPath) $(SolutionDir)Releases\Assembly-CSharp.$(TargetName).mm.dll
-copy $(TargetPath) $(SolutionDir)Releases\$(TargetName).dll</PostBuildEvent>
+    <PostBuildEvent>copy $(TargetPath) $(SolutionDir)Releases\OpenScriptsMonomod\Assembly-CSharp.$(TargetName).mm.dll
+copy $(TargetPath) $(SolutionDir)Releases\OpenScripts\$(TargetName).dll</PostBuildEvent>
   </PropertyGroup>
 </Project>

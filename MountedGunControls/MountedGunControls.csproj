@@ -106,7 +106,6 @@
   <ItemGroup>
     <Compile Include="AttachableGunControls_ClosedBolt.cs" />
     <Compile Include="AttachableGunControls_OpenBolt.cs" />
-    <Compile Include="MountedGunControls_BepInEx.cs" />
     <Compile Include="MountedGunControls_ClosedBolt.cs" />
     <Compile Include="MountedGunControls.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -117,6 +116,6 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if $(ConfigurationName) == Debug copy $(TargetPath) $(SolutionDir)Releases\unity_code\$(TargetName).dll
-if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\$(TargetName).dll</PostBuildEvent>
+if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\OpenScripts\$(TargetName).dll</PostBuildEvent>
   </PropertyGroup>
 </Project>

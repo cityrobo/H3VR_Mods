@@ -34,6 +34,7 @@ namespace Cityrobo
             public FVRFireArmMechanicalAccuracyClass accuracyClass;
             public FVRFireArmRecoilProfile recoilProfile;
             public FVRFireArmRecoilProfile recoilProfileStocked;
+            [Tooltip("Only replaces firing sounds!")]
             public FVRFirearmAudioSet ReplacementFiringSounds;
             public FVRObject objectWrapper;
         }
@@ -57,6 +58,7 @@ namespace Cityrobo
         public FVRFireArmMechanicalAccuracyClass[] accuracyClasses;
         public FVRFireArmRecoilProfile[] recoilProfiles;
         public FVRFireArmRecoilProfile[] recoilProfilesStocked;
+        [Tooltip("Only replaces firing sounds!")]
         public FVRFirearmAudioSet[] ReplacementFiringSoundss;
         public FVRObject[] objectWrappers;
 
@@ -66,9 +68,13 @@ namespace Cityrobo
         private List<CaliberDefinition> _caliberDefinitionsList;
 
         private FVRFireArmMechanicalAccuracyClass _origAccuracyClass;
+
         private FVRFireArmRecoilProfile _origRecoilProfile;
         private FVRFireArmRecoilProfile _origRecoilProfileStocked;
-        private FVRFirearmAudioSet _origAudioSet;
+
+        private AudioEvent _origFiringSounds;
+        private AudioEvent _origSuppressedSounds;
+        private AudioEvent _origLowPressureSounds;
 
         private bool _isDebug = true;
 
@@ -161,9 +167,13 @@ namespace Cityrobo
                 _fireArm = magazine.FireArm;
 
                 _origAccuracyClass = _fireArm.AccuracyClass;
+
                 _origRecoilProfile = _fireArm.RecoilProfile;
                 _origRecoilProfileStocked = _fireArm.RecoilProfileStocked;
-                _origAudioSet = Instantiate(_fireArm.AudioClipSet);
+
+                _origFiringSounds = _fireArm.AudioClipSet.Shots_Main;
+                _origSuppressedSounds = _fireArm.AudioClipSet.Shots_Suppressed;
+                _origLowPressureSounds = _fireArm.AudioClipSet.Shots_LowPressure;
 
                 if (_caliberDefinitionsList[currentCaliberDefinition].accuracyClass != FVRFireArmMechanicalAccuracyClass.None)
                     _fireArm.AccuracyClass = _caliberDefinitionsList[currentCaliberDefinition].accuracyClass;
@@ -180,7 +190,10 @@ namespace Cityrobo
                 _fireArm.AccuracyClass = _origAccuracyClass;
                 _fireArm.RecoilProfile = _origRecoilProfile;
                 _fireArm.RecoilProfileStocked = _origRecoilProfileStocked;
-                _fireArm.AudioClipSet = _origAudioSet;
+
+                _fireArm.AudioClipSet.Shots_Main = _origFiringSounds;
+                _fireArm.AudioClipSet.Shots_Suppressed = _origSuppressedSounds;
+                _fireArm.AudioClipSet.Shots_LowPressure = _origLowPressureSounds;
 
                 _fireArm = null;
             }

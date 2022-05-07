@@ -20,12 +20,16 @@ namespace Cityrobo
         public Text zeroText;
         public Text elevationText;
         public Text windageText;
+        [Tooltip("The existence of this text enables the reticle change functionality")]
+        public Text reticleText;
+
         public GameObject textFrame;
 
         public string zoomPrefix = "Zoom: ";
         public string zeroPrefix = "Zero Distance: ";
         public string elevationPrefix = "Elevation: ";
         public string windagePrefix = "Windage: ";
+        public string reticlePrefix = "Reticle: ";
 
         public int ZeroDistanceIndex = 0;
         public List<float> ZeroDistances = new List<float>()
@@ -71,16 +75,14 @@ namespace Cityrobo
         public bool isIntegrated = false;
         public FVRFireArm firearm = null;
         [Header("Reticle Change Settings")]
-        [Tooltip("The existence of this text enables the reticle change functionality")]
-        public Text reticleText;
-        public string reticlePrefix = "Reticle: ";
-        [Tooltip("Additional reticles. Default reticle is first entry.")]
+        [Tooltip("All reticle textures. Default reticle is first entry.")]
         public List<Texture2D> reticles;
-        [Tooltip("Names of additional reticles. Default reticle name is first entry.")]
-        public string[] reticleName;
-        [Tooltip("Additional reticle colors. Default reticle color is first entry.")]
+        [Tooltip("Colors of all reticles. Default reticle name is first entry.")]
         public List<Color> reticleColors;
-
+        [ColorUsage(true, true, float.MaxValue, float.MaxValue, 0f, 0f)]
+        [Tooltip("Names of all reticles. Default reticle name is first entry.")]
+        public string[] reticleName;
+        
         public int currentReticle = 0;
 
         [Tooltip("This enables the very specialized reticle change system.")]
@@ -88,46 +90,46 @@ namespace Cityrobo
         [Tooltip("Starts with default reticle, than all default reticle variants for the following zoom levels. Next entries are additional reticles and their according zoom levels, all ordered by zoom level and grouped by reticle type.")]
         public List<Texture2D> additionalReticlesPerZoomLevel;
 
-        private List<float> CorrespondingCameraFOV;
+        private List<float> _correspondingCameraFOV;
 
-        private bool hasZoomText;
-        private RenderTexture renderTexture;
+        private bool _hasZoomText;
+        private RenderTexture _renderTexture;
 
-        private FVRFireArmAttachment Attachment;
+        private FVRFireArmAttachment _attachment;
 
-        private float ElevationStep;
-        private float WindageStep;
+        private float _elevationStep;
+        private float _windageStep;
 
-        private int currentMenu;
-        private bool initialZero = false;
+        private int _currentMenu;
+        private bool _initialZero = false;
 
-        private float baseReticleSize;
+        private float _baseReticleSize;
 
         
 
         public void Start()
         {
-            CorrespondingCameraFOV = new List<float>();
-            if (canvas != null) hasZoomText = true;
-            else hasZoomText = false;
+            _correspondingCameraFOV = new List<float>();
+            if (canvas != null) _hasZoomText = true;
+            else _hasZoomText = false;
 
             for (int i = 0; i < ZoomFactor.Count; i++)
             {
                 //CorrespondingCameraFOV.Add(53.7f * Mathf.Pow(ZoomFactor[i], -0.9284f) - 0.5035f);
                 //CorrespondingCameraFOV.Add(54.3f * Mathf.Pow(ZoomFactor[i], -0.9613f) - 0.1378f);
                 float zoomValue = 53.6f * Mathf.Pow(ZoomFactor[i], -0.9364f) - 0.3666f;
-                CorrespondingCameraFOV.Add(zoomValue);
+                _correspondingCameraFOV.Add(zoomValue);
             }
 
 
-            renderTexture = camera.targetTexture;
-            renderTexture = RenderTexture.Instantiate(renderTexture);
-            camera.targetTexture = renderTexture;
-            scopeLens.material.mainTexture = renderTexture;
+            _renderTexture = camera.targetTexture;
+            _renderTexture = RenderTexture.Instantiate(_renderTexture);
+            camera.targetTexture = _renderTexture;
+            scopeLens.material.mainTexture = _renderTexture;
 
             if (doesZoomAffectReticle)
             {
-                baseReticleSize = scopeLens.material.GetFloat("_ReticleScale");
+                _baseReticleSize = scopeLens.material.GetFloat("_ReticleScale");
             }
 
             SetZoom();
@@ -136,14 +138,14 @@ namespace Cityrobo
 
             if (!isIntegrated && attachmentInterface != null)
             {
-                Attachment = attachmentInterface.Attachment;
+                _attachment = attachmentInterface.Attachment;
             }
             else if (!isIntegrated)
             {
-                Attachment = this.gameObject.GetComponent<FVRFireArmAttachment>();
+                _attachment = this.gameObject.GetComponent<FVRFireArmAttachment>();
             }
 
-            if (!isIntegrated && Attachment == null) Debug.LogWarning("Attachment not found. Scope zeroing disabled!");
+            if (!isIntegrated && _attachment == null) Debug.LogWarning("Attachment not found. Scope zeroing disabled!");
 
             UpdateMenu();
 
@@ -155,17 +157,17 @@ namespace Cityrobo
 #endif
             if (text == null) 
             { 
-                currentMenu++;
+                _currentMenu++;
                 if (zeroText == null)
                 {
-                    currentMenu++;
+                    _currentMenu++;
                     if (elevationText == null)
                     {
-                        currentMenu++;
+                        _currentMenu++;
                         if (windageText == null)
                         {
-                            currentMenu = 0;
-                            hasZoomText = false;
+                            _currentMenu = 0;
+                            _hasZoomText = false;
                         }
                     }
                 }
@@ -200,51 +202,51 @@ namespace Cityrobo
         }
         public void OnDestroy()
         {
-            Destroy(renderTexture);
+            Destroy(_renderTexture);
         }
 #if !DEBUG
         public void Update()
         {
             FVRViveHand hand = AttachmentInterface.m_hand;
-            if (hasZoomText && hand != null)
+            if (_hasZoomText && hand != null)
             {
                 if (hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.up) < 45f) NextMenu();
-                else if (currentMenu == 0 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.left) < 45f) PreviousZoom();
-                else if (currentMenu == 0 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.right) < 45f) NextZoom();
-                else if (currentMenu == 1 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.left) < 45f) PreviousZero();
-                else if (currentMenu == 1 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.right) < 45f) NextZero();
-                else if (currentMenu == 2 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.left) < 45f) DecreaseElevationAdjustment();
-                else if (currentMenu == 2 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.right) < 45f) IncreaseElevationAdjustment();
-                else if (currentMenu == 3 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.left) < 45f) DecreaseWindageAdjustment();
-                else if (currentMenu == 3 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.right) < 45f) IncreaseWindageAdjustment();
-                else if (currentMenu == 4 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.left) < 45f) PreviousReticle();
-                else if (currentMenu == 4 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.right) < 45f) NextReticle();
+                else if (_currentMenu == 0 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.left) < 45f) PreviousZoom();
+                else if (_currentMenu == 0 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.right) < 45f) NextZoom();
+                else if (_currentMenu == 1 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.left) < 45f) PreviousZero();
+                else if (_currentMenu == 1 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.right) < 45f) NextZero();
+                else if (_currentMenu == 2 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.left) < 45f) DecreaseElevationAdjustment();
+                else if (_currentMenu == 2 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.right) < 45f) IncreaseElevationAdjustment();
+                else if (_currentMenu == 3 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.left) < 45f) DecreaseWindageAdjustment();
+                else if (_currentMenu == 3 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.right) < 45f) IncreaseWindageAdjustment();
+                else if (_currentMenu == 4 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.left) < 45f) PreviousReticle();
+                else if (_currentMenu == 4 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.right) < 45f) NextReticle();
 
                 canvas.gameObject.SetActive(true);
             }
-            else if (hasZoomText) canvas.gameObject.SetActive(false);
+            else if (_hasZoomText) canvas.gameObject.SetActive(false);
 
             if (!activeWithoutMount)
             {
-                if (Attachment != null && Attachment.curMount != null) ScopeEnabled(true);
-                else if (Attachment != null && Attachment.curMount == null) ScopeEnabled(false);
+                if (_attachment != null && _attachment.curMount != null) ScopeEnabled(true);
+                else if (_attachment != null && _attachment.curMount == null) ScopeEnabled(false);
                 else ScopeEnabled(true);
             }
 
-            if (!initialZero && Attachment != null && Attachment.curMount != null)
+            if (!_initialZero && _attachment != null && _attachment.curMount != null)
             {
                 Zero();
-                initialZero = true;
+                _initialZero = true;
             }
-            else if (initialZero && Attachment != null && Attachment.curMount == null)
+            else if (_initialZero && _attachment != null && _attachment.curMount == null)
             {
                 Zero();
-                initialZero = false;
+                _initialZero = false;
             }
-            else if (!initialZero && isIntegrated)
+            else if (!_initialZero && isIntegrated)
             {
                 Zero();
-                initialZero = true;
+                _initialZero = true;
             }
         }
 #endif
@@ -268,11 +270,11 @@ namespace Cityrobo
 
         public void SetZoom()
         {
-            camera.fieldOfView = CorrespondingCameraFOV[currentZoomIndex];
+            camera.fieldOfView = _correspondingCameraFOV[currentZoomIndex];
 
             if (doesZoomAffectReticle)
             {
-                scopeLens.material.SetFloat("_ReticleScale", baseReticleSize * ZoomFactor[currentZoomIndex]/ZoomFactor[0]);
+                scopeLens.material.SetFloat("_ReticleScale", _baseReticleSize * ZoomFactor[currentZoomIndex]/ZoomFactor[0]);
             }
 
             if (hasRotatingBit)
@@ -314,26 +316,26 @@ namespace Cityrobo
 
         public void IncreaseElevationAdjustment()
         {
-            ElevationStep += elevationIncreasePerClick;
+            _elevationStep += elevationIncreasePerClick;
             Zero();
             UpdateMenu();
         }
         public void DecreaseElevationAdjustment()
         {
-            ElevationStep -= elevationIncreasePerClick;
+            _elevationStep -= elevationIncreasePerClick;
             Zero();
             UpdateMenu();
         }
 
         public void IncreaseWindageAdjustment()
         {
-            WindageStep += windageIncreasePerClick;
+            _windageStep += windageIncreasePerClick;
             Zero();
             UpdateMenu();
         }
         public void DecreaseWindageAdjustment()
         {
-            WindageStep -= windageIncreasePerClick;
+            _windageStep -= windageIncreasePerClick;
             Zero();
             UpdateMenu();
         }
@@ -357,11 +359,11 @@ namespace Cityrobo
         {
             if (text == null && zeroText == null && elevationText == null && windageText == null)
                 return;
-            currentMenu++;
+            _currentMenu++;
 
-            if (currentMenu >= 5) currentMenu = 0;
+            if (_currentMenu >= 5) _currentMenu = 0;
 
-            switch (currentMenu)
+            switch (_currentMenu)
             {
                 case 0:
                     if (text == null)
@@ -408,7 +410,7 @@ namespace Cityrobo
         public void UpdateMenu()
         {
             if (textFrame != null)
-                switch (currentMenu)
+                switch (_currentMenu)
                 {
                     case 0:
                         if (text == null) break;
@@ -436,16 +438,16 @@ namespace Cityrobo
 
             if (text != null) text.text = zoomPrefix + ZoomFactor[currentZoomIndex] + "x";
             if (zeroText != null) zeroText.text = zeroPrefix + ZeroDistances[ZeroDistanceIndex] + "m";
-            if (elevationText != null) elevationText.text = elevationPrefix + ElevationStep + " MOA";
-            if (windageText != null) windageText.text = windagePrefix + WindageStep + " MOA";
+            if (elevationText != null) elevationText.text = elevationPrefix + _elevationStep + " MOA";
+            if (windageText != null) windageText.text = windagePrefix + _windageStep + " MOA";
             if (reticleText != null) reticleText.text = reticlePrefix + reticleName[currentReticle];
         }
         public void Zero()
         {
 #if !Debug
-            if (isIntegrated || (this.Attachment != null && this.Attachment.curMount != null && this.Attachment.curMount.Parent != null && this.Attachment.curMount.Parent is FVRFireArm))
+            if (isIntegrated || (this._attachment != null && this._attachment.curMount != null && this._attachment.curMount.Parent != null && this._attachment.curMount.Parent is FVRFireArm))
             {
-                if (!isIntegrated) firearm = this.Attachment.curMount.Parent as FVRFireArm;
+                if (!isIntegrated) firearm = this._attachment.curMount.Parent as FVRFireArm;
 
                 if (isIntegrated && firearm == null) Debug.LogError("ScopeShaderZoom: FireArm not set on integrated Scope! Can't zero sight!");
 
@@ -456,8 +458,8 @@ namespace Cityrobo
                     num = AM.SRoundDisplayDataDic[roundType].BulletDropCurve.Evaluate(zeroDistance * (1f / 1000f));
                 Vector3 p = firearm.MuzzlePos.position + firearm.GetMuzzle().forward * zeroDistance + firearm.GetMuzzle().up * num;
                 Vector3 vector3_1 = Vector3.ProjectOnPlane(p - this.transform.forward, this.transform.right);
-                Vector3 vector3_2 = Quaternion.AngleAxis(this.ElevationStep /60f, this.transform.right) * vector3_1;
-                Vector3 forward = Quaternion.AngleAxis(this.WindageStep / 60f, this.transform.up) * vector3_2;
+                Vector3 vector3_2 = Quaternion.AngleAxis(this._elevationStep /60f, this.transform.right) * vector3_1;
+                Vector3 forward = Quaternion.AngleAxis(this._windageStep / 60f, this.transform.up) * vector3_2;
 
 
                 Vector3 projected_p = Vector3.ProjectOnPlane(p, this.transform.right) + Vector3.Dot(this.transform.position, this.transform.right) * this.transform.right;
@@ -465,7 +467,7 @@ namespace Cityrobo
                 //this.TargetAimer.rotation = Quaternion.LookRotation(forward, this.transform.up);
                 //this.camera.transform.rotation = Quaternion.LookRotation(Vector3.ProjectOnPlane(forward - camera.transform.position, camera.transform.right), camera.transform.up);// PointTowards(p);
                 this.camera.transform.LookAt(projected_p, this.transform.up);
-                this.camera.transform.localEulerAngles += new Vector3(-this.ElevationStep / 60f, this.WindageStep / 60f, 0);
+                this.camera.transform.localEulerAngles += new Vector3(-this._elevationStep / 60f, this._windageStep / 60f, 0);
                 //this.camera.transform.Rotate(new Vector3(-this.ElevationStep / 60f, this.WindageStep / 60f, 0));
 
                 //this.camera.transform.LookAt(forward);
@@ -485,7 +487,7 @@ namespace Cityrobo
             else
             {
                 camera.gameObject.SetActive(false);
-                RenderTexture.active = renderTexture;
+                RenderTexture.active = _renderTexture;
                 GL.Clear(false, true, Color.black);
                 RenderTexture.active = (RenderTexture) null;
             }

@@ -12,7 +12,7 @@ namespace Cityrobo
     {
         public AttachmentMountParentToThis_BepInEx()
         {
-            Logger.LogInfo("OpenScripts: AttachmentMountParentToThis loaded!");
+            //Logger.LogInfo("OpenScripts: AttachmentMountParentToThis loaded!");
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Cityrobo
     {
         public FO4_LaserRifle_BepInEx()
         {
-            Logger.LogInfo("Fallout 4 LaserRifle Scripts loaded!");
+            //Logger.LogInfo("Fallout 4 LaserRifle Scripts loaded!");
         }
     }
 }

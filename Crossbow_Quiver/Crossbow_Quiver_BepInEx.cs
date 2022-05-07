@@ -12,7 +12,7 @@ namespace Cityrobo
     {
         public Crossbow_Quiver_BepInEx()
         {
-            Logger.LogInfo("Crossbow Quiver Scripts loaded!");
+            //Logger.LogInfo("Crossbow Quiver Scripts loaded!");
         }
     }
 }

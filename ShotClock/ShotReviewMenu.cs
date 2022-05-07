@@ -110,7 +110,7 @@ namespace ShotTimer
 		}
 		private void OnEnable()
 		{
-			Debug.Log("ShotReviewMenu: Start!");
+			//Debug.Log("ShotReviewMenu: Start!");
 			this.StartCoroutine("Run");
 		}
 	}

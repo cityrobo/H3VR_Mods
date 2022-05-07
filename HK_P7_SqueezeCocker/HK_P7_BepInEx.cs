@@ -12,7 +12,7 @@ namespace Cityrobo
     {
         public HK_P7_BepInEx()
         {
-            Logger.LogInfo("Heckler&Koch P7 Script loaded!");
+           //Logger.LogInfo("Heckler&Koch P7 Script loaded!");
         }
     }
 }

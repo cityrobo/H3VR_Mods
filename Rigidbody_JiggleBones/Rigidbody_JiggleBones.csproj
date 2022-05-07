@@ -95,7 +95,6 @@
     <Compile Include="JiggleBonesMK2.cs" />
     <Compile Include="JiggleBones.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="JiggleBones_BepInEx.cs" />
     <Compile Include="StaticExtras.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -104,6 +103,6 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if $(ConfigurationName) == Debug copy $(TargetPath) $(SolutionDir)Releases\unity_code\$(TargetName).dll
-if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\$(TargetName).dll</PostBuildEvent>
+if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\OpenScripts\$(TargetName).dll</PostBuildEvent>
   </PropertyGroup>
 </Project>

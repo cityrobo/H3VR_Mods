@@ -96,9 +96,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CustomQBSlotSounds.cs" />
-    <Compile Include="CustomQuickBeltSlots_BepInEx.cs" />
     <Compile Include="QuickBeltAreaCollisionDetector.cs" />
     <Compile Include="QuickBeltArea.cs" />
+    <Compile Include="LeftHandIgnoreQBSlot.cs" />
     <Compile Include="WristMounted_ClosedBoltWeapon.cs" />
     <Compile Include="WristItem.cs" />
     <Compile Include="WristQBSlot_Item_test.cs" />
@@ -114,8 +114,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\Assembly-CSharp.$(TargetName).mm.dll
-if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\$(TargetName).dll
+    <PostBuildEvent>if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\OpenScriptsMonomod\Assembly-CSharp.$(TargetName).mm.dll
+if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\OpenScripts\$(TargetName).dll
 if $(ConfigurationName) == MeatKit copy $(TargetPath) $(SolutionDir)Releases\MeatKit\$(TargetName).dll</PostBuildEvent>
   </PropertyGroup>
 </Project>

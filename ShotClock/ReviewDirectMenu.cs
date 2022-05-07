@@ -11,7 +11,6 @@ namespace ShotTimer
 {
 	public class ReviewDirectMenu : TimerMenu
 	{ 
-	
 		[Header("Last Shot")]
 		[SerializeField]
 		private Text _lastShotText;
@@ -24,13 +23,8 @@ namespace ShotTimer
 		[SerializeField]
 		private Text _detailsText;
 
-
-
 		[SerializeField]
 		private string _detailsFormat = "SPL {0}{1:F2}\n" + "1st {2}{3:F2}\n" + "DELAY UNKN";
-
-		
-		
 
 		string delaynone = "SPL {0}{1:F2}\n" + "1st {2}{3:F2}\n" + "DELAY NONE";
 		string delayipsc = "SPL {0}{1:F2}\n" + "1st {2}{3:F2}\n" + "DELAY IPSC";
@@ -63,14 +57,11 @@ namespace ShotTimer
 
 		[SerializeField]
 		public AudioClip[] _Delayvoice;
-
 		
-
 		private void RenderTime()
 		{
 			_timeText.text = DateTime.Now.ToString(_timeFormat);
 		}
-		
 		public override void Render()
 		{
 
@@ -126,9 +117,7 @@ namespace ShotTimer
 			}
 			RenderTime();
 		}
-
-
-	public override bool UpdateInputs(Inputs inputs, out TimerMenu menu)
+		public override bool UpdateInputs(Inputs inputs, out TimerMenu menu)
 		{
 
 			switch (inputs)
@@ -157,7 +146,6 @@ namespace ShotTimer
 			}
 						
 		}
-
 		public override void Activate(TimerMenu next)
 		{
 			next.gameObject.SetActive(true);
@@ -165,8 +153,6 @@ namespace ShotTimer
 			this.StopAllCoroutines();
 			this.gameObject.SetActive(false);
 		}
-
-
 		public IEnumerator Run()
         {
 			do
@@ -178,7 +164,7 @@ namespace ShotTimer
 		}
 		private void OnEnable()
         {
-			Debug.Log("ReviewDirectMenu: Start!");
+			//Debug.Log("ReviewDirectMenu: Start!");
 			this.StartCoroutine("Run");
         }
 	}

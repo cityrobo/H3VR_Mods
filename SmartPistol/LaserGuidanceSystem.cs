@@ -37,6 +37,11 @@ namespace Cityrobo
         {
             LaserTargets.Remove(_lastTarget);
         }
+
+        public void OnDisable()
+        {
+            LaserTargets.Remove(_lastTarget);
+        }
 #endif
 	}
 }
