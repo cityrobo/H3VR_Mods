@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{226F3F1C-5206-45F5-8866-CB3C02DBC20A}</ProjectGuid>
+    <ProjectGuid>{F09696A1-A213-4330-8F9B-1D5A39861FB7}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SmartPistol</RootNamespace>
-    <AssemblyName>SmartPistol</AssemblyName>
+    <RootNamespace>JavelinScript</RootNamespace>
+    <AssemblyName>JavelinScript</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -30,7 +30,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'MeatKit|AnyCPU'">
     <OutputPath>bin\MeatKit\</OutputPath>
@@ -43,8 +42,8 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Harmony, Version=2.5.7.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\HarmonyX.2.5.7\lib\net35\0Harmony.dll</HintPath>
+    <Reference Include="0Harmony, Version=2.6.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\HarmonyX.2.6.1\lib\net35\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\H3VR.GameLibs.0.101.1-r.0\lib\net35\Assembly-CSharp.dll</HintPath>
@@ -54,15 +53,6 @@
     </Reference>
     <Reference Include="BepInEx, Version=5.4.19.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\BepInEx.BaseLib.5.4.19\lib\net35\BepInEx.dll</HintPath>
-    </Reference>
-    <Reference Include="BepInEx.Harmony">
-      <HintPath>..\..\..\libs\BepInEx.Harmony.dll</HintPath>
-    </Reference>
-    <Reference Include="BepInEx.Preloader">
-      <HintPath>..\..\..\libs\BepInEx.Preloader.dll</HintPath>
-    </Reference>
-    <Reference Include="Deli.Setup">
-      <HintPath>..\..\..\libs\Deli.Setup.dll</HintPath>
     </Reference>
     <Reference Include="MMHOOK_Assembly-CSharp">
       <HintPath>..\..\..\libs\MMHOOK_Assembly-CSharp.dll</HintPath>
@@ -79,20 +69,17 @@
     <Reference Include="Mono.Cecil.Rocks, Version=0.10.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
       <HintPath>..\packages\Mono.Cecil.0.10.4\lib\net35\Mono.Cecil.Rocks.dll</HintPath>
     </Reference>
-    <Reference Include="MonoMod.RuntimeDetour, Version=21.10.10.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MonoMod.RuntimeDetour.21.10.10.1\lib\net35\MonoMod.RuntimeDetour.dll</HintPath>
+    <Reference Include="MonoMod.RuntimeDetour, Version=21.11.1.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MonoMod.RuntimeDetour.21.11.1.1\lib\net35\MonoMod.RuntimeDetour.dll</HintPath>
     </Reference>
-    <Reference Include="MonoMod.Utils, Version=21.10.10.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MonoMod.Utils.21.10.10.1\lib\net35\MonoMod.Utils.dll</HintPath>
-    </Reference>
-    <Reference Include="ScopeShaderZoom">
-      <HintPath>..\Releases\ScopeShaderZoom.dll</HintPath>
+    <Reference Include="MonoMod.Utils, Version=21.11.1.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MonoMod.Utils.21.11.1.1\lib\net35\MonoMod.Utils.dll</HintPath>
     </Reference>
     <Reference Include="SemanticVersioning, Version=2.0.0.0, Culture=neutral, PublicKeyToken=a89bb7dc6f7a145c, processorArchitecture=MSIL">
       <HintPath>..\packages\SemanticVersioning.2.0.0\lib\net35\SemanticVersioning.dll</HintPath>
     </Reference>
-    <Reference Include="Sodalite">
-      <HintPath>..\..\..\..\AppData\Roaming\r2modmanPlus-local\H3VR\profiles\Creating Mods Stratum\BepInEx\plugins\nrgill28-Sodalite\Sodalite.dll</HintPath>
+    <Reference Include="SmartPistol">
+      <HintPath>..\Releases\OpenScripts\SmartPistol.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -111,16 +98,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SmartAttachment.cs" />
-    <Compile Include="TopAttackSystem.cs" />
-    <Compile Include="LaserGuidanceSystem.cs" />
-    <Compile Include="LaserGuidedProjectile.cs" />
-    <Compile Include="SmartWeapon.cs" />
-    <Compile Include="TopAttackProjectile.cs" />
-    <Compile Include="SmartProjectile.cs" />
-    <Compile Include="SmartRevolver.cs" />
-    <Compile Include="SmartRifle.cs" />
-    <Compile Include="SmartPistol.cs" />
+    <Compile Include="Javelin.cs" />
+    <Compile Include="JavelinScript_BepInEx.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -129,7 +108,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if $(ConfigurationName) == Debug copy $(TargetPath) $(SolutionDir)Releases\unity_code\$(TargetName).dll
-if $(ConfigurationName) == MeatKit copy $(TargetPath) $(SolutionDir)Releases\MeatKit\$(TargetName).dll
-if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\OpenScripts\$(TargetName).dll</PostBuildEvent>
+if $(ConfigurationName) == Release copy $(TargetPath) $(SolutionDir)Releases\$(TargetName).dll
+if $(ConfigurationName) == MeatKit copy $(TargetPath) $(SolutionDir)Releases\MeatKit\$(TargetName).dll</PostBuildEvent>
   </PropertyGroup>
 </Project>

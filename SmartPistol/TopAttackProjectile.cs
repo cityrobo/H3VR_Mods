@@ -11,6 +11,7 @@ namespace Cityrobo
     public class TopAttackProjectile : MonoBehaviour
     {
         public BallisticProjectile Projectile;
+        public GameObject MissileEngineEffects;
         [HideInInspector]
         //public Vector3 TargetPoint = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
 
@@ -61,7 +62,7 @@ namespace Cityrobo
         private float _altitudeHoldMaxDistance;
         private float _altitudeHoldCurrentDistance;
 
-        private bool _debug = true;
+        private bool _debug = false;
 
         private float _launchDelayTick = 0f;
         private bool _rocketEngaged = false;
@@ -69,6 +70,8 @@ namespace Cityrobo
 
         public void Start()
         {
+            if (Projectile.ExtraDisplay != null) Projectile.ExtraDisplay.SetActive(false);
+            if (MissileEngineEffects != null) MissileEngineEffects.SetActive(false);
             Projectile.ForceSetMaxDist(MaxRangeOverride);
         }
 
@@ -85,6 +88,7 @@ namespace Cityrobo
 
                 _rocketEngaged = true;
                 if (Projectile.ExtraDisplay != null) Projectile.ExtraDisplay.SetActive(true);
+                if (MissileEngineEffects != null) MissileEngineEffects.SetActive(true);
                 Projectile.GravityMultiplier = 0f;
             }
             else if (!_rocketEngaged)
@@ -139,7 +143,8 @@ namespace Cityrobo
 
             Quaternion flightRotation;
             if (Projectile.m_velocity.magnitude == 0) flightRotation = Quaternion.LookRotation(Projectile.transform.forward);
-            else flightRotation = Quaternion.LookRotation(Projectile.m_velocity);
+            else if (Projectile.m_velocity.normalized != Vector3.up) flightRotation = Quaternion.LookRotation(Projectile.m_velocity, Vector3.up);
+            else flightRotation = Quaternion.LookRotation(Projectile.m_velocity, Vector3.right);
             if (AttackMode == EAttackMode.Top)
             {
                 if ((_attackState == AttackState.ClimbOut || _attackState == AttackState.AltitudeHold) && _rocketEngaged)

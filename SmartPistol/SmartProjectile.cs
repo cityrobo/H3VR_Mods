@@ -90,7 +90,8 @@ namespace Cityrobo
                 Vector3 m_velocity = Projectile.m_velocity;
                 Quaternion flightRotation;
                 if (m_velocity.magnitude == 0) flightRotation = Quaternion.LookRotation(Projectile.transform.forward);
-                else flightRotation = Quaternion.LookRotation(m_velocity);
+                else if (m_velocity.normalized != Vector3.up) flightRotation = Quaternion.LookRotation(m_velocity, Vector3.up);
+                else flightRotation = Quaternion.LookRotation(m_velocity, Vector3.right);
 
                 _curTarget = Vector3.zero;
                 if (TargetLink != null) _curTarget = TargetLink.transform.position;
