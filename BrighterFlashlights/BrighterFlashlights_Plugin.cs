@@ -1,12 +1,12 @@
+using System;
 using BepInEx;
 using BepInEx.Configuration;
 
 namespace Cityrobo
 {
-    [BepInPlugin("h3vr.cityrobo.brighterflashlights", "Brighter Flashlights", "1.2.0")]
+    [BepInPlugin("h3vr.cityrobo.brighterflashlights", "Brighter Flashlights", "1.2.3")]
     public class BrighterFlashlights_Plugin : BaseUnityPlugin
     {
-        
         private readonly BrighterFlashlights_Hooks _hooks;
 
         private ConfigEntry<float> tacticalFlashlight_range;
@@ -38,12 +38,41 @@ namespace Cityrobo
             _hooks.tacticalFlashlightBrightness = tacticalFlashlightIntensity.Value;
             _hooks.tacticalFlashlightBrightness_dark = tacticalFlashlightIntensity_dark.Value;
             _hooks.Hook();
+
+
+            tacticalFlashlight_range.SettingChanged += SettingsChanged;
+            tacticalFlashlightIntensity.SettingChanged += SettingsChanged;
+            tacticalFlashlightIntensity_dark.SettingChanged += SettingsChanged;
+            flashlight_range.SettingChanged += SettingsChanged;
+            flashlightIntensity.SettingChanged += SettingsChanged;
+            flashlightIntensity_dark.SettingChanged += SettingsChanged;
         }
 
         private void OnDestroy()
         {
             _hooks?.Unhook();
+
+            tacticalFlashlight_range.SettingChanged -= SettingsChanged;
+            tacticalFlashlightIntensity.SettingChanged -= SettingsChanged;
+            tacticalFlashlightIntensity_dark.SettingChanged -= SettingsChanged;
+            flashlight_range.SettingChanged -= SettingsChanged;
+            flashlightIntensity.SettingChanged -= SettingsChanged;
+            flashlightIntensity_dark.SettingChanged -= SettingsChanged;
         }
 
+        private void SettingsChanged(object sender, EventArgs e)
+        {
+            _hooks?.Unhook();
+
+            _hooks.flashlightRange = flashlight_range.Value;
+            _hooks.flashlightBrightness = flashlightIntensity.Value;
+            _hooks.flashlightBrightness_dark = flashlightIntensity_dark.Value;
+
+            _hooks.tacticalFlashlightRange = tacticalFlashlight_range.Value;
+            _hooks.tacticalFlashlightBrightness = tacticalFlashlightIntensity.Value;
+            _hooks.tacticalFlashlightBrightness_dark = tacticalFlashlightIntensity_dark.Value;
+
+            _hooks.Hook();
+        }
     }
 }
