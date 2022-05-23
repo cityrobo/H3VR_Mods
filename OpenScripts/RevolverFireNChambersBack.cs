@@ -9,50 +9,60 @@ using FistVR;
 
 namespace Cityrobo
 {
-    public class RevolverFiveNChambersBack : MonoBehaviour
-    {
-        public Revolver revolver;
+	public class RevolverFireNChambersBack : MonoBehaviour
+	{
+		public Revolver revolver;
+		public int NChambersBack = 3;
+		public Transform SecondMuzzle;
+		public float FiringDelay = 0.1f;
 
-        public int NChambersBack = 3;
-
-        public Transform SecondMuzzle;
+		private List<MuzzlePSystem> m_muzzleSystems = new List<MuzzlePSystem>();
 
 #if !(DEBUG || MEATKIT)
 
-        public int PrevChamberN(int n)
-        {
-                int num = revolver.CurChamber - n;
-                if (num < 0)
-                {
-                    return revolver.Cylinder.numChambers + num;
-                }
-                return num;
-        }
+		public int PrevChamberN(int n)
+		{
+			int num = revolver.CurChamber - n;
+			if (num < 0)
+			{
+				return revolver.Cylinder.numChambers + num;
+			}
+			return num;
+		}
 
-        public void Awake()
-        {
+		public void Awake()
+		{
 			Hook();
 
+			RegenerateSecondaryMuzzleEffects();
 		}
 		public void OnDestroy()
-        {
+		{
 			Unhook();
-        }
+		}
 
 		void Unhook()
-        {
-
+		{
+			On.FistVR.Revolver.UpdateTriggerHammer -= Revolver_UpdateTriggerHammer;
+			On.FistVR.FVRFireArm.RegenerateMuzzleEffects -= FVRFireArm_RegenerateMuzzleEffects;
 		}
 
 		void Hook()
-        {
-            On.FistVR.Revolver.UpdateTriggerHammer += Revolver_UpdateTriggerHammer;
-        }
+		{
+			On.FistVR.Revolver.UpdateTriggerHammer += Revolver_UpdateTriggerHammer;
+			On.FistVR.FVRFireArm.RegenerateMuzzleEffects += FVRFireArm_RegenerateMuzzleEffects;
+		}
 
-        private void Revolver_UpdateTriggerHammer(On.FistVR.Revolver.orig_UpdateTriggerHammer orig, Revolver self)
-        {
-            if (self == revolver)
-            {
+		private void FVRFireArm_RegenerateMuzzleEffects(On.FistVR.FVRFireArm.orig_RegenerateMuzzleEffects orig, FVRFireArm self, MuzzleDevice m)
+		{
+			orig(self, m);
+			if (self == revolver) RegenerateSecondaryMuzzleEffects();
+		}
+
+		private void Revolver_UpdateTriggerHammer(On.FistVR.Revolver.orig_UpdateTriggerHammer orig, Revolver self)
+		{
+			if (self == revolver)
+			{
 				if (self.m_hasTriggeredUpSinceBegin && !self.m_isSpinning && !self.IsAltHeld && self.isCylinderArmLocked)
 				{
 					self.m_tarTriggerFloat = self.m_hand.Input.TriggerFloat;
@@ -149,7 +159,7 @@ namespace Cityrobo
 							else if (PrimaryChamberFire && SecondaryChamberFire)
 							{
 								self.Fire();
-								FireSecondaryChamber();
+								StartCoroutine(DelayedFiring());
 								if (GM.CurrentSceneSettings.IsAmmoInfinite || GM.CurrentPlayerBody.IsInfiniteAmmo)
 								{
 									self.Chambers[self.CurChamber].IsSpent = false;
@@ -242,17 +252,17 @@ namespace Cityrobo
 					self.Hammer.localEulerAngles = new Vector3(self.m_hammerCurrentRot, 0f, 0f);
 				}
 			}
-            else
-            {
-                orig(self);
-            }
-        }
+			else
+			{
+				orig(self);
+			}
+		}
 
 		private void FireSecondaryChamber()
 		{
 			FVRFireArmChamber fvrfireArmChamber = revolver.Chambers[PrevChamberN(NChambersBack)];
 			revolver.Fire(fvrfireArmChamber, SecondMuzzle, true, 1f, -1f);
-			revolver.FireMuzzleSmoke();
+			FireSecondMuzzleSmoke();
 			if (fvrfireArmChamber.GetRound().IsHighPressure)
 			{
 				bool twoHandStabilized = revolver.IsTwoHandStabilized();
@@ -261,12 +271,112 @@ namespace Cityrobo
 				revolver.Recoil(twoHandStabilized, foregripStabilized, shoulderStabilized, null, 1f);
 			}
 			revolver.PlayAudioGunShot(fvrfireArmChamber.GetRound(), GM.CurrentPlayerBody.GetCurrentSoundEnvironment(), revolver.ShotLoudnessMult);
+
 			if (fvrfireArmChamber.GetRound().IsCaseless)
 			{
 				fvrfireArmChamber.SetRound(null, false);
 			}
 		}
 
+		IEnumerator DelayedFiring()
+		{
+			yield return new WaitForSeconds(FiringDelay);
+
+			FVRFireArmChamber fvrfireArmChamber = revolver.Chambers[PrevChamberN(NChambersBack)];
+			revolver.Fire(fvrfireArmChamber, SecondMuzzle, true, 1f, -1f);
+			FireSecondMuzzleSmoke();
+			if (fvrfireArmChamber.GetRound().IsHighPressure)
+			{
+				bool twoHandStabilized = revolver.IsTwoHandStabilized();
+				bool foregripStabilized = revolver.AltGrip != null;
+				bool shoulderStabilized = revolver.IsShoulderStabilized();
+				revolver.Recoil(twoHandStabilized, foregripStabilized, shoulderStabilized, null, 1f);
+			}
+			revolver.PlayAudioGunShot(fvrfireArmChamber.GetRound(), GM.CurrentPlayerBody.GetCurrentSoundEnvironment(), revolver.ShotLoudnessMult);
+
+			if (fvrfireArmChamber.GetRound().IsCaseless)
+			{
+				fvrfireArmChamber.SetRound(null, false);
+			}
+		}
+
+		private void FireSecondMuzzleSmoke()
+		{
+			if (GM.CurrentSceneSettings.IsSceneLowLight)
+			{
+				if (revolver.IsSuppressed())
+				{
+					FXM.InitiateMuzzleFlash(SecondMuzzle.position, SecondMuzzle.forward, 0.25f, new Color(1f, 0.9f, 0.77f), 0.5f);
+				}
+				else
+				{
+					FXM.InitiateMuzzleFlash(SecondMuzzle.position, SecondMuzzle.forward, 1f, new Color(1f, 0.9f, 0.77f), 1f);
+				}
+			}
+			for (int i = 0; i < revolver.m_muzzleSystems.Count; i++)
+			{
+				if (this.m_muzzleSystems[i].OverridePoint == null)
+				{
+					this.m_muzzleSystems[i].PSystem.transform.position = SecondMuzzle.position;
+				}
+				this.m_muzzleSystems[i].PSystem.Emit(this.m_muzzleSystems[i].NumParticlesPerShot);
+			}
+		}
+
+		private void RegenerateSecondaryMuzzleEffects()
+		{
+			for (int i = 0; i < this.m_muzzleSystems.Count; i++)
+			{
+				Destroy(this.m_muzzleSystems[i].PSystem);
+			}
+			this.m_muzzleSystems.Clear();
+			bool flag = false;
+			MuzzleEffect[] muzzleEffects = revolver.MuzzleEffects;
+			for (int j = 0; j < muzzleEffects.Length; j++)
+			{
+				if (muzzleEffects[j].Entry != MuzzleEffectEntry.None)
+				{
+					MuzzleEffectConfig muzzleConfig = FXM.GetMuzzleConfig(muzzleEffects[j].Entry);
+					MuzzleEffectSize muzzleEffectSize = muzzleEffects[j].Size;
+					if (flag)
+					{
+						muzzleEffectSize = revolver.DefaultMuzzleEffectSize;
+					}
+					GameObject gameObject;
+					if (GM.CurrentSceneSettings.IsSceneLowLight)
+					{
+						gameObject = Instantiate<GameObject>(muzzleConfig.Prefabs_Lowlight[(int)muzzleEffectSize], SecondMuzzle.position, SecondMuzzle.rotation);
+					}
+					else
+					{
+						gameObject = Instantiate<GameObject>(muzzleConfig.Prefabs_Highlight[(int)muzzleEffectSize], SecondMuzzle.position, SecondMuzzle.rotation);
+					}
+					if (muzzleEffects[j].OverridePoint == null)
+					{
+						gameObject.transform.SetParent(SecondMuzzle.transform);
+					}
+					else
+					{
+						gameObject.transform.SetParent(muzzleEffects[j].OverridePoint);
+						gameObject.transform.localPosition = Vector3.zero;
+						gameObject.transform.localEulerAngles = Vector3.zero;
+					}
+					MuzzlePSystem muzzlePSystem = new MuzzlePSystem();
+					muzzlePSystem.PSystem = gameObject.GetComponent<ParticleSystem>();
+					muzzlePSystem.OverridePoint = muzzleEffects[j].OverridePoint;
+					int index = (int)muzzleEffectSize;
+					if (GM.CurrentSceneSettings.IsSceneLowLight)
+					{
+						muzzlePSystem.NumParticlesPerShot = muzzleConfig.NumParticles_Lowlight[index];
+					}
+					else
+					{
+						muzzlePSystem.NumParticlesPerShot = muzzleConfig.NumParticles_Highlight[index];
+					}
+					this.m_muzzleSystems.Add(muzzlePSystem);
+				}
+			}
+		}
 #endif
 	}
 }

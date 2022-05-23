@@ -99,6 +99,7 @@
     <Compile Include="QuickBeltAreaCollisionDetector.cs" />
     <Compile Include="QuickBeltArea.cs" />
     <Compile Include="LeftHandIgnoreQBSlot.cs" />
+    <Compile Include="HolsterStockQBSlot.cs" />
     <Compile Include="WristMounted_ClosedBoltWeapon.cs" />
     <Compile Include="WristItem.cs" />
     <Compile Include="WristQBSlot_Item_test.cs" />

@@ -7,7 +7,7 @@ using BepInEx;
 
 namespace Cityrobo
 {
-    [BepInPlugin("h3vr.cityrobo.hk_p7", "Heckler&Koch P7 Script", "1.0.0")]
+    [BepInPlugin("h3vr.cityrobo.HK_P7_SqueezeCocker", "Heckler&Koch P7 SqueezeCocker Script", "1.0.0")]
     class HK_P7_BepInEx : BaseUnityPlugin
     {
         public HK_P7_BepInEx()

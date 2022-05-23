@@ -2,10 +2,9 @@ using FistVR;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
-
+using UnityEngine.Serialization;
 
 namespace Cityrobo
-
 {
     public class Adjustable_ReflexSight : MonoBehaviour
     {
@@ -13,8 +12,6 @@ namespace Cityrobo
         [Tooltip("This can be an AttachmentInterface or a standalone FVRInteractiveObject set to \" is simple interact \" ")]
         public FVRInteractiveObject reflexSightInterface;
         public MeshRenderer reticle;
-
-
 
         [Header("Reticle Settings")]
         [Tooltip("All reticle textures. Default reticle is first entry.")]
@@ -24,19 +21,19 @@ namespace Cityrobo
         public Color[] reticleColors;
         [Tooltip("Names of all reticles. Default reticle name is first entry.")]
         public string[] reticleText;
-
+        [Tooltip("Index of the Array below, not the actual value. Starts at 0.")]
         public int currentTexture = 0;
 
         [Header("If you want a Screen above the scope that shows stuff, use this:")]
         public Transform textFrame;
         public Text reticleTextScreen;
         public Text zeroTextScreen;
+        public Text BrightnessTextScreen;
 
         public string reticleTestPrefix = "Reticle: ";
-
-
         public string zeroTextPrefix = "Zero Distance: ";
-        [Tooltip("Index of the Array below, not the actual value")]
+        public string BrightnessTextPrefix = "Brightness: ";
+        [Tooltip("Index of the Array below, not the actual value. Starts at 0.")]
         public int currentZeroDistance = 3;
         [Tooltip("In meters. Miss me with that imperial shit!")]
         public float[] zeroDistances = new float[7] { 2, 5, 10, 15, 25, 50, 100 };
@@ -56,30 +53,39 @@ namespace Cityrobo
         public Transform buttonSwitch;
         public Vector3[] switchPositions;
 
-        private FVRViveHand hand;
-        private int currentMenu = 0;
+        [Header("Brightness Settings")]
+        [Tooltip("Index of the Array below, not the actual value. Starts at 0.")]
+        public int currentBrightnessIndex = 3;
+        public float[] HDRBrightnessLevels = new float[] { 0.25f, 0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f, 2.5f, 3f };
+        public float[] BrightnessAlphaLevels = new float[] { 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f };
 
-        private bool zeroOnlyMode = false;
-        private string nameOfTexture = "_RedDotTex";
-        private string nameOfDistanceVariable = "_RedDotDist";
-        private string nameOfXOffset = "_MuzzleOffsetX";
-        private string nameOfYOffset = "_MuzzleOffsetY";
-        private List<Collider> scopeColliders;
-        //private string nameOfDotSizeVariable = "_RedDotSize";
+        private FVRViveHand m_hand;
+        private bool _attached = false;
+        private int _currentMenu = 0;
 
-        private Transform muzzlePos;
+        private bool _zeroOnlyMode = false;
+        // Shader variable name constants
+        private const string s_nameOfTextureVariable = "_RedDotTex";
+        private const string s_nameOfColorVariable = "_DotColor";
+        private const string s_nameOfDistanceVariable = "_RedDotDist";
+        private const string s_nameOfXOffsetVariable = "_MuzzleOffsetX";
+        private const string s_nameOfYOffsetVariable = "_MuzzleOffsetY";
 
-        private bool attached = false;
+        // Occlusion Variables
+        private List<Collider> _scopeColliders;
+        private Transform _muzzlePos;
+        private Vector3 _leftEye;
+        private Vector3 _rightEye;
 
-        private Vector3 leftEye;
-        private Vector3 rightEye;
         public void Start()
         {
             if (currentTexture >= textures.Length || currentTexture < 0) currentTexture = 0;
             if (currentZeroDistance >= zeroDistances.Length || currentZeroDistance < 0) currentZeroDistance = 0;
-            if (textures.Length != 0) reticle.material.SetTexture(nameOfTexture, textures[currentTexture]);
-            reticle.material.SetFloat(nameOfDistanceVariable, zeroDistances[currentZeroDistance]);
-            //lens.material.SetFloat(nameOfDotSizeVariable, dotSizeAt100mDistance * (zeroDistances[currentZeroDistance] / 100) );
+            if (currentBrightnessIndex >= HDRBrightnessLevels.Length || currentBrightnessIndex < 0) currentBrightnessIndex = 0;
+
+            if (HDRBrightnessLevels.Length != BrightnessAlphaLevels.Length) Debug.LogError($"AdjustableReflexsight {gameObject.name}: HDRBrightnessLevels.Length != BrightnessAlphaLevels.Length!");
+            if (textures.Length != 0) reticle.material.SetTexture(s_nameOfTextureVariable, textures[currentTexture]);
+            reticle.material.SetFloat(s_nameOfDistanceVariable, zeroDistances[currentZeroDistance]);
 
             if (buttonSwitch != null) buttonSwitch.localPosition = switchPositions[currentTexture];
 
@@ -87,25 +93,26 @@ namespace Cityrobo
 
             if (textures.Length <= 1) 
             { 
-                zeroOnlyMode = true;
-                currentMenu = 1;
+                _zeroOnlyMode = true;
+                _currentMenu = 1;
             }
-
-            scopeColliders = new List<Collider>(attachment.m_colliders);
 
             if (isStandalone)
             {
-                muzzlePos = fireArm.MuzzlePos;
-                Vector3 muzzleOffset = muzzlePos.InverseTransformPoint(reticle.transform.position);
+                _muzzlePos = fireArm.MuzzlePos;
+                Vector3 muzzleOffset = _muzzlePos.InverseTransformPoint(reticle.transform.position);
 
-                reticle.material.SetFloat(nameOfXOffset, -muzzleOffset.x);
-                reticle.material.SetFloat(nameOfYOffset, -muzzleOffset.y);
+                reticle.material.SetFloat(s_nameOfXOffsetVariable, -muzzleOffset.x);
+                reticle.material.SetFloat(s_nameOfYOffsetVariable, -muzzleOffset.y);
             }
 
             StartScreen();
+#if !DEBUG
+            _leftEye = GM.CurrentPlayerBody.Head.position + GM.CurrentPlayerBody.Head.right * -0.032f;
+            _rightEye = GM.CurrentPlayerBody.Head.position + GM.CurrentPlayerBody.Head.right * +0.032f;
 
-            leftEye = GM.CurrentPlayerBody.Head.position + GM.CurrentPlayerBody.Head.right * -0.032f;
-            rightEye = GM.CurrentPlayerBody.Head.position + GM.CurrentPlayerBody.Head.right * +0.032f;
+            _scopeColliders = new List<Collider>(attachment.m_colliders);
+#endif
         }
 #if !DEBUG
         public void OnDestroy()
@@ -117,56 +124,56 @@ namespace Cityrobo
         {
             if (!reflexSightInterface.IsSimpleInteract)
             {
-                hand = reflexSightInterface.m_hand;
-                if (hand != null)
+                m_hand = reflexSightInterface.m_hand;
+                if (m_hand != null)
                 {
-                    if (hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.left) < 45f && currentMenu == 0) UsePreviousTexture();
-                    else if (hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.right) < 45f && currentMenu == 0) UseNextTexture();
-                    if (hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.left) < 45f && currentMenu == 1) UsePreviousZeroDistance();
-                    else if (hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.right) < 45f && currentMenu == 1) UseNextZeroDistance();
-                    else if ((hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.up) < 45f) && !zeroOnlyMode) ShowNextMenu();
+                    if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.left) < 45f && _currentMenu == 0) UsePreviousTexture();
+                    else if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.right) < 45f && _currentMenu == 0) UseNextTexture();
+                    if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.left) < 45f && _currentMenu == 1) UsePreviousZeroDistance();
+                    else if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.right) < 45f && _currentMenu == 1) UseNextZeroDistance();
+                    if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.left) < 45f && _currentMenu == 2) UsePreviousBrightness();
+                    else if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.right) < 45f && _currentMenu == 2) UseNextBrightness();
+                    else if ((m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.up) < 45f) && !_zeroOnlyMode) ShowNextMenu();
                 }
             }
-            if (!isStandalone && attachment.curMount != null && !attached)
+            if (!isStandalone && attachment.curMount != null && !_attached)
             {
-                attached = true;
+                _attached = true;
                 fireArm = attachment.curMount.GetRootMount().MyObject as FVRFireArm;
                 if (fireArm != null)
                 {
-                    muzzlePos = fireArm.CurrentMuzzle;
+                    _muzzlePos = fireArm.CurrentMuzzle;
 
-                    Vector3 muzzleOffset = muzzlePos.InverseTransformPoint(reticle.transform.position);
-                    /*
-                    Debug.Log(muzzleOffset.x);
-                    Debug.Log(muzzleOffset.y);
-                    Debug.Log(muzzleOffset.z);
-                    */
+                    Vector3 muzzleOffset = _muzzlePos.InverseTransformPoint(reticle.transform.position);
 
-                    reticle.material.SetFloat(nameOfXOffset, -muzzleOffset.x);
-                    reticle.material.SetFloat(nameOfYOffset, -muzzleOffset.y);
+                    reticle.material.SetFloat(s_nameOfXOffsetVariable, -muzzleOffset.x);
+                    reticle.material.SetFloat(s_nameOfYOffsetVariable, -muzzleOffset.y);
                 }
             }
-            else if (!isStandalone && attachment.curMount == null && attached)
+            else if (!isStandalone && attachment.curMount == null && _attached)
             {
-                attached = false;
-                reticle.material.SetFloat(nameOfXOffset, 0f);
-                reticle.material.SetFloat(nameOfYOffset, 0f);
+                _attached = false;
+                reticle.material.SetFloat(s_nameOfXOffsetVariable, 0f);
+                reticle.material.SetFloat(s_nameOfYOffsetVariable, 0f);
                 fireArm = null;
-                muzzlePos = null;
+                _muzzlePos = null;
             }
 
-            leftEye = GM.CurrentPlayerBody.Head.position + GM.CurrentPlayerBody.Head.right * -0.032f;
-            rightEye = GM.CurrentPlayerBody.Head.position + GM.CurrentPlayerBody.Head.right * +0.032f;
+            _leftEye = GM.CurrentPlayerBody.Head.position + GM.CurrentPlayerBody.Head.right * -0.032f;
+            _rightEye = GM.CurrentPlayerBody.Head.position + GM.CurrentPlayerBody.Head.right * +0.032f;
 
-            if (!disableOcclusionCulling && (isStandalone || attached)) CheckReticleVisibility();
+            if (!disableOcclusionCulling && (isStandalone || _attached)) CheckReticleVisibility();
         }
 #endif
         public void UseNextTexture()
         {
             currentTexture = (currentTexture + 1) % textures.Length;
 
-            reticle.material.SetTexture(nameOfTexture, textures[currentTexture]);
+            reticle.material.SetTexture(s_nameOfTextureVariable, textures[currentTexture]);
+            if (reticleColors != null && reticleColors.Length == textures.Length) reticle.material.SetColor(s_nameOfColorVariable, reticleColors[currentTexture]);
             if (buttonSwitch != null) buttonSwitch.localPosition = switchPositions[currentTexture];
+
+            UpdateBrightness();
             UpdateScreen();
         }
 
@@ -174,20 +181,22 @@ namespace Cityrobo
         {
             currentTexture = (currentTexture + textures.Length - 1) % textures.Length;
 
-            reticle.material.SetTexture(nameOfTexture, textures[currentTexture]);
+            reticle.material.SetTexture(s_nameOfTextureVariable, textures[currentTexture]);
+            if (reticleColors != null && reticleColors.Length == textures.Length) reticle.material.SetColor(s_nameOfColorVariable, reticleColors[currentTexture]);
             if (buttonSwitch != null) buttonSwitch.localPosition = switchPositions[currentTexture];
+
+            UpdateBrightness();
             UpdateScreen();
         }
 
         private void ShowNextMenu() 
         {
-            //currentMenu = (currentMenu + 1) % 2;
             if (reticleTextScreen == null && zeroTextScreen == null) return;
-            currentMenu++;
+            _currentMenu++;
 
-            if (currentMenu > 2) currentMenu = 0;
+            if (_currentMenu > 3) _currentMenu = 0;
 
-            switch (currentMenu)
+            switch (_currentMenu)
             {
                 case 0:
                     if (reticleTextScreen == null)
@@ -203,8 +212,15 @@ namespace Cityrobo
                         return;
                     }
                     break;
+                case 2:
+                    if (BrightnessTextScreen == null)
+                    {
+                        ShowNextMenu();
+                        return;
+                    }
+                    break;
                 default:
-                    currentMenu = 0;
+                    _currentMenu = 0;
                     break;
             }
             UpdateScreen();
@@ -212,45 +228,80 @@ namespace Cityrobo
 
         private void UpdateScreen()
         {
-            if (reticleTextScreen != null && currentMenu == 0)
+            if (reticleTextScreen != null && _currentMenu == 0)
             {
                 if (textFrame != null) textFrame.localPosition = reticleTextScreen.transform.localPosition;
                 reticleTextScreen.text = reticleTestPrefix + reticleText[currentTexture];
             }
             else if (reticleTextScreen == null)
             {
-                currentMenu = 1;
+                _currentMenu = 1;
             }
 
-            if (zeroTextScreen != null && currentMenu == 1)
+            if (zeroTextScreen != null && _currentMenu == 1)
             {
                 if (textFrame != null) textFrame.localPosition = zeroTextScreen.transform.localPosition;
                 zeroTextScreen.text = zeroTextPrefix + zeroDistances[currentZeroDistance] + "m";
             }
+            else if (zeroTextScreen == null)
+            {
+                _currentMenu = 2;
+            }
             
+            if (BrightnessTextScreen != null && _currentMenu == 2)
+            {
+                if (textFrame != null) textFrame.localPosition = BrightnessTextScreen.transform.localPosition;
+                BrightnessTextScreen.text = BrightnessTextPrefix + HDRBrightnessLevels[currentBrightnessIndex];
+            }
+            else if (BrightnessTextScreen == null)
+            {
+                _currentMenu = 0;
+            }
         }
 
         private void StartScreen()
         {
             if (reticleTextScreen != null) reticleTextScreen.text = reticleTestPrefix + reticleText[currentTexture];
             if (zeroTextScreen != null) zeroTextScreen.text = zeroTextPrefix + zeroDistances[currentZeroDistance] + "m";
+            if (BrightnessTextScreen != null) BrightnessTextScreen.text = BrightnessTextPrefix + HDRBrightnessLevels[currentBrightnessIndex];
         }
         public void UseNextZeroDistance()
         {
             if (currentZeroDistance < zeroDistances.Length - 1) currentZeroDistance++;
-            reticle.material.SetFloat(nameOfDistanceVariable, zeroDistances[currentZeroDistance]);
-            //lens.material.SetFloat(nameOfDotSizeVariable, dotSizeAt100mDistance * (zeroDistances[currentZeroDistance] / 100));
+            reticle.material.SetFloat(s_nameOfDistanceVariable, zeroDistances[currentZeroDistance]);
+
             UpdateScreen();
         }
-
         public void UsePreviousZeroDistance()
         {
             if (currentZeroDistance > 0) currentZeroDistance--;
-            reticle.material.SetFloat(nameOfDistanceVariable, zeroDistances[currentZeroDistance]);
-            //lens.material.SetFloat(nameOfDotSizeVariable, dotSizeAt100mDistance * (zeroDistances[currentZeroDistance] / 100));
+            reticle.material.SetFloat(s_nameOfDistanceVariable, zeroDistances[currentZeroDistance]);
+
             UpdateScreen();
         }
+        public void UseNextBrightness()
+        {
+            if (currentBrightnessIndex < HDRBrightnessLevels.Length - 1) currentBrightnessIndex++;
 
+            UpdateBrightness();
+            UpdateScreen();
+        }
+        public void UsePreviousBrightness()
+        {
+            if (currentBrightnessIndex > 0) currentBrightnessIndex--;
+
+            UpdateBrightness();
+            UpdateScreen();
+        }
+        public void UpdateBrightness()
+        {
+            float factor = Mathf.Pow(2, HDRBrightnessLevels[currentBrightnessIndex]);
+            Color currentReticleColor = reticleColors[currentTexture];
+            Color color = new Color(currentReticleColor.r * factor, currentReticleColor.g * factor, currentReticleColor.b * factor);
+            color.a = BrightnessAlphaLevels[currentBrightnessIndex];
+
+            reticle.material.SetColor(s_nameOfColorVariable, color);
+        }
         private void CheckReticleVisibility()
         {
             bool scopeHit = false;
@@ -275,11 +326,11 @@ namespace Cityrobo
             if (!scopeHit) reticle.gameObject.SetActive(false);
 
             */
-            if (lensCollider == null && scopeColliders.Count > 0)
+            if (lensCollider == null && _scopeColliders.Count > 0)
             {
                 RaycastHit[] raycastHits;
                 float distance = Vector3.Distance(this.gameObject.transform.position, GM.CurrentPlayerBody.Head.position) + 0.2f;
-                Vector3 direction = muzzlePos.position + this.transform.forward * zeroDistances[currentZeroDistance] - rightEye;
+                Vector3 direction = _muzzlePos.position + this.transform.forward * zeroDistances[currentZeroDistance] - _rightEye;
                 bool angleGood = false;
                 angleGood = Vector3.Angle(GM.CurrentPlayerBody.Head.forward, this.transform.forward) < 45f;
                 //float distance = 1f;
@@ -287,11 +338,11 @@ namespace Cityrobo
                 //Right Eye check
                 if (angleGood)
                 {
-                    raycastHits = Physics.RaycastAll(rightEye, direction, distance, LayerMask.NameToLayer("Environment"), QueryTriggerInteraction.Ignore);
+                    raycastHits = Physics.RaycastAll(_rightEye, direction, distance, LayerMask.NameToLayer("Environment"), QueryTriggerInteraction.Ignore);
                     if (raycastHits.Length != 0)
                         foreach (var hit in raycastHits)
                         {
-                            if (scopeColliders.Contains(hit.collider))
+                            if (_scopeColliders.Contains(hit.collider))
                             {
                                 reticle.gameObject.SetActive(true);
                                 scopeHit = true;
@@ -302,15 +353,15 @@ namespace Cityrobo
                 if (!scopeHit)
                 {
                     angleGood = false;
-                    direction = muzzlePos.position + this.transform.forward * zeroDistances[currentZeroDistance] - leftEye;
+                    direction = _muzzlePos.position + this.transform.forward * zeroDistances[currentZeroDistance] - _leftEye;
                     angleGood = Vector3.Angle(GM.CurrentPlayerBody.Head.forward, this.transform.forward) < 45f;
                     if (angleGood)
                     {
-                        raycastHits = Physics.RaycastAll(leftEye, direction, distance, LayerMask.NameToLayer("Environment"), QueryTriggerInteraction.Ignore);
+                        raycastHits = Physics.RaycastAll(_leftEye, direction, distance, LayerMask.NameToLayer("Environment"), QueryTriggerInteraction.Ignore);
                         if (raycastHits.Length != 0)
                             foreach (var hit in raycastHits)
                             {
-                                if (scopeColliders.Contains(hit.collider))
+                                if (_scopeColliders.Contains(hit.collider))
                                 {
                                     reticle.gameObject.SetActive(true);
                                     scopeHit = true;
@@ -324,11 +375,11 @@ namespace Cityrobo
             else if (lensCollider != null)
             {
                 float distance = Vector3.Distance(this.gameObject.transform.position, GM.CurrentPlayerBody.Head.position) + 0.2f;
-                Vector3 direction = muzzlePos.position + this.transform.forward * zeroDistances[currentZeroDistance] - rightEye;
+                Vector3 direction = _muzzlePos.position + this.transform.forward * zeroDistances[currentZeroDistance] - _rightEye;
                 bool angleGood = Vector3.Angle(GM.CurrentPlayerBody.Head.forward, this.transform.forward) < 45f;
                 if (angleGood)
                 {
-                    Ray ray = new Ray(rightEye,direction);
+                    Ray ray = new Ray(_rightEye,direction);
                     RaycastHit hit;
                     if (lensCollider.Raycast(ray, out hit, distance))
                     {
@@ -339,11 +390,11 @@ namespace Cityrobo
 
                 if (!scopeHit)
                 {
-                    direction = muzzlePos.position + this.transform.forward * zeroDistances[currentZeroDistance] - leftEye;
+                    direction = _muzzlePos.position + this.transform.forward * zeroDistances[currentZeroDistance] - _leftEye;
                     angleGood = Vector3.Angle(GM.CurrentPlayerBody.Head.forward, this.transform.forward) < 45f;
                     if (angleGood)
                     {
-                        Ray ray = new Ray(leftEye, direction);
+                        Ray ray = new Ray(_leftEye, direction);
                         RaycastHit hit;
                         if (lensCollider.Raycast(ray, out hit, distance))
                         {
@@ -361,22 +412,18 @@ namespace Cityrobo
                 disableOcclusionCulling = true;
             }
         }
-
         private void Unhook()
         {
 #if !(DEBUG || MEATKIT)
             On.FistVR.FVRInteractiveObject.SimpleInteraction -= FVRInteractiveObject_SimpleInteraction;
 #endif
         }
-
         private void Hook()
         {
 #if !(DEBUG || MEATKIT)
             On.FistVR.FVRInteractiveObject.SimpleInteraction += FVRInteractiveObject_SimpleInteraction;
 #endif
         }
-
-
 #if !(DEBUG || MEATKIT)
         private void FVRInteractiveObject_SimpleInteraction(On.FistVR.FVRInteractiveObject.orig_SimpleInteraction orig, FVRInteractiveObject self, FVRViveHand hand)
         {

@@ -57,6 +57,7 @@ namespace Cityrobo
         [Tooltip("If true, checkboxes will be updated with the ones set in the ItemSpawnerID.")]
         public bool updateCheckboxes = false;
 
+#if !DEBUG
         [Header("ItemSpawnerEntry Options")]
         [Tooltip("Optional replacement ItemSpawnerEntry, options will only get copied if not empty or for checkboxes, different from the original. (Also not strictly required, can be fetched from the running Otherloader instance). Or, if original item does not have a ItemSpawnerEntry, it will use this one.")]
         public OtherLoader.ItemSpawnerEntry ReplacementItemSpawnerEntry;
@@ -77,6 +78,7 @@ namespace Cityrobo
         public bool IsAmmo = false;
         public bool ReplaceAmmoPanelName = false;
         public bool ReplaceAmmoRoundClass = false;
+#endif
 
         [Header("Miscellaneous Options")]
         [Tooltip("This checkbox makes it so that only the replaced Item shows up in the ItemSpawner. Removes the duplicate replacement from the ItemSpawner.")]

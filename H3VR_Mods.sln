@@ -115,6 +115,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSC_MagazineFollower", "RSC
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MeatBeatScanner", "MeatBeatScanner\MeatBeatScanner.csproj", "{3F33C54A-7BCB-4398-8643-82AB4C47C6F8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HK_VP70_Stock", "HK_VP70_Stock\HK_VP70_Stock.csproj", "{F15E12B7-D3DB-48BD-8F44-76A9F8ABF06C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniversalMuzzleAttachmentPoint", "UniversalMuzzleAttachmentPoint\UniversalMuzzleAttachmentPoint.csproj", "{AB1B9896-67D2-4E4C-B995-3C7C4D021633}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JavelinScript", "JavelinScript\JavelinScript.csproj", "{F09696A1-A213-4330-8F9B-1D5A39861FB7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -458,6 +464,24 @@ Global
 		{3F33C54A-7BCB-4398-8643-82AB4C47C6F8}.MeatKit|Any CPU.Build.0 = Debug|Any CPU
 		{3F33C54A-7BCB-4398-8643-82AB4C47C6F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3F33C54A-7BCB-4398-8643-82AB4C47C6F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F15E12B7-D3DB-48BD-8F44-76A9F8ABF06C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F15E12B7-D3DB-48BD-8F44-76A9F8ABF06C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F15E12B7-D3DB-48BD-8F44-76A9F8ABF06C}.MeatKit|Any CPU.ActiveCfg = MeatKit|Any CPU
+		{F15E12B7-D3DB-48BD-8F44-76A9F8ABF06C}.MeatKit|Any CPU.Build.0 = MeatKit|Any CPU
+		{F15E12B7-D3DB-48BD-8F44-76A9F8ABF06C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F15E12B7-D3DB-48BD-8F44-76A9F8ABF06C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB1B9896-67D2-4E4C-B995-3C7C4D021633}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB1B9896-67D2-4E4C-B995-3C7C4D021633}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB1B9896-67D2-4E4C-B995-3C7C4D021633}.MeatKit|Any CPU.ActiveCfg = MeatKit|Any CPU
+		{AB1B9896-67D2-4E4C-B995-3C7C4D021633}.MeatKit|Any CPU.Build.0 = MeatKit|Any CPU
+		{AB1B9896-67D2-4E4C-B995-3C7C4D021633}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB1B9896-67D2-4E4C-B995-3C7C4D021633}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F09696A1-A213-4330-8F9B-1D5A39861FB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F09696A1-A213-4330-8F9B-1D5A39861FB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F09696A1-A213-4330-8F9B-1D5A39861FB7}.MeatKit|Any CPU.ActiveCfg = MeatKit|Any CPU
+		{F09696A1-A213-4330-8F9B-1D5A39861FB7}.MeatKit|Any CPU.Build.0 = MeatKit|Any CPU
+		{F09696A1-A213-4330-8F9B-1D5A39861FB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F09696A1-A213-4330-8F9B-1D5A39861FB7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
