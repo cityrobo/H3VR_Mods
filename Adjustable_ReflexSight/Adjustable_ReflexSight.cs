@@ -295,10 +295,10 @@ namespace Cityrobo
         }
         public void UpdateBrightness()
         {
-            float factor = Mathf.Pow(2, HDRBrightnessLevels[currentBrightnessIndex]);
+            float factor = Mathf.Pow(2, HDRBrightnessLevels[currentBrightnessIndex] - 1f);
             Color currentReticleColor = reticleColors[currentTexture];
-            Color color = new Color(currentReticleColor.r * factor, currentReticleColor.g * factor, currentReticleColor.b * factor);
-            color.a = BrightnessAlphaLevels[currentBrightnessIndex];
+            Color color = new Color(currentReticleColor.r * factor, currentReticleColor.g * factor, currentReticleColor.b * factor, currentReticleColor.a);
+            color.a *= BrightnessAlphaLevels[currentBrightnessIndex];
 
             reticle.material.SetColor(s_nameOfColorVariable, color);
         }

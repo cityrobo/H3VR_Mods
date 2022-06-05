@@ -11,14 +11,15 @@ namespace Cityrobo
     public class StandaloneQBSlot : FVRQuickBeltSlot
     {
 #if !(UNITY_EDITOR || UNITY_5)
+		
         public virtual void Start()
         {
 			if (GM.CurrentPlayerBody != null)
 			{
-				RegisterQuickbeltSlot();
+				//RegisterQuickbeltSlot();
 			}
         }
-
+		/*
 		public virtual void OnEnable()
         {
 			if (GM.CurrentPlayerBody != null)
@@ -58,6 +59,7 @@ namespace Cityrobo
 				GM.CurrentPlayerBody.QuickbeltSlots.Remove(this);
 			}
 		}
+		*/
 #endif
 	}
 }
