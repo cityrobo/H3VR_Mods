@@ -222,13 +222,16 @@ namespace Cityrobo
                 Zero();
                 _initialZero = true;
             }
-
+            /*
+            if (RotatingBit != null) SetZoomLerp();
             if (_lastZoomLerp != ZoomLerp)
             {
-                if (RotatingBit != null) SetZoomLerp();
                 SetZoom();
                 _lastZoomLerp = ZoomLerp;
             }
+            */
+            SetZoomLerp();
+            SetZoom();
         }
 #endif
         public void SetZoomLerp()

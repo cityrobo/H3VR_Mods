@@ -35,13 +35,35 @@ namespace Cityrobo
         {
 			On.FistVR.Handgun.UpdateInputAndAnimate -= Handgun_UpdateInputAndAnimate;
 			On.FistVR.FVRFireArm.FVRFixedUpdate -= FVRFireArm_FVRFixedUpdate;
+			On.FistVR.FVRFireArm.EndInteraction -= FVRFireArm_EndInteraction;
+			On.FistVR.FVRFireArm.EndInteractionIntoInventorySlot -= FVRFireArm_EndInteractionIntoInventorySlot;
 		}
 
 		void Hook()
         {
             On.FistVR.Handgun.UpdateInputAndAnimate += Handgun_UpdateInputAndAnimate;
             On.FistVR.FVRFireArm.FVRFixedUpdate += FVRFireArm_FVRFixedUpdate;
+            On.FistVR.FVRFireArm.EndInteraction += FVRFireArm_EndInteraction;
+            On.FistVR.FVRFireArm.EndInteractionIntoInventorySlot += FVRFireArm_EndInteractionIntoInventorySlot;
         }
+
+        private void FVRFireArm_EndInteractionIntoInventorySlot(On.FistVR.FVRFireArm.orig_EndInteractionIntoInventorySlot orig, FVRFireArm self, FVRViveHand hand, FVRQuickBeltSlot slot)
+        {
+			if (self == handgun)
+			{
+				m_isSpinning = false;
+			}
+			orig(self, hand, slot);
+		}
+
+        private void FVRFireArm_EndInteraction(On.FistVR.FVRFireArm.orig_EndInteraction orig, FVRFireArm self, FVRViveHand hand)
+        {
+			if (self == handgun)
+			{
+				m_isSpinning = false;
+			}
+			orig(self,hand);
+		}
 
         private void FVRFireArm_FVRFixedUpdate(On.FistVR.FVRFireArm.orig_FVRFixedUpdate orig, FVRFireArm self)
         {
@@ -59,7 +81,7 @@ namespace Cityrobo
 
 			if (self == handgun)
 			{
-				if (hand.Input.TouchpadPressed && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.up) < 45f) m_isSpinning = true;
+				if (hand.Input.TouchpadPressed && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.right) < 45f) m_isSpinning = true;
 				else m_isSpinning = false;
 			}
         }

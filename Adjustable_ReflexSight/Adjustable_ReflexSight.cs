@@ -57,13 +57,12 @@ namespace Cityrobo
         [Tooltip("Index of the Array below, not the actual value. Starts at 0.")]
         public int currentBrightnessIndex = 3;
         public float[] HDRBrightnessLevels = new float[] { 0.25f, 0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f, 2.5f, 3f };
-        public float[] BrightnessAlphaLevels = new float[] { 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f };
+        public float[] BrightnessAlphaLevels = new float[] { 0.25f, 0.5f, 0.75f, 1f, 1f, 1f, 1f, 1f, 1f, 1f };
 
         private FVRViveHand m_hand;
         private bool _attached = false;
         private int _currentMenu = 0;
 
-        private bool _zeroOnlyMode = false;
         // Shader variable name constants
         private const string s_nameOfTextureVariable = "_RedDotTex";
         private const string s_nameOfColorVariable = "_DotColor";
@@ -93,7 +92,6 @@ namespace Cityrobo
 
             if (textures.Length <= 1) 
             { 
-                _zeroOnlyMode = true;
                 _currentMenu = 1;
             }
 
@@ -111,7 +109,7 @@ namespace Cityrobo
             _leftEye = GM.CurrentPlayerBody.Head.position + GM.CurrentPlayerBody.Head.right * -0.032f;
             _rightEye = GM.CurrentPlayerBody.Head.position + GM.CurrentPlayerBody.Head.right * +0.032f;
 
-            _scopeColliders = new List<Collider>(attachment.m_colliders);
+            if (!isStandalone) _scopeColliders = new List<Collider>(attachment.m_colliders);
 #endif
         }
 #if !DEBUG
@@ -127,13 +125,50 @@ namespace Cityrobo
                 m_hand = reflexSightInterface.m_hand;
                 if (m_hand != null)
                 {
+                    if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.left) < 45f)
+                    {
+                        switch (_currentMenu)
+                        {
+                            case 0:
+                                UsePreviousTexture();
+                                break;
+                            case 1:
+                                UsePreviousZeroDistance();
+                                break;
+                            case 2:
+                                UsePreviousBrightness();
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    else if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.right) < 45f)
+                    {
+                        switch (_currentMenu)
+                        {
+                            case 0:
+                                UseNextTexture();
+                                break;
+                            case 1:
+                                UseNextZeroDistance();
+                                break;
+                            case 2:
+                                UseNextBrightness();
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    else if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.up) < 45f) ShowNextMenu();
+                    /*
                     if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.left) < 45f && _currentMenu == 0) UsePreviousTexture();
                     else if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.right) < 45f && _currentMenu == 0) UseNextTexture();
                     if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.left) < 45f && _currentMenu == 1) UsePreviousZeroDistance();
                     else if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.right) < 45f && _currentMenu == 1) UseNextZeroDistance();
                     if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.left) < 45f && _currentMenu == 2) UsePreviousBrightness();
                     else if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.right) < 45f && _currentMenu == 2) UseNextBrightness();
-                    else if ((m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.up) < 45f) && !_zeroOnlyMode) ShowNextMenu();
+                    if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.up) < 45f) ShowNextMenu();
+                    */
                 }
             }
             if (!isStandalone && attachment.curMount != null && !_attached)
@@ -191,7 +226,7 @@ namespace Cityrobo
 
         private void ShowNextMenu() 
         {
-            if (reticleTextScreen == null && zeroTextScreen == null) return;
+            if (reticleTextScreen == null && zeroTextScreen == null && BrightnessTextScreen == null) return;
             _currentMenu++;
 
             if (_currentMenu > 3) _currentMenu = 0;
@@ -296,7 +331,22 @@ namespace Cityrobo
         public void UpdateBrightness()
         {
             float factor = Mathf.Pow(2, HDRBrightnessLevels[currentBrightnessIndex] - 1f);
-            Color currentReticleColor = reticleColors[currentTexture];
+
+            if (reticleColors == null || reticleColors.Length == 0) 
+            { 
+                Debug.LogError("Trying to change brightness but reference color array is empty!");
+                return;
+            }
+            Color currentReticleColor;
+            try
+            {
+                currentReticleColor = reticleColors[currentTexture];
+            }
+            catch (System.Exception)
+            {
+                Debug.LogError("Trying to change brightness but reference color array is empty at selected texture index!");
+                return;
+            }
             Color color = new Color(currentReticleColor.r * factor, currentReticleColor.g * factor, currentReticleColor.b * factor, currentReticleColor.a);
             color.a *= BrightnessAlphaLevels[currentBrightnessIndex];
 
@@ -326,13 +376,13 @@ namespace Cityrobo
             if (!scopeHit) reticle.gameObject.SetActive(false);
 
             */
-            if (lensCollider == null && _scopeColliders.Count > 0)
+            Vector3 muzzleOffset = _muzzlePos.InverseTransformPoint(reticle.transform.position);
+            if (lensCollider == null && _scopeColliders != null && _scopeColliders.Count > 0)
             {
                 RaycastHit[] raycastHits;
-                float distance = Vector3.Distance(this.gameObject.transform.position, GM.CurrentPlayerBody.Head.position) + 0.2f;
-                Vector3 direction = _muzzlePos.position + this.transform.forward * zeroDistances[currentZeroDistance] - _rightEye;
-                bool angleGood = false;
-                angleGood = Vector3.Angle(GM.CurrentPlayerBody.Head.forward, this.transform.forward) < 45f;
+                float distance = Vector3.Distance(this.transform.position, GM.CurrentPlayerBody.Head.position) + 0.2f;
+                Vector3 direction = this.transform.TransformPoint(-muzzleOffset) + this.transform.forward * zeroDistances[currentZeroDistance] - _rightEye;
+                bool angleGood = Vector3.Angle(GM.CurrentPlayerBody.Head.forward, this.transform.forward) < 45f;
                 //float distance = 1f;
 
                 //Right Eye check
@@ -352,8 +402,7 @@ namespace Cityrobo
                 //Left Eye check
                 if (!scopeHit)
                 {
-                    angleGood = false;
-                    direction = _muzzlePos.position + this.transform.forward * zeroDistances[currentZeroDistance] - _leftEye;
+                    direction = this.transform.TransformPoint(-muzzleOffset) + this.transform.forward * zeroDistances[currentZeroDistance] - _leftEye;
                     angleGood = Vector3.Angle(GM.CurrentPlayerBody.Head.forward, this.transform.forward) < 45f;
                     if (angleGood)
                     {
@@ -374,8 +423,8 @@ namespace Cityrobo
             }
             else if (lensCollider != null)
             {
-                float distance = Vector3.Distance(this.gameObject.transform.position, GM.CurrentPlayerBody.Head.position) + 0.2f;
-                Vector3 direction = _muzzlePos.position + this.transform.forward * zeroDistances[currentZeroDistance] - _rightEye;
+                float distance = Vector3.Distance(this.transform.position, GM.CurrentPlayerBody.Head.position) + 0.2f;
+                Vector3 direction = this.transform.TransformPoint(-muzzleOffset) + this.transform.forward * zeroDistances[currentZeroDistance] - _rightEye;
                 bool angleGood = Vector3.Angle(GM.CurrentPlayerBody.Head.forward, this.transform.forward) < 45f;
                 if (angleGood)
                 {
@@ -390,7 +439,7 @@ namespace Cityrobo
 
                 if (!scopeHit)
                 {
-                    direction = _muzzlePos.position + this.transform.forward * zeroDistances[currentZeroDistance] - _leftEye;
+                    direction = this.transform.TransformPoint(-muzzleOffset) + this.transform.forward * zeroDistances[currentZeroDistance] - _leftEye;
                     angleGood = Vector3.Angle(GM.CurrentPlayerBody.Head.forward, this.transform.forward) < 45f;
                     if (angleGood)
                     {

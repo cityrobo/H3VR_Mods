@@ -59,19 +59,20 @@ namespace Cityrobo
             public Quaternion localRot;
         }
 #if !(UNITY_EDITOR || UNITY_5)
+        /*
         public void Awake()
         {
             Hook();
         }
-
-        public void OnDestroy()
+        */
+        public override void OnDestroy()
         {
             Unhook();
         }
         public override void Start()
         {
             base.Start();
-
+            Hook();
             if (MainObject == null)
             {
                 FVRPhysicalObject myObject = GetComponent<FVRPhysicalObject>();
@@ -115,7 +116,6 @@ namespace Cityrobo
             MainObject.Slots.Concat(qbSlots.ToArray());
 
             SubQBSlotPrefab.SetActive(false);
-
         }
 
         public void LateUpdate()

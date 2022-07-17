@@ -19,7 +19,7 @@ namespace Cityrobo
 				//RegisterQuickbeltSlot();
 			}
         }
-		/*
+		
 		public virtual void OnEnable()
         {
 			if (GM.CurrentPlayerBody != null)
@@ -43,23 +43,27 @@ namespace Cityrobo
 				DeRegisterQuickbeltSlot();
 			}
 		}
-
+		
 		public void RegisterQuickbeltSlot()
 		{
+			/*
 			if (!GM.CurrentPlayerBody.QuickbeltSlots.Contains(this))
 			{
 				GM.CurrentPlayerBody.QuickbeltSlots.Add(this);
 			}
+			*/
 		}
 
 		public void DeRegisterQuickbeltSlot()
 		{
+			/*
 			if (GM.CurrentPlayerBody.QuickbeltSlots.Contains(this))
 			{
 				GM.CurrentPlayerBody.QuickbeltSlots.Remove(this);
 			}
+			*/
 		}
-		*/
+		
 #endif
 	}
 }

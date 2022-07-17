@@ -18,7 +18,7 @@ namespace Cityrobo
 
         private float[] lastLerp;
 
-#if !(UNITY_EDITOR || UNITY_5)
+#if !(UNITY_EDITOR || UNITY_5 || DEBUG)
         public void Awake()
         {
             chamberRammed = new bool[NumChambers];

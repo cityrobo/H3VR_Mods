@@ -26,7 +26,7 @@ namespace Cityrobo
 
         private bool isRamRodExtended = false;
 
-#if!(UNITY_EDITOR||UNITY_5)
+#if!(UNITY_EDITOR || UNITY_5 || DEBUG)
         public override void Start()
         {
             base.Start();
@@ -44,7 +44,7 @@ namespace Cityrobo
         private void Unhook()
         {
             On.FistVR.SingleActionRevolver.Fire -= SingleActionRevolver_Fire;
-            //On.FistVR.SingleActionRevolver.EjectPrevCylinder -= SingleActionRevolver_EjectPrevCylinder;
+            On.FistVR.SingleActionRevolver.EjectPrevCylinder -= SingleActionRevolver_EjectPrevCylinder;
             On.FistVR.SingleActionRevolver.UpdateCylinderRot -= SingleActionRevolver_UpdateCylinderRot;
             On.FistVR.SingleActionRevolver.AdvanceCylinder -= SingleActionRevolver_AdvanceCylinder;
         }
@@ -52,7 +52,7 @@ namespace Cityrobo
         private void Hook()
         {
             On.FistVR.SingleActionRevolver.Fire += SingleActionRevolver_Fire;
-            //On.FistVR.SingleActionRevolver.EjectPrevCylinder += SingleActionRevolver_EjectPrevCylinder;
+            On.FistVR.SingleActionRevolver.EjectPrevCylinder += SingleActionRevolver_EjectPrevCylinder;
             On.FistVR.SingleActionRevolver.UpdateCylinderRot += SingleActionRevolver_UpdateCylinderRot;
             On.FistVR.SingleActionRevolver.AdvanceCylinder += SingleActionRevolver_AdvanceCylinder;
         }
@@ -193,19 +193,7 @@ namespace Cityrobo
 
         private void SingleActionRevolver_EjectPrevCylinder(On.FistVR.SingleActionRevolver.orig_EjectPrevCylinder orig, SingleActionRevolver self)
         {
-            if (self == this)
-            {
-                /*if (!this.m_isStateToggled)
-                    return;
-                int index = this.PrevChamber;
-                if (this.IsAccessTwoChambersBack)
-                    index = this.PrevChamber2;
-                FVRFireArmChamber chamber = this.CapCylinder.Chambers[index];
-                if (chamber.IsFull)
-                    this.PlayAudioEvent(FirearmAudioEventType.MagazineEjectRound);
-                chamber.EjectRound(chamber.transform.position + chamber.transform.forward * (1f / 400f), chamber.transform.forward, Vector3.zero);*/
-            }
-            else
+            if (self != this)
             {
                 orig(self);
             }
@@ -252,7 +240,7 @@ namespace Cityrobo
         }
 #endif
     }
-#if !(UNITY_EDITOR || UNITY_5)
+#if !(UNITY_EDITOR || UNITY_5 || DEBUG)
     public static class ExtendingVector3
     {
         public static bool IsGreaterOrEqual(this Vector3 local, Vector3 other)

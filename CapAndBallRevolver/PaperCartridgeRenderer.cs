@@ -11,7 +11,7 @@ namespace Cityrobo
         public Mesh cartridgeMesh;
         public Material cartridgeMaterial;
 
-#if !(UNITY_EDITOR || UNITY_5)
+#if !(UNITY_EDITOR || UNITY_5 || DEBUG)
         void LateUpdate()
         {
             if (chamber.m_round != null && !chamber.m_round.IsSpent && chamber.ProxyMesh.mesh != cartridgeMesh)

@@ -55,7 +55,7 @@ namespace Cityrobo
                 foreach (FileInfo foundFile in filesInDir)
                 {
                     Logger.LogInfo($"Loading standalone PrefabReplacer asset bundle {foundFile.Name}.");
-                    Sodalite.Api.GameAPI.PreloadAllAssets(foundFile.FullName);
+                    Sodalite.Api.GameAPI.PreloadAllAssets(foundFile.Name);
                 }
                 Logger.LogInfo($"Standalone PrefabReplacer asset bundle loading complete!");
             }
@@ -80,19 +80,17 @@ namespace Cityrobo
             if (_PRIDs.Count != 0) _percentagePerPRID = 1f / _PRIDs.Count;
             foreach (var PRID in _PRIDs)
             {
-                if (PRID.PrefabReplacerIDActivated == true) ReplacePrefabViaID(PRID);
+                if (PRID.PrefabReplacerIDDeactivated == false) ReplacePrefabViaID(PRID);
                 _progress += _percentagePerPRID;
             }
             if (_PRIDs.Count == 0) Logger.LogInfo("No PrefabReplacerIDs found. Have a nice day!");
+            else Logger.LogInfo("Prefab Replacement complete!");
             _progress = 1f;
         }
 
         private void ReplacePrefabViaID(PrefabReplacerID PRID)
         {
-            
-
             LoadedPrefabReplacerIDs.Add(PRID.originalItemID, PRID);
-            
 
             // FVRObject Replacement
             FVRObject origFVRObject = null;
@@ -134,15 +132,11 @@ namespace Cityrobo
             ItemSpawnerEntryReplacement(PRID, origSpawnerEntry, replacementSpawnerEntry, origFVRObject);
 
             // Additional Operations
-            if (PRID.DisableReplacementObjectInItemSpawner)
-            { 
-                if (replacementISID != null) replacementISID.IsDisplayedInMainEntry = false;
-                if (replacementSpawnerEntry != null) replacementSpawnerEntry.IsDisplayedInMainEntry = false;
-            }
-            if (PRID.DisableReplacementObjectInTnH)
-            {
-                if (replacementFVRObject != null) replacementFVRObject.OSple = false;
-            }
+            if (replacementISID != null) replacementISID.IsDisplayedInMainEntry = PRID.EnableReplacementObjectInItemSpawner;
+            if (replacementSpawnerEntry != null) replacementSpawnerEntry.IsDisplayedInMainEntry = PRID.EnableReplacementObjectInItemSpawner;
+
+
+            if (replacementFVRObject != null) replacementFVRObject.OSple = PRID.EnableReplacementObjectInTnH;
 
             Logger.LogInfo($"PrefabRepacerID {PRID.name} replaced {PRID.originalItemID} with {PRID.replacementItemID}. {_percentagePerPRID + _progress}% done.");
         }
@@ -236,10 +230,13 @@ namespace Cityrobo
                         if (origISID.IsReward != replacementISID.IsReward) origISID.IsReward = replacementISID.IsReward;
                     }
                 }
-                else
+                /*
+                else if (origFVRObject.SpawnedFromId == string.Empty)
                 {
                     origFVRObject.SpawnedFromId = replacementISID.ItemID;
                 }
+                */
+                else Debug.LogError($"{PRID.name}: Couldn't find original ISID!");
             }
         }
 
@@ -247,7 +244,7 @@ namespace Cityrobo
         {
             if (replacementSpawnerEntry != null)
             {
-                if (origFVRObject.SpawnedFromId != string.Empty && OtherLoader.OtherLoader.SpawnerEntriesByID.TryGetValue(origFVRObject.SpawnedFromId, out origSpawnerEntry))
+                if (origFVRObject.ItemID != string.Empty && OtherLoader.OtherLoader.SpawnerEntriesByID.TryGetValue(origFVRObject.ItemID, out origSpawnerEntry))
                 {
                     if (replacementSpawnerEntry.EntryIcon != null) origSpawnerEntry.EntryIcon = replacementSpawnerEntry.EntryIcon;
                     if (replacementSpawnerEntry.DisplayName != string.Empty) origSpawnerEntry.DisplayName = replacementSpawnerEntry.DisplayName;
@@ -273,10 +270,11 @@ namespace Cityrobo
                     if (PRID.ReplaceTutorialBlocksEntryInstead) origSpawnerEntry.TutorialBlockIDs = replacementSpawnerEntry.TutorialBlockIDs;
                     else origSpawnerEntry.TutorialBlockIDs.AddRange(replacementSpawnerEntry.TutorialBlockIDs);
                 }
-                else
+                else if (origFVRObject.SpawnedFromId == string.Empty)
                 {
                     origFVRObject.SpawnedFromId = replacementSpawnerEntry.MainObjectID;
                 }
+                else Debug.LogError($"{PRID.name}: Couldn't find original ItemSpawnerEntry!");
             }
         }
     }

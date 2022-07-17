@@ -82,14 +82,14 @@ namespace Cityrobo
 
         [Header("Miscellaneous Options")]
         [Tooltip("This checkbox makes it so that only the replaced Item shows up in the ItemSpawner. Removes the duplicate replacement from the ItemSpawner.")]
-        public bool DisableReplacementObjectInItemSpawner = true;
+        public bool EnableReplacementObjectInItemSpawner = false;
         [Tooltip("This checkbox makes it so that only the replaced Item shows up in the Take and Hold. Removes the duplicate replacement from the Take and Hold loot pool.")]
-        public bool DisableReplacementObjectInTnH = true;
+        public bool EnableReplacementObjectInTnH = false;
 
 
 
         [HideInInspector]
-        public bool PrefabReplacerIDActivated = true;
+        public bool PrefabReplacerIDDeactivated = false;
 
         public PrefabReplacerID(string orig, string replacement)
         {
