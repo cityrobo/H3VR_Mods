@@ -75,6 +75,9 @@
     <Reference Include="MonoMod.Utils, Version=21.12.13.1, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MonoMod.Utils.21.12.13.1\lib\net35\MonoMod.Utils.dll</HintPath>
     </Reference>
+    <Reference Include="OpenScriptsBepInEx">
+      <HintPath>..\Releases\OpenScripts\OpenScriptsBepInEx.dll</HintPath>
+    </Reference>
     <Reference Include="SemanticVersioning, Version=2.0.0.0, Culture=neutral, PublicKeyToken=a89bb7dc6f7a145c, processorArchitecture=MSIL">
       <HintPath>..\packages\SemanticVersioning.2.0.0\lib\net35\SemanticVersioning.dll</HintPath>
     </Reference>
@@ -84,6 +87,9 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="UnityEditor">
+      <HintPath>..\..\..\..\..\..\Program Files\Unity\Hub\Editor\5.6.3p4\Editor\Data\Managed\UnityEditor.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\UnityEngine.5.6.1\lib\net35\UnityEngine.dll</HintPath>
     </Reference>
@@ -95,6 +101,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FirearmHeatingEffectEditor.cs" />
     <Compile Include="FirearmHeatingEffect_FirearmCore.cs" />
     <Compile Include="FirearmHeatingEffect.cs" />
     <Compile Include="RevolverFireNChambersBack.cs" />

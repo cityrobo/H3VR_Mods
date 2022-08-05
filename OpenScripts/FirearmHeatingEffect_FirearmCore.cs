@@ -16,14 +16,39 @@ namespace Cityrobo
         public List<FirearmHeatingEffect> FirearmHeatingEffects = new List<FirearmHeatingEffect>();
         private int _lastListCount = 0;
 
-        private float _averageBoltForwardSpeed;
-        private float _averageBoltRearwardSpeed;
-        private float _averageBoltSpring;
-#if !(DEBUG)
+        private float _origBoltForwardSpeed;
+        private float _origBoltRearwardSpeed;
+        private float _origBoltSpringStiffness;
 
+        private float _averageBoltForwardSpeedMultiplier;
+        private float _averageBoltRearwardSpeedMultiplier;
+        private float _averageBoltSpringStiffnessMultiplier;
+
+#if !(DEBUG)
         public void Awake()
         {
 			FireArm = GetComponent<FVRFireArm>();
+
+            switch (FireArm)
+            {
+                case ClosedBoltWeapon w:
+                    _origBoltForwardSpeed = w.Bolt.Speed_Forward;
+                    _origBoltRearwardSpeed = w.Bolt.Speed_Rearward;
+                    _origBoltSpringStiffness = w.Bolt.SpringStiffness;
+                    break;
+                case OpenBoltReceiver w:
+                    _origBoltForwardSpeed = w.Bolt.BoltSpeed_Forward;
+                    _origBoltRearwardSpeed = w.Bolt.BoltSpeed_Rearward;
+                    _origBoltSpringStiffness = w.Bolt.BoltSpringStiffness;
+                    break;
+                case Handgun w:
+                    _origBoltForwardSpeed = w.Slide.Speed_Forward;
+                    _origBoltRearwardSpeed = w.Slide.Speed_Rearward;
+                    _origBoltSpringStiffness = w.Slide.SpringStiffness;
+                    break;
+                default:
+                    break;
+            }
         }
 		public void OnDestroy()
         {
@@ -38,53 +63,47 @@ namespace Cityrobo
                 {
                     CombinedHeatMultiplier = 1f;
 
-
-                    foreach (FirearmHeatingEffect effect in FirearmHeatingEffects)
-                    {
-                        CombinedHeatMultiplier *= effect.HeatMultiplier;
-                    }
+                    foreach (FirearmHeatingEffect effect in FirearmHeatingEffects) CombinedHeatMultiplier *= effect.HeatMultiplier;
 
                     _lastListCount = FirearmHeatingEffects.Count;
                 }
 
-                _averageBoltForwardSpeed = 0f;
-                _averageBoltRearwardSpeed = 0f;
-                _averageBoltSpring = 0f;
-
+                _averageBoltForwardSpeedMultiplier = 0f;
+                _averageBoltRearwardSpeedMultiplier = 0f;
+                _averageBoltSpringStiffnessMultiplier = 0f;
+                
                 int BoltBool = 0;
                 foreach (FirearmHeatingEffect effect in FirearmHeatingEffects)
                 {
-                    CombinedHeatMultiplier *= effect.HeatMultiplier;
-
                     if (effect.DoesHeatAffectBoltSpeed)
                     {
-                        _averageBoltForwardSpeed += effect.CurrentBoltForwardSpeed;
-                        _averageBoltRearwardSpeed += effect.CurrentBoltRearwardSpeed;
-                        _averageBoltSpring += effect.CurrentBoltSpring;
+                        _averageBoltForwardSpeedMultiplier += effect.CurrentBoltForwardSpeedMultiplier;
+                        _averageBoltRearwardSpeedMultiplier += effect.CurrentBoltRearwardSpeedMultiplier;
+                        _averageBoltSpringStiffnessMultiplier += effect.CurrentBoltSpringMultiplier;
                         BoltBool++;
                     }
                 }
                 if (BoltBool != 0)
                 {
-                    _averageBoltForwardSpeed /= BoltBool;
-                    _averageBoltRearwardSpeed /= BoltBool;
-                    _averageBoltSpring /= BoltBool;
+                    _averageBoltForwardSpeedMultiplier /= BoltBool;
+                    _averageBoltRearwardSpeedMultiplier /= BoltBool;
+                    _averageBoltSpringStiffnessMultiplier /= BoltBool;
                     switch (FireArm)
                     {
                         case ClosedBoltWeapon w:
-                            w.Bolt.Speed_Forward = _averageBoltForwardSpeed;
-                            w.Bolt.Speed_Rearward = _averageBoltRearwardSpeed;
-                            w.Bolt.SpringStiffness = _averageBoltSpring;
+                            w.Bolt.Speed_Forward = _averageBoltForwardSpeedMultiplier * _origBoltForwardSpeed;
+                            w.Bolt.Speed_Rearward = _averageBoltRearwardSpeedMultiplier * _origBoltRearwardSpeed;
+                            w.Bolt.SpringStiffness = _averageBoltSpringStiffnessMultiplier * _origBoltSpringStiffness;
                             break;
                         case OpenBoltReceiver w:
-                            w.Bolt.BoltSpeed_Forward = _averageBoltForwardSpeed;
-                            w.Bolt.BoltSpeed_Rearward = _averageBoltRearwardSpeed;
-                            w.Bolt.BoltSpringStiffness = _averageBoltSpring;
+                            w.Bolt.BoltSpeed_Forward = _averageBoltForwardSpeedMultiplier * _origBoltForwardSpeed;
+                            w.Bolt.BoltSpeed_Rearward = _averageBoltRearwardSpeedMultiplier * _origBoltRearwardSpeed;
+                            w.Bolt.BoltSpringStiffness = _averageBoltSpringStiffnessMultiplier * _origBoltSpringStiffness;
                             break;
                         case Handgun w:
-                            w.Slide.Speed_Forward = _averageBoltForwardSpeed;
-                            w.Slide.Speed_Rearward = _averageBoltRearwardSpeed;
-                            w.Slide.SpringStiffness = _averageBoltSpring;
+                            w.Slide.Speed_Forward = _averageBoltForwardSpeedMultiplier * _origBoltForwardSpeed;
+                            w.Slide.Speed_Rearward = _averageBoltRearwardSpeedMultiplier * _origBoltRearwardSpeed;
+                            w.Slide.SpringStiffness = _averageBoltSpringStiffnessMultiplier * _origBoltSpringStiffness;
                             break;
                         default:
                             break;
