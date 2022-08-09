@@ -177,7 +177,9 @@ namespace Cityrobo
             On.FistVR.BoltActionRifle.CockHammer -= BoltActionRifle_CockHammer;
             On.FistVR.BoltActionRifle.DropHammer -= BoltActionRifle_DropHammer;
             On.FistVR.BoltActionRifle.UpdateBolt -= BoltActionRifle_UpdateBolt;
-            On.FistVR.BoltActionRifle.UpdateInteraction -= BoltActionRifle_UpdateInteraction;
+            On.FistVR.BoltActionRifle.UpdateInteraction -= BoltActionRifle_UpdateInteraction; 
+            On.FistVR.FVRFireArmRound.DuplicateFromSpawnLock -= FVRFireArmRound_DuplicateFromSpawnLock;
+            On.FistVR.FVRFireArmRound.GetNumRoundsPulled -= FVRFireArmRound_GetNumRoundsPulled;
         }
         private void Hook()
         {
@@ -186,6 +188,86 @@ namespace Cityrobo
             On.FistVR.BoltActionRifle.DropHammer += BoltActionRifle_DropHammer;
             On.FistVR.BoltActionRifle.UpdateBolt += BoltActionRifle_UpdateBolt;
             On.FistVR.BoltActionRifle.UpdateInteraction += BoltActionRifle_UpdateInteraction;
+            On.FistVR.FVRFireArmRound.DuplicateFromSpawnLock += FVRFireArmRound_DuplicateFromSpawnLock;
+            On.FistVR.FVRFireArmRound.GetNumRoundsPulled += FVRFireArmRound_GetNumRoundsPulled;
+        }
+
+        private int FVRFireArmRound_GetNumRoundsPulled(On.FistVR.FVRFireArmRound.orig_GetNumRoundsPulled orig, FVRFireArmRound self, FVRViveHand hand)
+        {
+            if (hand.OtherHand.CurrentInteractable is DP12_BoltAction dp12_boltaction)
+            {
+                int num = 0;
+                if (dp12_boltaction.RoundType == self.RoundType)
+                {
+                    DP12_Mag magazine = dp12_boltaction.Magazine as DP12_Mag;
+                    if (magazine != null)
+                    {
+                        num = magazine.m_capacity - magazine.m_numRounds;
+                        num += magazine.SecondMagazine.m_capacity - magazine.SecondMagazine.m_numRounds;
+                    }
+                    for (int i = 0; i < dp12_boltaction.GetChambers().Count; i++)
+                    {
+                        FVRFireArmChamber fvrfireArmChamber = dp12_boltaction.GetChambers()[i];
+                        if (fvrfireArmChamber.IsManuallyChamberable && (!fvrfireArmChamber.IsFull || fvrfireArmChamber.IsSpent))
+                        {
+                            num++;
+                        }
+                    }
+                }
+                if (num == 0)
+                {
+                    num = 1 + self.ProxyRounds.Count;
+                }
+                return num;
+            }
+            else return orig(self, hand);
+        }
+
+        // Patching FVRFireArmRound.DuplicateFromSpawnLock to make smart palming work correctly with the dp12 magazine system
+        private GameObject FVRFireArmRound_DuplicateFromSpawnLock(On.FistVR.FVRFireArmRound.orig_DuplicateFromSpawnLock orig, FVRFireArmRound self, FVRViveHand hand)
+        {
+            GameObject returnGO = orig(self, hand);
+
+            FVRFireArmRound component = returnGO.GetComponent<FVRFireArmRound>();
+
+            if (GM.Options.ControlOptions.SmartAmmoPalming == ControlOptions.SmartAmmoPalmingMode.Enabled && component != null && hand.OtherHand.CurrentInteractable != null)
+            {
+                int num = 0;
+                if (hand.OtherHand.CurrentInteractable is DP12_BoltAction dp12_boltaction)
+                {
+                    if (dp12_boltaction.RoundType == self.RoundType)
+                    {
+                        DP12_Mag magazine = dp12_boltaction.Magazine as DP12_Mag;
+                        if (magazine != null)
+                        {
+                            num = magazine.m_capacity - magazine.m_numRounds;
+                            num += magazine.SecondMagazine.m_capacity - magazine.SecondMagazine.m_numRounds;
+                        }
+                        for (int i = 0; i < dp12_boltaction.GetChambers().Count; i++)
+                        {
+                            FVRFireArmChamber fvrfireArmChamber = dp12_boltaction.GetChambers()[i];
+                            if (fvrfireArmChamber.IsManuallyChamberable && (!fvrfireArmChamber.IsFull || fvrfireArmChamber.IsSpent))
+                            {
+                                num++;
+                            }
+                        }
+                    }
+                    if (num < 1)
+                    {
+                        num = self.ProxyRounds.Count;
+                    }
+
+                    component.DestroyAllProxies();
+                    int num2 = Mathf.Min(self.ProxyRounds.Count, num - 1);
+                    for (int k = 0; k < num2; k++)
+                    {
+                        component.AddProxy(self.ProxyRounds[k].Class, self.ProxyRounds[k].ObjectWrapper);
+                    }
+                    component.UpdateProxyDisplay();
+                }
+            }
+
+            return returnGO;
         }
 
         private void BoltActionRifle_UpdateInteraction(On.FistVR.BoltActionRifle.orig_UpdateInteraction orig, BoltActionRifle self, FVRViveHand hand)
@@ -385,13 +467,13 @@ namespace Cityrobo
         }
 #endif
 
+        [Tooltip("Use this if you're working with a BoltActionRifle prefab and don't feel like repopulating all the field of this script manually. Use the context menu after placing the BoltActionRifle here.")]
         public BoltActionRifle CopyBoltActionRifle;
-        [ContextMenu("Copy Rifle")]
-        public void CopyRifle()
+        [ContextMenu("Copy existing BoltActionRifle Parameters")]
+        public void CopyBoltActionRifleParameters()
         {
             System.Type type = CopyBoltActionRifle.GetType();
             Component copy = this;
-            // Copied fields can be restricted with BindingFlags
             System.Reflection.FieldInfo[] fields = type.GetFields();
             foreach (System.Reflection.FieldInfo field in fields)
             {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if DEBUG || MEATKIT
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -24,6 +25,7 @@ public class FirearmHeatingEffectEditor : Editor
     private SerializedProperty _explosionSound;
     public override void OnInspectorGUI()
     {
+        serializedObject.Update();
         f = target as FirearmHeatingEffect;
         GUIStyle bold = new GUIStyle(EditorStyles.boldLabel);
         bold.fontStyle = FontStyle.Bold;
@@ -36,6 +38,7 @@ public class FirearmHeatingEffectEditor : Editor
         EditorGUILayout.LabelField("Firearm Heating Effect", bold);
         HorizontalLine(Color.gray);
         f.FireArm = (FVRFireArm)EditorGUILayout.ObjectField(new GUIContent("Firearm", "Use this if you plan to use the script on a firearm."), f.FireArm, typeof(FVRFireArm), true);
+
         f.Attachment = (FVRFireArmAttachment)EditorGUILayout.ObjectField(new GUIContent("Attachment", "Use this if you plan to use the script on an attachment."), f.Attachment, typeof(FVRFireArmAttachment), true);
         if ((f.FireArm != null || f.Attachment != null) && !(f.FireArm != null && f.Attachment != null))
         {
@@ -45,6 +48,12 @@ public class FirearmHeatingEffectEditor : Editor
                 f.HeatPerShot = EditorGUILayout.FloatField(new GUIContent("Heat per Shot", "Heat added to the effect per shot fired. Heat caps out at 1."), f.HeatPerShot);
                 f.HeatMultiplier = EditorGUILayout.FloatField(new GUIContent("Heat Multiplier", "This multiplier will affect the heat gain of all parts of the gun. It will act multiplicatively with other such multipliers."), f.HeatMultiplier);
                 f.CooldownRate = EditorGUILayout.FloatField(new GUIContent("Cooldown Rate", "Heat removed per second."), f.CooldownRate);
+                f.ChangesWithCartridgePower = EditorGUILayout.Toggle(new GUIContent("Does Round Power affect Heat?"), f.ChangesWithCartridgePower);
+                if (f.ChangesWithCartridgePower)
+                {
+                    SerializedProperty powerMult = serializedObject.FindProperty("RoundPowerMultipliers");
+                    EditorGUILayout.PropertyField(powerMult, true);
+                }
             }
             _emissionFoldOut = EditorGUILayout.Foldout(_emissionFoldOut, "Emission Modification", foldout);
             if (_emissionFoldOut)
@@ -234,13 +243,14 @@ public class FirearmHeatingEffectEditor : Editor
 
     public static class BetterPropertyField
     {
-        // source: https://gist.github.com/tomkail/ba8d49e1cee021b0b89d47fca68b53a2
+
 
         /// <summary>
         /// Draws a serialized property (including children) fully, even if it's an instance of a custom serializable class.
         /// Supersedes EditorGUILayout.PropertyField(serializedProperty, true);
         /// </summary>
         /// <param name="_serializedProperty">Serialized property.</param>
+        /// source: https://gist.github.com/tomkail/ba8d49e1cee021b0b89d47fca68b53a2
         public static void DrawSerializedProperty(SerializedProperty _serializedProperty)
         {
             if (_serializedProperty == null)
@@ -316,3 +326,4 @@ public class FirearmHeatingEffectEditor : Editor
         }
     }
 }
+#endif

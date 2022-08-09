@@ -34,17 +34,73 @@ namespace Cityrobo
 
 		public void Unhook()
 		{
-			//On.FistVR.AmmoSpawnerV2.LoadIntoHeldObjects -= AmmoSpawnerV2_LoadIntoHeldObjects;
 			On.FistVR.FVRFireArmMagazine.ReloadMagWithType -= FVRFireArmMagazine_ReloadMagWithType;
+			On.FistVR.FVRFireArmRound.DuplicateFromSpawnLock -= FVRFireArmRound_DuplicateFromSpawnLock;
+			On.FistVR.FVRFireArmRound.GetNumRoundsPulled -= FVRFireArmRound_GetNumRoundsPulled;
 
 		}
 		public void Hook()
 		{
-			//On.FistVR.AmmoSpawnerV2.LoadIntoHeldObjects += AmmoSpawnerV2_LoadIntoHeldObjects;
 			On.FistVR.FVRFireArmMagazine.ReloadMagWithType += FVRFireArmMagazine_ReloadMagWithType;
+            On.FistVR.FVRFireArmRound.DuplicateFromSpawnLock += FVRFireArmRound_DuplicateFromSpawnLock;
+            On.FistVR.FVRFireArmRound.GetNumRoundsPulled += FVRFireArmRound_GetNumRoundsPulled;
+		}
+		// Patching FVRFireArmRound.GetNumRoundsPulled to make smart palming work correctly with the DP-12 magazine system
+		private int FVRFireArmRound_GetNumRoundsPulled(On.FistVR.FVRFireArmRound.orig_GetNumRoundsPulled orig, FVRFireArmRound self, FVRViveHand hand)
+        {
+			if (hand.OtherHand.CurrentInteractable is DP12_Mag mag)
+			{
+				int num = 0;
+				if (mag.RoundType == self.RoundType)
+				{
+					num = mag.m_capacity - mag.m_numRounds;
+					num += mag.SecondMagazine.m_capacity - mag.SecondMagazine.m_numRounds;
+				}
+				if (num == 0)
+				{
+					num = 1 + self.ProxyRounds.Count;
+				}
+				return num;
+			}
+			else return orig(self, hand);
 		}
 
-		private void FVRFireArmMagazine_ReloadMagWithType(On.FistVR.FVRFireArmMagazine.orig_ReloadMagWithType orig, FVRFireArmMagazine self, FireArmRoundClass rClass)
+        // Patching FVRFireArmRound.DuplicateFromSpawnLock to make smart palming work correctly with the dp12 magazine system
+        private GameObject FVRFireArmRound_DuplicateFromSpawnLock(On.FistVR.FVRFireArmRound.orig_DuplicateFromSpawnLock orig, FVRFireArmRound self, FVRViveHand hand)
+        {
+			GameObject returnGO = orig(self, hand);
+
+			FVRFireArmRound component = returnGO.GetComponent<FVRFireArmRound>();
+
+			if (GM.Options.ControlOptions.SmartAmmoPalming == ControlOptions.SmartAmmoPalmingMode.Enabled && component != null && hand.OtherHand.CurrentInteractable != null)
+			{
+				int num = 0;
+				if (hand.OtherHand.CurrentInteractable is DP12_Mag mag)
+				{
+					if (mag.RoundType == self.RoundType)
+					{
+						num = mag.m_capacity - mag.m_numRounds;
+						num += mag.SecondMagazine.m_capacity - mag.SecondMagazine.m_numRounds;
+					}
+					if (num < 1)
+					{
+						num = self.ProxyRounds.Count;
+					}
+
+					component.DestroyAllProxies();
+					int num2 = Mathf.Min(self.ProxyRounds.Count, num - 1);
+					for (int k = 0; k < num2; k++)
+					{
+						component.AddProxy(self.ProxyRounds[k].Class, self.ProxyRounds[k].ObjectWrapper);
+					}
+					component.UpdateProxyDisplay();
+				}
+			}
+
+			return returnGO;
+		}
+
+        private void FVRFireArmMagazine_ReloadMagWithType(On.FistVR.FVRFireArmMagazine.orig_ReloadMagWithType orig, FVRFireArmMagazine self, FireArmRoundClass rClass)
 		{
 			if (self == this)
 			{
@@ -57,54 +113,6 @@ namespace Cityrobo
 				UpdateBulletDisplay();
 			}
 			else orig(self, rClass);
-		}
-
-		private void AmmoSpawnerV2_LoadIntoHeldObjects(On.FistVR.AmmoSpawnerV2.orig_LoadIntoHeldObjects orig, AmmoSpawnerV2 self)
-		{
-			FireArmRoundType curAmmoType = self.m_curAmmoType;
-			FireArmRoundClass curAmmoClass = self.m_curAmmoClass;
-			for (int i = 0; i < GM.CurrentMovementManager.Hands.Length; i++)
-			{
-				if (GM.CurrentMovementManager.Hands[i].CurrentInteractable != null && GM.CurrentMovementManager.Hands[i].CurrentInteractable is FVRPhysicalObject)
-				{
-					if (GM.CurrentMovementManager.Hands[i].CurrentInteractable is DP12_Mag fvrfireArmMagazineNew)
-					{
-						if (fvrfireArmMagazineNew.RoundType == curAmmoType)
-						{
-							fvrfireArmMagazineNew.ReloadMagWithType(curAmmoClass);
-						}
-					}
-
-					if (GM.CurrentMovementManager.Hands[i].CurrentInteractable is FVRFireArmMagazine fvrfireArmMagazine)
-					{
-						if (fvrfireArmMagazine.RoundType == curAmmoType)
-						{
-							fvrfireArmMagazine.ReloadMagWithType(curAmmoClass);
-						}
-					}
-					if (GM.CurrentMovementManager.Hands[i].CurrentInteractable is FVRFireArm fvrfireArm)
-					{
-						if (fvrfireArm.RoundType == curAmmoType && fvrfireArm.Magazine != null)
-						{
-							fvrfireArm.Magazine.ReloadMagWithType(curAmmoClass);
-						}
-					}
-					if (GM.CurrentMovementManager.Hands[i].CurrentInteractable is FVRFireArmClip fvrfireArmClip)
-					{
-						if (fvrfireArmClip.RoundType == curAmmoType)
-						{
-							fvrfireArmClip.ReloadClipWithType(curAmmoClass);
-						}
-					}
-					if (GM.CurrentMovementManager.Hands[i].CurrentInteractable is Speedloader speedloader)
-					{
-						if (speedloader.Chambers[0].Type == curAmmoType)
-						{
-							speedloader.ReloadClipWithType(curAmmoClass);
-						}
-					}
-				}
-			}
 		}
 
 		public override void UpdateInteraction(FVRViveHand hand)
@@ -182,33 +190,33 @@ namespace Cityrobo
 
 		public override GameObject DuplicateFromSpawnLock(FVRViveHand hand)
 		{
-			GameObject gameObject = base.DuplicateFromSpawnLock(hand);
-			DP12_Mag mag = gameObject.GetComponent<DP12_Mag>();
+			GameObject copyGameObject = base.DuplicateFromSpawnLock(hand);
+			DP12_Mag copyDP12_Mag = copyGameObject.GetComponent<DP12_Mag>();
 
-			FVRFireArmMagazine leftComponent = mag.SecondMagazine.GetComponent<FVRFireArmMagazine>();
-			for (int i = 0; i < Mathf.Min(SecondMagazine.LoadedRounds.Length, leftComponent.LoadedRounds.Length); i++)
+			FVRFireArmMagazine copySecondMagazine = copyDP12_Mag.SecondMagazine;
+			for (int i = 0; i < Mathf.Min(SecondMagazine.LoadedRounds.Length, copySecondMagazine.LoadedRounds.Length); i++)
 			{
 				if (SecondMagazine.LoadedRounds[i] != null && SecondMagazine.LoadedRounds[i].LR_Mesh != null)
 				{
-					leftComponent.LoadedRounds[i].LR_Class = SecondMagazine.LoadedRounds[i].LR_Class;
-					leftComponent.LoadedRounds[i].LR_Mesh = SecondMagazine.LoadedRounds[i].LR_Mesh;
-					leftComponent.LoadedRounds[i].LR_Material = SecondMagazine.LoadedRounds[i].LR_Material;
-					leftComponent.LoadedRounds[i].LR_ObjectWrapper = SecondMagazine.LoadedRounds[i].LR_ObjectWrapper;
+					copySecondMagazine.LoadedRounds[i].LR_Class = SecondMagazine.LoadedRounds[i].LR_Class;
+					copySecondMagazine.LoadedRounds[i].LR_Mesh = SecondMagazine.LoadedRounds[i].LR_Mesh;
+					copySecondMagazine.LoadedRounds[i].LR_Material = SecondMagazine.LoadedRounds[i].LR_Material;
+					copySecondMagazine.LoadedRounds[i].LR_ObjectWrapper = SecondMagazine.LoadedRounds[i].LR_ObjectWrapper;
 				}
 			}
-			leftComponent.m_numRounds = SecondMagazine.m_numRounds;
-			leftComponent.UpdateBulletDisplay();
+			copySecondMagazine.m_numRounds = SecondMagazine.m_numRounds;
+			copySecondMagazine.UpdateBulletDisplay();
 
-			return gameObject;
+			return copyGameObject;
 		}
 #endif
+		[Tooltip("Use this if you're working with a FVRFireArmMagazine prefab and don't feel like repopulating all the field of this script manually. Use the context menu after placing the FVRFireArmMagazine here.")]
 		public  FVRFireArmMagazine CopyFVRFireArmMagazine;
-		[ContextMenu("Copy Magazine")]
-		public void CopyMagazine()
+		[ContextMenu("Copy existing Magazine Parameters")]
+		public void CopyFVRFireArmMagazineParameters()
 		{
 			System.Type type = CopyFVRFireArmMagazine.GetType();
 			Component copy = this;
-			// Copied fields can be restricted with BindingFlags
 			System.Reflection.FieldInfo[] fields = type.GetFields();
 			foreach (System.Reflection.FieldInfo field in fields)
 			{

@@ -26,7 +26,10 @@ namespace Cityrobo
         public Vector3 Second_RoundEjectionSpeed;
         public Vector3 Second_RoundEjectionSpin;
 
-        private FVRFirearmMovingProxyRound m_secondProxyRound;
+        private FVRFirearmMovingProxyRound m_secondProxy;
+        private bool m_isSecondExtractedRoundOnLowerPath = true;
+        private bool m_isSecondChamberRoundOnExtractor = false;
+
         private enum EDP12State
         {
             FirstShot,
@@ -41,8 +44,8 @@ namespace Cityrobo
             FChambers.Add(SecondChamber);
 
             GameObject gameObject = new GameObject("m_secondProxyRound");
-            m_secondProxyRound = gameObject.AddComponent<FVRFirearmMovingProxyRound>();
-            m_secondProxyRound.Init(transform);
+            m_secondProxy = gameObject.AddComponent<FVRFirearmMovingProxyRound>();
+            m_secondProxy.Init(transform);
 
             Hook();
         }
@@ -60,7 +63,7 @@ namespace Cityrobo
 
             if (Magazine != null && Magazine is DP12_Mag mag)
             {
-                if (HasExtractedRound() && m_isExtractedRoundOnLowerPath) mag.SecondMagazine.IsDropInLoadable = false;
+                if (HasExtractedRound() && m_isSecondExtractedRoundOnLowerPath) mag.SecondMagazine.IsDropInLoadable = false;
                 else mag.SecondMagazine.IsDropInLoadable = true;
             }
         }
@@ -178,6 +181,11 @@ namespace Cityrobo
             On.FistVR.TubeFedShotgun.UpdateDisplayRoundPositions -= TubeFedShotgun_UpdateDisplayRoundPositions;
             On.FistVR.TubeFedShotgun.ReleaseHammer -= TubeFedShotgun_ReleaseHammer;
             On.FistVR.TubeFedShotgun.CockHammer -= TubeFedShotgun_CockHammer;
+            On.FistVR.TubeFedShotgun.TransferShellToUpperTrack -= TubeFedShotgun_TransferShellToUpperTrack;
+            On.FistVR.TubeFedShotgun.HasExtractedRound -= TubeFedShotgun_HasExtractedRound;
+            On.FistVR.TubeFedShotgun.UpdateCarrier -= TubeFedShotgun_UpdateCarrier;
+            On.FistVR.FVRFireArmRound.DuplicateFromSpawnLock -= FVRFireArmRound_DuplicateFromSpawnLock;
+            On.FistVR.FVRFireArmRound.GetNumRoundsPulled -= FVRFireArmRound_GetNumRoundsPulled;
         }
         private void Hook()
         {
@@ -188,6 +196,158 @@ namespace Cityrobo
             On.FistVR.TubeFedShotgun.UpdateDisplayRoundPositions += TubeFedShotgun_UpdateDisplayRoundPositions;
             On.FistVR.TubeFedShotgun.ReleaseHammer += TubeFedShotgun_ReleaseHammer;
             On.FistVR.TubeFedShotgun.CockHammer += TubeFedShotgun_CockHammer;
+            On.FistVR.TubeFedShotgun.TransferShellToUpperTrack += TubeFedShotgun_TransferShellToUpperTrack;
+            On.FistVR.TubeFedShotgun.HasExtractedRound += TubeFedShotgun_HasExtractedRound;
+            On.FistVR.TubeFedShotgun.UpdateCarrier += TubeFedShotgun_UpdateCarrier;
+            On.FistVR.FVRFireArmRound.DuplicateFromSpawnLock += FVRFireArmRound_DuplicateFromSpawnLock;
+            On.FistVR.FVRFireArmRound.GetNumRoundsPulled += FVRFireArmRound_GetNumRoundsPulled;
+        }
+
+        // Patching FVRFireArmRound.GetNumRoundsPulled to make smart palming work correctly with the DP-12 magazine system
+        private int FVRFireArmRound_GetNumRoundsPulled(On.FistVR.FVRFireArmRound.orig_GetNumRoundsPulled orig, FVRFireArmRound self, FVRViveHand hand)
+        {
+            if (hand.OtherHand.CurrentInteractable is DP12_Shotgun dp12)
+            {
+                int num = 0;
+                if (dp12.RoundType == self.RoundType)
+                {
+                    DP12_Mag magazine = dp12.Magazine as DP12_Mag;
+                    if (magazine != null)
+                    {
+                        num = magazine.m_capacity - magazine.m_numRounds;
+                        num += magazine.SecondMagazine.m_capacity - magazine.SecondMagazine.m_numRounds;
+                    }
+                    for (int i = 0; i < dp12.GetChambers().Count; i++)
+                    {
+                        FVRFireArmChamber fvrfireArmChamber = dp12.GetChambers()[i];
+                        if (fvrfireArmChamber.IsManuallyChamberable && (!fvrfireArmChamber.IsFull || fvrfireArmChamber.IsSpent))
+                        {
+                            num++;
+                        }
+                    }
+                }
+                if (num == 0)
+                {
+                    num = 1 + self.ProxyRounds.Count;
+                }
+                return num;
+            }
+            else return orig(self, hand);
+        }
+
+        // Patching FVRFireArmRound.DuplicateFromSpawnLock to make smart palming work correctly with the DP-12 magazine system
+        private GameObject FVRFireArmRound_DuplicateFromSpawnLock(On.FistVR.FVRFireArmRound.orig_DuplicateFromSpawnLock orig, FVRFireArmRound self, FVRViveHand hand)
+        {
+            GameObject returnGO = orig(self, hand);
+
+            FVRFireArmRound component = returnGO.GetComponent<FVRFireArmRound>();
+
+            if (GM.Options.ControlOptions.SmartAmmoPalming == ControlOptions.SmartAmmoPalmingMode.Enabled && component != null && hand.OtherHand.CurrentInteractable != null)
+            {
+                int num = 0;
+                if (hand.OtherHand.CurrentInteractable is DP12_Shotgun dp12)
+                {
+                    if (dp12.RoundType == self.RoundType)
+                    {
+                        DP12_Mag magazine = dp12.Magazine as DP12_Mag;
+                        if (magazine != null)
+                        {
+                            num = magazine.m_capacity - magazine.m_numRounds;
+                            num += magazine.SecondMagazine.m_capacity - magazine.SecondMagazine.m_numRounds;
+                        }
+                        for (int i = 0; i < dp12.GetChambers().Count; i++)
+                        {
+                            FVRFireArmChamber fvrfireArmChamber = dp12.GetChambers()[i];
+                            if (fvrfireArmChamber.IsManuallyChamberable && (!fvrfireArmChamber.IsFull || fvrfireArmChamber.IsSpent))
+                            {
+                                num++;
+                            }
+                        }
+                    }
+                    if (num < 1)
+                    {
+                        num = self.ProxyRounds.Count;
+                    }
+
+                    component.DestroyAllProxies();
+                    int num2 = Mathf.Min(self.ProxyRounds.Count, num - 1);
+                    for (int k = 0; k < num2; k++)
+                    {
+                        component.AddProxy(self.ProxyRounds[k].Class, self.ProxyRounds[k].ObjectWrapper);
+                    }
+                    component.UpdateProxyDisplay();
+                }
+            }
+
+            return returnGO;
+        }
+
+        private void TubeFedShotgun_UpdateCarrier(On.FistVR.TubeFedShotgun.orig_UpdateCarrier orig, TubeFedShotgun self)
+        {
+            if (self == this)
+            {
+                if (UsesAnimatedCarrier)
+                {
+                    if (IsHeld)
+                    {
+                        if (m_hand.OtherHand.CurrentInteractable != null)
+                        {
+                            if (m_hand.OtherHand.CurrentInteractable is FVRFireArmRound)
+                            {
+                                float num = Vector3.Distance(m_hand.OtherHand.CurrentInteractable.transform.position, GetClosestValidPoint(CarrierComparePoint1.position, CarrierComparePoint2.position, m_hand.OtherHand.CurrentInteractable.transform.position));
+                                if (num < CarrierDetectDistance)
+                                {
+                                    m_tarCarrierRot = CarrierRots.y;
+                                }
+                                else
+                                {
+                                    m_tarCarrierRot = CarrierRots.x;
+                                }
+                            }
+                            else
+                            {
+                                m_tarCarrierRot = CarrierRots.x;
+                            }
+                        }
+                        else
+                        {
+                            m_tarCarrierRot = CarrierRots.x;
+                        }
+                    }
+                    else
+                    {
+                        m_tarCarrierRot = CarrierRots.x;
+                    }
+                    if (HasExtractedRound() && !(m_isExtractedRoundOnLowerPath || m_isSecondExtractedRoundOnLowerPath))
+                    {
+                        m_tarCarrierRot = CarrierRots.y;
+                    }
+                    if (Mathf.Abs(m_curCarrierRot - m_tarCarrierRot) > 0.001f)
+                    {
+                        m_curCarrierRot = Mathf.MoveTowards(m_curCarrierRot, m_tarCarrierRot, 270f * Time.deltaTime);
+                        Carrier.localEulerAngles = new Vector3(m_curCarrierRot, 0f, 0f);
+                    }
+                }
+            }
+            else orig(self);
+        }
+
+        private bool TubeFedShotgun_HasExtractedRound(On.FistVR.TubeFedShotgun.orig_HasExtractedRound orig, TubeFedShotgun self)
+        {
+            if (self == this) return m_proxy.IsFull || m_secondProxy.IsFull;
+            else return orig(self);
+        }
+
+        private void TubeFedShotgun_TransferShellToUpperTrack(On.FistVR.TubeFedShotgun.orig_TransferShellToUpperTrack orig, TubeFedShotgun self)
+        {
+            orig(self);
+            if (self == this)
+            {
+                if (m_secondProxy.IsFull && m_isSecondExtractedRoundOnLowerPath && !SecondChamber.IsFull)
+                {
+                    m_isSecondExtractedRoundOnLowerPath = false;
+                }
+            }
         }
 
         private void TubeFedShotgun_EjectExtractedRound(On.FistVR.TubeFedShotgun.orig_EjectExtractedRound orig, TubeFedShotgun self)
@@ -195,6 +355,11 @@ namespace Cityrobo
             orig(self);
             if (self == this)
             {
+                if (!m_isSecondChamberRoundOnExtractor)
+                {
+                    return;
+                }
+                m_isSecondChamberRoundOnExtractor = false;
                 if (SecondChamber.IsFull)
                 {
                     SecondChamber.EjectRound(Second_RoundPos_Ejection.position, transform.right * Second_RoundEjectionSpeed.x + transform.up * Second_RoundEjectionSpeed.y + transform.forward * Second_RoundEjectionSpeed.z, transform.right * Second_RoundEjectionSpin.x + transform.up * Second_RoundEjectionSpin.y + transform.forward * Second_RoundEjectionSpin.z, false);
@@ -213,15 +378,15 @@ namespace Cityrobo
                 {
                     return;
                 }
-                if (m_secondProxyRound.IsFull)
+                if (m_secondProxy.IsFull)
                 {
                     return;
                 }
-                if (!m_secondProxyRound.IsFull && mag.SecondMagazine.HasARound())
+                if (!m_secondProxy.IsFull && mag.SecondMagazine.HasARound())
                 {
                     GameObject fromPrefabReference = mag.SecondMagazine.RemoveRound(false);
-                    m_secondProxyRound.SetFromPrefabReference(fromPrefabReference);
-                    m_isExtractedRoundOnLowerPath = true;
+                    m_secondProxy.SetFromPrefabReference(fromPrefabReference);
+                    m_isSecondExtractedRoundOnLowerPath = true;
                 }
             }
         }
@@ -233,13 +398,13 @@ namespace Cityrobo
             {
                 if (SecondChamber.IsFull)
                 {
-                    m_isChamberRoundOnExtractor = true;
+                    m_isSecondChamberRoundOnExtractor = true;
                 }
-                if (m_secondProxyRound.IsFull && !SecondChamber.IsFull && !m_isExtractedRoundOnLowerPath)
+                if (m_secondProxy.IsFull && !SecondChamber.IsFull && !m_isSecondExtractedRoundOnLowerPath)
                 {
-                    m_isChamberRoundOnExtractor = true;
-                    SecondChamber.SetRound(m_secondProxyRound.Round, false);
-                    m_secondProxyRound.ClearProxy();
+                    m_isSecondChamberRoundOnExtractor = true;
+                    SecondChamber.SetRound(m_secondProxy.Round, false);
+                    m_secondProxy.ClearProxy();
                     return true;
                 }
             }
@@ -251,10 +416,10 @@ namespace Cityrobo
             bool origReturn = orig(self);
             if (self == this)
             {
-                if (m_secondProxyRound.IsFull && m_isExtractedRoundOnLowerPath && Magazine != null && Magazine is DP12_Mag mag)
+                if (m_secondProxy.IsFull && m_isSecondExtractedRoundOnLowerPath && Magazine != null && Magazine is DP12_Mag mag)
                 {
-                    mag.SecondMagazine.AddRound(m_secondProxyRound.Round.RoundClass, false, true);
-                    m_secondProxyRound.ClearProxy();
+                    mag.SecondMagazine.AddRound(m_secondProxy.Round.RoundClass, false, true);
+                    m_secondProxy.ClearProxy();
                     return true;
                 }
             }
@@ -269,7 +434,7 @@ namespace Cityrobo
                 float boltLerpBetweenLockAndFore = Bolt.GetBoltLerpBetweenLockAndFore();
                 if (SecondChamber.IsFull)
                 {
-                    if (m_isChamberRoundOnExtractor)
+                    if (m_isSecondChamberRoundOnExtractor)
                     {
                         SecondChamber.ProxyRound.position = Vector3.Lerp(Second_RoundPos_Ejecting.position, SecondChamber.transform.position, boltLerpBetweenLockAndFore);
                         SecondChamber.ProxyRound.rotation = Quaternion.Slerp(Second_RoundPos_Ejecting.rotation, SecondChamber.transform.rotation, boltLerpBetweenLockAndFore);
@@ -280,17 +445,17 @@ namespace Cityrobo
                         SecondChamber.ProxyRound.rotation = SecondChamber.transform.rotation;
                     }
                 }
-                if (m_proxy.IsFull)
+                if (m_secondProxy.IsFull)
                 {
-                    if (m_isExtractedRoundOnLowerPath || Chamber.IsFull)
+                    if (m_isSecondExtractedRoundOnLowerPath || SecondChamber.IsFull)
                     {
-                        m_secondProxyRound.ProxyRound.position = Vector3.Lerp(Second_RoundPos_LowerPath_Rearward.position, Second_RoundPos_LowerPath_Forward.position, boltLerpBetweenLockAndFore);
-                        m_secondProxyRound.ProxyRound.rotation = Quaternion.Slerp(Second_RoundPos_LowerPath_Rearward.rotation, Second_RoundPos_LowerPath_Forward.rotation, boltLerpBetweenLockAndFore);
+                        m_secondProxy.ProxyRound.position = Vector3.Lerp(Second_RoundPos_LowerPath_Rearward.position, Second_RoundPos_LowerPath_Forward.position, boltLerpBetweenLockAndFore);
+                        m_secondProxy.ProxyRound.rotation = Quaternion.Slerp(Second_RoundPos_LowerPath_Rearward.rotation, Second_RoundPos_LowerPath_Forward.rotation, boltLerpBetweenLockAndFore);
                     }
                     else
                     {
-                        m_secondProxyRound.ProxyRound.position = Vector3.Lerp(Second_RoundPos_UpperPath_Rearward.position, Second_RoundPos_UpperPath_Forward.position, boltLerpBetweenLockAndFore);
-                        m_secondProxyRound.ProxyRound.rotation = Quaternion.Slerp(Second_RoundPos_UpperPath_Rearward.rotation, Second_RoundPos_UpperPath_Forward.rotation, boltLerpBetweenLockAndFore);
+                        m_secondProxy.ProxyRound.position = Vector3.Lerp(Second_RoundPos_UpperPath_Rearward.position, Second_RoundPos_UpperPath_Forward.position, boltLerpBetweenLockAndFore);
+                        m_secondProxy.ProxyRound.rotation = Quaternion.Slerp(Second_RoundPos_UpperPath_Rearward.rotation, Second_RoundPos_UpperPath_Forward.rotation, boltLerpBetweenLockAndFore);
                     }
                 }
             }
@@ -337,18 +502,17 @@ namespace Cityrobo
             else orig(self);
         }
 #endif
-
-        public TubeFedShotgun CopyTubFedShotgun;
-        [ContextMenu("Copy Shotgun")]
-        public void CopyShotgun()
+        [Tooltip("Use this if you're working with a TubeFedMagazine prefab and don't feel like repopulating all the field of this script manually. Use the context menu after placing the TubeFedShotgun here.")]
+        public TubeFedShotgun CopyTubeFedShotgun;
+        [ContextMenu("Copy existing TubeFedShotgun Parameters")]
+        public void CopyTubeFedShotgunParameters()
         {
-            System.Type type = CopyTubFedShotgun.GetType();
+            System.Type type = CopyTubeFedShotgun.GetType();
             Component copy = this;
-            // Copied fields can be restricted with BindingFlags
             System.Reflection.FieldInfo[] fields = type.GetFields();
             foreach (System.Reflection.FieldInfo field in fields)
             {
-                field.SetValue(copy, field.GetValue(CopyTubFedShotgun));
+                field.SetValue(copy, field.GetValue(CopyTubeFedShotgun));
             }
         }
     }

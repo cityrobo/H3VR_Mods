@@ -26,6 +26,23 @@ namespace Cityrobo
         public float CooldownRate = 0.01f;
         [Tooltip("This multiplier will affect the heat gain of all parts of the gun. It will act multiplicatively with other such multipliers.")]
         public float HeatMultiplier = 1f;
+        [Tooltip("Adds a separate Multiplier for Round power. (None, Tiny, Pistol, Shotgun, Intermediate, FullPower, AntiMaterial, Ordnance, Exotic, Fire)")]
+        public bool ChangesWithCartridgePower = false;
+        [Tooltip("None, Tiny, Pistol, Shotgun, Intermediate, FullPower, AntiMaterial, Ordnance, Exotic, Fire")]
+        public float[] RoundPowerMultipliers =
+        {
+            0f,
+            0.25f,
+            0.5f,
+            0.75f,
+            1f,
+            2f,
+            4f,
+            4f,
+            1f,
+            8f
+        };
+        
 
         // Emission weight system
         [Header("Emission modification config")]
@@ -516,8 +533,15 @@ namespace Cityrobo
         {
             if (FireArm != null && firearm == FireArm)
             {
-                if (Core != null) Heat += HeatPerShot * Core.CombinedHeatMultiplier;
-                else Heat += HeatPerShot * HeatMultiplier;
+                float powerMult = 1f;
+                if (ChangesWithCartridgePower)
+                {
+                    FVRObject.OTagFirearmRoundPower power = AM.GetRoundPower(FireArm.RoundType);
+                    powerMult = RoundPowerMultipliers[(int)power];
+                }
+
+                if (Core != null) Heat += HeatPerShot * Core.CombinedHeatMultiplier * powerMult;
+                else Heat += HeatPerShot * HeatMultiplier * powerMult;
             }
         }
 
