@@ -44,7 +44,7 @@ namespace Cityrobo
             if (self.MuzzleDevices.Count == 0) orig(self, i);
             else
             {
-                if (!self.m_isHingeLatched) return;
+                if (self.GetHingeState() != Derringer.HingeState.Closed) return;
                 FVRFireArmChamber chamber = self.Barrels[self.m_curBarrel].Chamber;
                 if (!chamber.Fire()) return;
                 Transform muzzle = self.GetMuzzle();

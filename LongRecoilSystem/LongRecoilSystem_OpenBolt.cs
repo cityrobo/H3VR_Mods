@@ -37,8 +37,6 @@ namespace Cityrobo
 
         private bool _soundPlayed = false;
 
-        private string _lastMessage;
-
         public void Start()
         {
             _currentZ = originalBolt.transform.localPosition.z;

@@ -129,12 +129,8 @@ namespace Cityrobo
 
 		GameObject DuplicateFromSpawnLock(FVRPhysicalObject physicalObject)
         {
-			GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(physicalObject.ObjectWrapper.GetGameObject(), physicalObject.Transform.position, physicalObject.Transform.rotation);
+			GameObject gameObject = Instantiate(physicalObject.ObjectWrapper.GetGameObject(), physicalObject.Transform.position, physicalObject.Transform.rotation);
 			FVRPhysicalObject component = gameObject.GetComponent<FVRPhysicalObject>();
-			if (component is FVREntityProxy)
-			{
-				(component as FVREntityProxy).Data.PrimeDataLists((component as FVREntityProxy).Flags);
-			}
 			component.SetQuickBeltSlot(null);
 			if (physicalObject.MP.IsMeleeWeapon && component.MP.IsThrownDisposable)
 			{
