@@ -173,7 +173,7 @@ public class FirearmHeatingEffectEditor : Editor
             _explodingFoldOut = EditorGUILayout.Foldout(_explodingFoldOut, "Explosion System", foldout);
             if (_explodingFoldOut)
             {
-                f.ExplodingPart = (MeshRenderer)EditorGUILayout.ObjectField(new GUIContent("Exploding Part"), f.ExplodingPart, typeof(MeshRenderer), true);
+                f.ExplodingPart = (MeshRenderer)EditorGUILayout.ObjectField(new GUIContent("Exploded Part MeshRenderer"), f.ExplodingPart, typeof(MeshRenderer), true);
                 if (f.ExplodingPart != null)
                 {
                     f.ExplodingHeatThreshhold = EditorGUILayout.FloatField(new GUIContent("Exploding Heat Threshold", "Heat level at which part explodes. Don't use a value of 1. It is very unlikely the part will actually hit a perfect 1 heat."), f.ExplodingHeatThreshhold);

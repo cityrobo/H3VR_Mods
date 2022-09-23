@@ -50,14 +50,14 @@ namespace Cityrobo
         {
 			if (self == this)
 			{
-				this.m_numRounds = 0;
-				for (int i = 0; i < this.m_capacity; i++)
+				m_numRounds = 0;
+				for (int i = 0; i < m_capacity; i++)
 				{
-					this.AddRound(rClass, false, false);
+					AddRound(rClass, false, false);
 				}
 				leftMag.ReloadMagWithType(rClass);
 				rightMag.ReloadMagWithType(rClass);
-				this.UpdateBulletDisplay();
+				UpdateBulletDisplay();
 			}
 			else orig(self, rClass);
         }
@@ -119,7 +119,7 @@ namespace Cityrobo
         {
             base.UpdateInteraction(hand);
 
-			if (this.leftMag.CanManuallyEjectRounds && this.leftMag.RoundEjectionPos != null && this.leftMag.HasARound())
+			if (leftMag.CanManuallyEjectRounds && leftMag.RoundEjectionPos != null && leftMag.HasARound())
 			{
 				bool flag3 = false;
 				if (hand.IsInStreamlinedMode && hand.Input.BYButtonDown)
@@ -132,63 +132,63 @@ namespace Cityrobo
 				}
 				if (flag3)
 				{
-					if (this.FireArm != null)
+					if (FireArm != null)
 					{
-						this.FireArm.PlayAudioEvent(FirearmAudioEventType.MagazineEjectRound, 1f);
+						FireArm.PlayAudioEvent(FirearmAudioEventType.MagazineEjectRound, 1f);
 					}
 					else
 					{
-						SM.PlayGenericSound(this.Profile.MagazineEjectRound, base.transform.position);
+						SM.PlayGenericSound(Profile.MagazineEjectRound, base.transform.position);
 					}
-					if (hand.OtherHand.CurrentInteractable == null && hand.OtherHand.Input.IsGrabbing && Vector3.Distance(this.leftMag.RoundEjectionPos.position, hand.OtherHand.Input.Pos) < 0.15f)
+					if (hand.OtherHand.CurrentInteractable == null && hand.OtherHand.Input.IsGrabbing && Vector3.Distance(leftMag.RoundEjectionPos.position, hand.OtherHand.Input.Pos) < 0.15f)
 					{
-						GameObject original = this.leftMag.RemoveRound(false);
-						GameObject gameObject2 = UnityEngine.Object.Instantiate<GameObject>(original, this.leftMag.RoundEjectionPos.position, this.leftMag.RoundEjectionPos.rotation);
+						GameObject original = leftMag.RemoveRound(false);
+						GameObject gameObject2 = Instantiate(original, leftMag.RoundEjectionPos.position, leftMag.RoundEjectionPos.rotation);
 						FVRFireArmRound component2 = gameObject2.GetComponent<FVRFireArmRound>();
 						component2.SetIFF(GM.CurrentPlayerBody.GetPlayerIFF());
 						hand.OtherHand.ForceSetInteractable(component2);
 						component2.BeginInteraction(hand.OtherHand);
 					}
-					else if (hand.OtherHand.CurrentInteractable is FVRFireArmRound && ((FVRFireArmRound)hand.OtherHand.CurrentInteractable).RoundType == this.leftMag.RoundType && ((FVRFireArmRound)hand.OtherHand.CurrentInteractable).ProxyRounds.Count < ((FVRFireArmRound)hand.OtherHand.CurrentInteractable).MaxPalmedAmount && Vector3.Distance(hand.Input.Pos, hand.OtherHand.Input.Pos) < 0.15f)
+					else if (hand.OtherHand.CurrentInteractable is FVRFireArmRound && ((FVRFireArmRound)hand.OtherHand.CurrentInteractable).RoundType == leftMag.RoundType && ((FVRFireArmRound)hand.OtherHand.CurrentInteractable).ProxyRounds.Count < ((FVRFireArmRound)hand.OtherHand.CurrentInteractable).MaxPalmedAmount && Vector3.Distance(hand.Input.Pos, hand.OtherHand.Input.Pos) < 0.15f)
 					{
-						FireArmRoundClass lr_Class = this.leftMag.LoadedRounds[this.leftMag.m_numRounds - 1].LR_Class;
-						FVRObject lr_ObjectWrapper = this.leftMag.LoadedRounds[this.leftMag.m_numRounds - 1].LR_ObjectWrapper;
+						FireArmRoundClass lr_Class = leftMag.LoadedRounds[leftMag.m_numRounds - 1].LR_Class;
+						FVRObject lr_ObjectWrapper = leftMag.LoadedRounds[leftMag.m_numRounds - 1].LR_ObjectWrapper;
 						((FVRFireArmRound)hand.OtherHand.CurrentInteractable).AddProxy(lr_Class, lr_ObjectWrapper);
 						((FVRFireArmRound)hand.OtherHand.CurrentInteractable).UpdateProxyDisplay();
-						this.leftMag.RemoveRound();
+						leftMag.RemoveRound();
 					}
 					else if (hand.CurrentHoveredQuickbeltSlotDirty != null && hand.CurrentHoveredQuickbeltSlotDirty.HeldObject == null)
 					{
-						GameObject original2 = this.leftMag.RemoveRound(false);
-						GameObject gameObject3 = UnityEngine.Object.Instantiate<GameObject>(original2, this.leftMag.RoundEjectionPos.position, this.leftMag.RoundEjectionPos.rotation);
+						GameObject original2 = leftMag.RemoveRound(false);
+						GameObject gameObject3 = Instantiate(original2, leftMag.RoundEjectionPos.position, leftMag.RoundEjectionPos.rotation);
 						FVRFireArmRound component3 = gameObject3.GetComponent<FVRFireArmRound>();
 						component3.SetIFF(GM.CurrentPlayerBody.GetPlayerIFF());
 						component3.SetQuickBeltSlot(hand.CurrentHoveredQuickbeltSlotDirty);
 					}
-					else if (hand.CurrentHoveredQuickbeltSlotDirty != null && hand.CurrentHoveredQuickbeltSlotDirty.HeldObject is FVRFireArmRound && ((FVRFireArmRound)hand.CurrentHoveredQuickbeltSlotDirty.HeldObject).RoundType == this.leftMag.RoundType && ((FVRFireArmRound)hand.CurrentHoveredQuickbeltSlotDirty.HeldObject).ProxyRounds.Count < ((FVRFireArmRound)hand.CurrentHoveredQuickbeltSlotDirty.HeldObject).MaxPalmedAmount)
+					else if (hand.CurrentHoveredQuickbeltSlotDirty != null && hand.CurrentHoveredQuickbeltSlotDirty.HeldObject is FVRFireArmRound && ((FVRFireArmRound)hand.CurrentHoveredQuickbeltSlotDirty.HeldObject).RoundType == leftMag.RoundType && ((FVRFireArmRound)hand.CurrentHoveredQuickbeltSlotDirty.HeldObject).ProxyRounds.Count < ((FVRFireArmRound)hand.CurrentHoveredQuickbeltSlotDirty.HeldObject).MaxPalmedAmount)
 					{
-						FireArmRoundClass lr_Class2 = this.leftMag.LoadedRounds[this.leftMag.m_numRounds - 1].LR_Class;
-						FVRObject lr_ObjectWrapper2 = this.leftMag.LoadedRounds[this.leftMag.m_numRounds - 1].LR_ObjectWrapper;
+						FireArmRoundClass lr_Class2 = leftMag.LoadedRounds[leftMag.m_numRounds - 1].LR_Class;
+						FVRObject lr_ObjectWrapper2 = leftMag.LoadedRounds[leftMag.m_numRounds - 1].LR_ObjectWrapper;
 						((FVRFireArmRound)hand.CurrentHoveredQuickbeltSlotDirty.HeldObject).AddProxy(lr_Class2, lr_ObjectWrapper2);
 						((FVRFireArmRound)hand.CurrentHoveredQuickbeltSlotDirty.HeldObject).UpdateProxyDisplay();
-						this.leftMag.RemoveRound();
+						leftMag.RemoveRound();
 					}
 					else
 					{
-						GameObject original3 = this.leftMag.RemoveRound(false);
-						GameObject gameObject4 = UnityEngine.Object.Instantiate<GameObject>(original3, this.leftMag.RoundEjectionPos.position, this.leftMag.RoundEjectionPos.rotation);
+						GameObject original3 = leftMag.RemoveRound(false);
+						GameObject gameObject4 = Instantiate(original3, leftMag.RoundEjectionPos.position, leftMag.RoundEjectionPos.rotation);
 						gameObject4.GetComponent<FVRFireArmRound>().SetIFF(GM.CurrentPlayerBody.GetPlayerIFF());
 						gameObject4.GetComponent<Rigidbody>().AddForce(gameObject4.transform.forward * 0.5f);
-						if (this.leftMag.DisplayBullets.Length > 0 && this.leftMag.DisplayBullets[0] != null)
+						if (leftMag.DisplayBullets.Length > 0 && leftMag.DisplayBullets[0] != null)
 						{
-							gameObject4.GetComponent<FVRFireArmRound>().BeginAnimationFrom(this.leftMag.DisplayBullets[0].transform.position, this.leftMag.DisplayBullets[0].transform.rotation);
+							gameObject4.GetComponent<FVRFireArmRound>().BeginAnimationFrom(leftMag.DisplayBullets[0].transform.position, leftMag.DisplayBullets[0].transform.rotation);
 						}
 					}
 				}
 			}
 			//Debug.Log("Mag oof 4");
 
-			if (this.rightMag.CanManuallyEjectRounds && this.rightMag.RoundEjectionPos != null && this.rightMag.HasARound())
+			if (rightMag.CanManuallyEjectRounds && rightMag.RoundEjectionPos != null && rightMag.HasARound())
 			{
 				bool flag3 = false;
 				if (hand.IsInStreamlinedMode && hand.Input.BYButtonDown)
@@ -201,56 +201,56 @@ namespace Cityrobo
 				}
 				if (flag3)
 				{
-					if (this.FireArm != null)
+					if (FireArm != null)
 					{
-						this.FireArm.PlayAudioEvent(FirearmAudioEventType.MagazineEjectRound, 1f);
+						FireArm.PlayAudioEvent(FirearmAudioEventType.MagazineEjectRound, 1f);
 					}
 					else
 					{
-						SM.PlayGenericSound(this.Profile.MagazineEjectRound, base.transform.position);
+						SM.PlayGenericSound(Profile.MagazineEjectRound, transform.position);
 					}
-					if (hand.OtherHand.CurrentInteractable == null && hand.OtherHand.Input.IsGrabbing && Vector3.Distance(this.rightMag.RoundEjectionPos.position, hand.OtherHand.Input.Pos) < 0.15f)
+					if (hand.OtherHand.CurrentInteractable == null && hand.OtherHand.Input.IsGrabbing && Vector3.Distance(rightMag.RoundEjectionPos.position, hand.OtherHand.Input.Pos) < 0.15f)
 					{
-						GameObject original = this.rightMag.RemoveRound(false);
-						GameObject gameObject2 = UnityEngine.Object.Instantiate<GameObject>(original, this.rightMag.RoundEjectionPos.position, this.rightMag.RoundEjectionPos.rotation);
+						GameObject original = rightMag.RemoveRound(false);
+						GameObject gameObject2 = Instantiate(original, rightMag.RoundEjectionPos.position, rightMag.RoundEjectionPos.rotation);
 						FVRFireArmRound component2 = gameObject2.GetComponent<FVRFireArmRound>();
 						component2.SetIFF(GM.CurrentPlayerBody.GetPlayerIFF());
 						hand.OtherHand.ForceSetInteractable(component2);
 						component2.BeginInteraction(hand.OtherHand);
 					}
-					else if (hand.OtherHand.CurrentInteractable is FVRFireArmRound && ((FVRFireArmRound)hand.OtherHand.CurrentInteractable).RoundType == this.rightMag.RoundType && ((FVRFireArmRound)hand.OtherHand.CurrentInteractable).ProxyRounds.Count < ((FVRFireArmRound)hand.OtherHand.CurrentInteractable).MaxPalmedAmount && Vector3.Distance(hand.Input.Pos, hand.OtherHand.Input.Pos) < 0.15f)
+					else if (hand.OtherHand.CurrentInteractable is FVRFireArmRound && ((FVRFireArmRound)hand.OtherHand.CurrentInteractable).RoundType == rightMag.RoundType && ((FVRFireArmRound)hand.OtherHand.CurrentInteractable).ProxyRounds.Count < ((FVRFireArmRound)hand.OtherHand.CurrentInteractable).MaxPalmedAmount && Vector3.Distance(hand.Input.Pos, hand.OtherHand.Input.Pos) < 0.15f)
 					{
-						FireArmRoundClass lr_Class = this.rightMag.LoadedRounds[this.rightMag.m_numRounds - 1].LR_Class;
-						FVRObject lr_ObjectWrapper = this.rightMag.LoadedRounds[this.rightMag.m_numRounds - 1].LR_ObjectWrapper;
+						FireArmRoundClass lr_Class = rightMag.LoadedRounds[rightMag.m_numRounds - 1].LR_Class;
+						FVRObject lr_ObjectWrapper = rightMag.LoadedRounds[rightMag.m_numRounds - 1].LR_ObjectWrapper;
 						((FVRFireArmRound)hand.OtherHand.CurrentInteractable).AddProxy(lr_Class, lr_ObjectWrapper);
 						((FVRFireArmRound)hand.OtherHand.CurrentInteractable).UpdateProxyDisplay();
-						this.rightMag.RemoveRound();
+						rightMag.RemoveRound();
 					}
 					else if (hand.CurrentHoveredQuickbeltSlotDirty != null && hand.CurrentHoveredQuickbeltSlotDirty.HeldObject == null)
 					{
-						GameObject original2 = this.rightMag.RemoveRound(false);
-						GameObject gameObject3 = UnityEngine.Object.Instantiate<GameObject>(original2, this.rightMag.RoundEjectionPos.position, this.rightMag.RoundEjectionPos.rotation);
+						GameObject original2 = rightMag.RemoveRound(false);
+						GameObject gameObject3 = Instantiate(original2, rightMag.RoundEjectionPos.position, rightMag.RoundEjectionPos.rotation);
 						FVRFireArmRound component3 = gameObject3.GetComponent<FVRFireArmRound>();
 						component3.SetIFF(GM.CurrentPlayerBody.GetPlayerIFF());
 						component3.SetQuickBeltSlot(hand.CurrentHoveredQuickbeltSlotDirty);
 					}
-					else if (hand.CurrentHoveredQuickbeltSlotDirty != null && hand.CurrentHoveredQuickbeltSlotDirty.HeldObject is FVRFireArmRound && ((FVRFireArmRound)hand.CurrentHoveredQuickbeltSlotDirty.HeldObject).RoundType == this.rightMag.RoundType && ((FVRFireArmRound)hand.CurrentHoveredQuickbeltSlotDirty.HeldObject).ProxyRounds.Count < ((FVRFireArmRound)hand.CurrentHoveredQuickbeltSlotDirty.HeldObject).MaxPalmedAmount)
+					else if (hand.CurrentHoveredQuickbeltSlotDirty != null && hand.CurrentHoveredQuickbeltSlotDirty.HeldObject is FVRFireArmRound && ((FVRFireArmRound)hand.CurrentHoveredQuickbeltSlotDirty.HeldObject).RoundType == rightMag.RoundType && ((FVRFireArmRound)hand.CurrentHoveredQuickbeltSlotDirty.HeldObject).ProxyRounds.Count < ((FVRFireArmRound)hand.CurrentHoveredQuickbeltSlotDirty.HeldObject).MaxPalmedAmount)
 					{
-						FireArmRoundClass lr_Class2 = this.rightMag.LoadedRounds[this.rightMag.m_numRounds - 1].LR_Class;
-						FVRObject lr_ObjectWrapper2 = this.rightMag.LoadedRounds[this.rightMag.m_numRounds - 1].LR_ObjectWrapper;
+						FireArmRoundClass lr_Class2 = rightMag.LoadedRounds[rightMag.m_numRounds - 1].LR_Class;
+						FVRObject lr_ObjectWrapper2 = rightMag.LoadedRounds[rightMag.m_numRounds - 1].LR_ObjectWrapper;
 						((FVRFireArmRound)hand.CurrentHoveredQuickbeltSlotDirty.HeldObject).AddProxy(lr_Class2, lr_ObjectWrapper2);
 						((FVRFireArmRound)hand.CurrentHoveredQuickbeltSlotDirty.HeldObject).UpdateProxyDisplay();
-						this.rightMag.RemoveRound();
+						rightMag.RemoveRound();
 					}
 					else
 					{
-						GameObject original3 = this.rightMag.RemoveRound(false);
-						GameObject gameObject4 = UnityEngine.Object.Instantiate<GameObject>(original3, this.rightMag.RoundEjectionPos.position, this.rightMag.RoundEjectionPos.rotation);
+						GameObject original3 = rightMag.RemoveRound(false);
+						GameObject gameObject4 = Instantiate(original3, rightMag.RoundEjectionPos.position, rightMag.RoundEjectionPos.rotation);
 						gameObject4.GetComponent<FVRFireArmRound>().SetIFF(GM.CurrentPlayerBody.GetPlayerIFF());
 						gameObject4.GetComponent<Rigidbody>().AddForce(gameObject4.transform.forward * 0.5f);
-						if (this.rightMag.DisplayBullets.Length > 0 && this.rightMag.DisplayBullets[0] != null)
+						if (rightMag.DisplayBullets.Length > 0 && rightMag.DisplayBullets[0] != null)
 						{
-							gameObject4.GetComponent<FVRFireArmRound>().BeginAnimationFrom(this.rightMag.DisplayBullets[0].transform.position, this.rightMag.DisplayBullets[0].transform.rotation);
+							gameObject4.GetComponent<FVRFireArmRound>().BeginAnimationFrom(rightMag.DisplayBullets[0].transform.position, rightMag.DisplayBullets[0].transform.rotation);
 						}
 					}
 				}
@@ -263,31 +263,31 @@ namespace Cityrobo
 			TKB_059_Magazine mag = gameObject.GetComponent<TKB_059_Magazine>();
 
 			FVRFireArmMagazine leftComponent = mag.leftMag.GetComponent<FVRFireArmMagazine>();
-			for (int i = 0; i < Mathf.Min(this.leftMag.LoadedRounds.Length, leftComponent.LoadedRounds.Length); i++)
+			for (int i = 0; i < Mathf.Min(leftMag.LoadedRounds.Length, leftComponent.LoadedRounds.Length); i++)
 			{
-				if (this.leftMag.LoadedRounds[i] != null && this.leftMag.LoadedRounds[i].LR_Mesh != null)
+				if (leftMag.LoadedRounds[i] != null && leftMag.LoadedRounds[i].LR_Mesh != null)
 				{
-					leftComponent.LoadedRounds[i].LR_Class = this.leftMag.LoadedRounds[i].LR_Class;
-					leftComponent.LoadedRounds[i].LR_Mesh = this.leftMag.LoadedRounds[i].LR_Mesh;
-					leftComponent.LoadedRounds[i].LR_Material = this.leftMag.LoadedRounds[i].LR_Material;
-					leftComponent.LoadedRounds[i].LR_ObjectWrapper = this.leftMag.LoadedRounds[i].LR_ObjectWrapper;
+					leftComponent.LoadedRounds[i].LR_Class = leftMag.LoadedRounds[i].LR_Class;
+					leftComponent.LoadedRounds[i].LR_Mesh = leftMag.LoadedRounds[i].LR_Mesh;
+					leftComponent.LoadedRounds[i].LR_Material = leftMag.LoadedRounds[i].LR_Material;
+					leftComponent.LoadedRounds[i].LR_ObjectWrapper = leftMag.LoadedRounds[i].LR_ObjectWrapper;
 				}
 			}
-			leftComponent.m_numRounds = this.leftMag.m_numRounds;
+			leftComponent.m_numRounds = leftMag.m_numRounds;
 			leftComponent.UpdateBulletDisplay();
 
 			FVRFireArmMagazine rightComponent = mag.rightMag.GetComponent<FVRFireArmMagazine>();
-			for (int i = 0; i < Mathf.Min(this.rightMag.LoadedRounds.Length, rightComponent.LoadedRounds.Length); i++)
+			for (int i = 0; i < Mathf.Min(rightMag.LoadedRounds.Length, rightComponent.LoadedRounds.Length); i++)
 			{
-				if (this.rightMag.LoadedRounds[i] != null && this.rightMag.LoadedRounds[i].LR_Mesh != null)
+				if (rightMag.LoadedRounds[i] != null && rightMag.LoadedRounds[i].LR_Mesh != null)
 				{
-					rightComponent.LoadedRounds[i].LR_Class = this.rightMag.LoadedRounds[i].LR_Class;
-					rightComponent.LoadedRounds[i].LR_Mesh = this.rightMag.LoadedRounds[i].LR_Mesh;
-					rightComponent.LoadedRounds[i].LR_Material = this.rightMag.LoadedRounds[i].LR_Material;
-					rightComponent.LoadedRounds[i].LR_ObjectWrapper = this.rightMag.LoadedRounds[i].LR_ObjectWrapper;
+					rightComponent.LoadedRounds[i].LR_Class = rightMag.LoadedRounds[i].LR_Class;
+					rightComponent.LoadedRounds[i].LR_Mesh = rightMag.LoadedRounds[i].LR_Mesh;
+					rightComponent.LoadedRounds[i].LR_Material = rightMag.LoadedRounds[i].LR_Material;
+					rightComponent.LoadedRounds[i].LR_ObjectWrapper = rightMag.LoadedRounds[i].LR_ObjectWrapper;
 				}
 			}
-			rightComponent.m_numRounds = this.rightMag.m_numRounds;
+			rightComponent.m_numRounds = rightMag.m_numRounds;
 			rightComponent.UpdateBulletDisplay();
 
 			return gameObject;

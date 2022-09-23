@@ -1,5 +1,6 @@
 using FistVR;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,16 +36,16 @@ namespace Cityrobo
         {
             base.Awake();
 
-            this.FChambers.Add(leftChamber);
-            this.FChambers.Add(rightChamber);
+            FChambers.Add(leftChamber);
+            FChambers.Add(rightChamber);
 
             GameObject leftProxy = new GameObject("m_proxyRoundLeft");
-            this.m_leftProxy = leftProxy.AddComponent<FVRFirearmMovingProxyRound>();
-            this.m_leftProxy.Init(base.transform);
+            m_leftProxy = leftProxy.AddComponent<FVRFirearmMovingProxyRound>();
+            m_leftProxy.Init(transform);
 
             GameObject rightProxy = new GameObject("m_proxyRoundRight");
-            this.m_rightProxy = rightProxy.AddComponent<FVRFirearmMovingProxyRound>();
-            this.m_rightProxy.Init(base.transform);
+            m_rightProxy = rightProxy.AddComponent<FVRFirearmMovingProxyRound>();
+            m_rightProxy.Init(transform);
 
             if (leftMagExit == null && rightMagExit == null && leftEjecting == null && rightEjecting == null)
             {
@@ -63,28 +64,104 @@ namespace Cityrobo
         {
             List<FireArmRoundClass> roundList = new List<FireArmRoundClass>();
 
-            if (this.Chamber.IsFull && !this.Chamber.IsSpent)
+            if (Chamber.IsFull && !Chamber.IsSpent)
             {
-                roundList.Add(this.Chamber.GetRound().RoundClass);
+                roundList.Add(Chamber.GetRound().RoundClass);
             }
-            if (this.leftChamber.IsFull && !this.leftChamber.IsSpent)
+            if (leftChamber.IsFull && !leftChamber.IsSpent)
             {
-                roundList.Add(this.leftChamber.GetRound().RoundClass);
+                roundList.Add(leftChamber.GetRound().RoundClass);
             }
-            if (this.rightChamber.IsFull && !this.rightChamber.IsSpent)
+            if (rightChamber.IsFull && !rightChamber.IsSpent)
             {
-                roundList.Add(this.rightChamber.GetRound().RoundClass);
+                roundList.Add(rightChamber.GetRound().RoundClass);
             }
             return roundList;
         }
         public override void SetLoadedChambers(List<FireArmRoundClass> rounds)
         {
-            if (rounds.Count > 0)
+            base.SetLoadedChambers(rounds);
+
+            if (rounds.Count > 1) leftChamber.Autochamber(rounds[1]);
+            if (rounds.Count > 2) rightChamber.Autochamber(rounds[2]);
+        }
+
+        public override void ConfigureFromFlagDic(Dictionary<string, string> f)
+        {
+            base.ConfigureFromFlagDic(f);
+            if (Magazine != null && Magazine is TKB_059_Magazine mag)
             {
-                this.Chamber.Autochamber(rounds[0]);
-                this.leftChamber.Autochamber(rounds[0]);
-                this.rightChamber.Autochamber(rounds[0]);
+                string key = "LeftMagazineChamber";
+                string value = string.Empty;
+
+                string[] roundClassStrings;
+                if (f.ContainsKey(key))
+                {
+                    value = f[key];
+
+                    roundClassStrings = value.Split(';');
+
+                    foreach (string roundClassString in roundClassStrings)
+                    {
+                        mag.leftMag.AddRound((FireArmRoundClass)Enum.Parse(typeof(FireArmRoundClass), roundClassString), false, false);
+                    }
+
+                    mag.leftMag.UpdateBulletDisplay();
+                }
+
+                key = "RightMagazineChamber";
+                value = string.Empty;
+
+                if (f.ContainsKey(key))
+                {
+                    value = f[key];
+
+                    roundClassStrings = value.Split(';');
+
+                    foreach (string roundClassString in roundClassStrings)
+                    {
+                        mag.rightMag.AddRound((FireArmRoundClass)Enum.Parse(typeof(FireArmRoundClass), roundClassString), false, false);
+                    }
+
+                    mag.rightMag.UpdateBulletDisplay();
+                }
             }
+        }
+
+        public override Dictionary<string, string> GetFlagDic()
+        {
+            Dictionary<string, string> flagDic = base.GetFlagDic();
+
+            string key = "LeftMagazineChamber";
+            string value = string.Empty;
+
+            if (Magazine != null && Magazine is TKB_059_Magazine mag && mag.leftMag.HasARound())
+            {
+                value += mag.leftMag.LoadedRounds[0].LR_Class.ToString();
+
+                for (int i = 1; i < mag.leftMag.m_numRounds; i++)
+                {
+                    value += ";" + mag.leftMag.LoadedRounds[i].LR_Class.ToString();
+                }
+
+                flagDic.Add(key, value);
+
+                key = "RightMagazineChamber";
+                value = string.Empty;
+
+                if (mag.rightMag.HasARound())
+                {
+                    value += mag.rightMag.LoadedRounds[0].LR_Class.ToString();
+
+                    for (int i = 1; i < mag.rightMag.m_numRounds; i++)
+                    {
+                        value += ";" + mag.rightMag.LoadedRounds[i].LR_Class.ToString();
+                    }
+
+                    flagDic.Add(key, value);
+                }
+            }
+            return flagDic;
         }
 
         public override void OnDestroy()
@@ -117,38 +194,38 @@ namespace Cityrobo
         {
             if (self == this)
             {
-                float boltLerpBetweenLockAndFore = this.Bolt.GetBoltLerpBetweenLockAndFore();
-                if (this.Chamber.IsFull)
+                float boltLerpBetweenLockAndFore = Bolt.GetBoltLerpBetweenLockAndFore();
+                if (Chamber.IsFull)
                 {
-                    this.Chamber.ProxyRound.position = Vector3.Lerp(this.RoundPos_Ejecting.position, this.Chamber.transform.position, boltLerpBetweenLockAndFore);
-                    this.Chamber.ProxyRound.rotation = Quaternion.Slerp(this.RoundPos_Ejecting.rotation, this.Chamber.transform.rotation, boltLerpBetweenLockAndFore);
+                    Chamber.ProxyRound.position = Vector3.Lerp(RoundPos_Ejecting.position, Chamber.transform.position, boltLerpBetweenLockAndFore);
+                    Chamber.ProxyRound.rotation = Quaternion.Slerp(RoundPos_Ejecting.rotation, Chamber.transform.rotation, boltLerpBetweenLockAndFore);
                 }
-                if (this.m_proxy.IsFull)
+                if (m_proxy.IsFull)
                 {
-                    this.m_proxy.ProxyRound.position = Vector3.Lerp(this.RoundPos_MagazinePos.position, this.Chamber.transform.position, boltLerpBetweenLockAndFore);
-                    this.m_proxy.ProxyRound.rotation = Quaternion.Slerp(this.RoundPos_MagazinePos.rotation, this.Chamber.transform.rotation, boltLerpBetweenLockAndFore);
-                }
-
-                if (this.leftChamber.IsFull)
-                {
-                    this.leftChamber.ProxyRound.position = Vector3.Lerp(this.leftEjecting.position, this.leftChamber.transform.position, boltLerpBetweenLockAndFore);
-                    this.leftChamber.ProxyRound.rotation = Quaternion.Slerp(this.leftEjecting.rotation, this.leftChamber.transform.rotation, boltLerpBetweenLockAndFore);
-                }
-                if (this.m_leftProxy.IsFull)
-                {
-                    this.m_leftProxy.ProxyRound.position = Vector3.Lerp(this.leftMagExit.position, this.leftChamber.transform.position, boltLerpBetweenLockAndFore);
-                    this.m_leftProxy.ProxyRound.rotation = Quaternion.Slerp(this.leftMagExit.rotation, this.leftChamber.transform.rotation, boltLerpBetweenLockAndFore);
+                    m_proxy.ProxyRound.position = Vector3.Lerp(RoundPos_MagazinePos.position, Chamber.transform.position, boltLerpBetweenLockAndFore);
+                    m_proxy.ProxyRound.rotation = Quaternion.Slerp(RoundPos_MagazinePos.rotation, Chamber.transform.rotation, boltLerpBetweenLockAndFore);
                 }
 
-                if (this.rightChamber.IsFull)
+                if (leftChamber.IsFull)
                 {
-                    this.rightChamber.ProxyRound.position = Vector3.Lerp(this.rightEjecting.position, this.rightChamber.transform.position, boltLerpBetweenLockAndFore);
-                    this.rightChamber.ProxyRound.rotation = Quaternion.Slerp(this.rightEjecting.rotation, this.rightChamber.transform.rotation, boltLerpBetweenLockAndFore);
+                    leftChamber.ProxyRound.position = Vector3.Lerp(leftEjecting.position, leftChamber.transform.position, boltLerpBetweenLockAndFore);
+                    leftChamber.ProxyRound.rotation = Quaternion.Slerp(leftEjecting.rotation, leftChamber.transform.rotation, boltLerpBetweenLockAndFore);
                 }
-                if (this.m_rightProxy.IsFull)
+                if (m_leftProxy.IsFull)
                 {
-                    this.m_rightProxy.ProxyRound.position = Vector3.Lerp(this.rightMagExit.position, this.rightChamber.transform.position, boltLerpBetweenLockAndFore);
-                    this.m_rightProxy.ProxyRound.rotation = Quaternion.Slerp(this.rightMagExit.rotation, this.rightChamber.transform.rotation, boltLerpBetweenLockAndFore);
+                    m_leftProxy.ProxyRound.position = Vector3.Lerp(leftMagExit.position, leftChamber.transform.position, boltLerpBetweenLockAndFore);
+                    m_leftProxy.ProxyRound.rotation = Quaternion.Slerp(leftMagExit.rotation, leftChamber.transform.rotation, boltLerpBetweenLockAndFore);
+                }
+
+                if (rightChamber.IsFull)
+                {
+                    rightChamber.ProxyRound.position = Vector3.Lerp(rightEjecting.position, rightChamber.transform.position, boltLerpBetweenLockAndFore);
+                    rightChamber.ProxyRound.rotation = Quaternion.Slerp(rightEjecting.rotation, rightChamber.transform.rotation, boltLerpBetweenLockAndFore);
+                }
+                if (m_rightProxy.IsFull)
+                {
+                    m_rightProxy.ProxyRound.position = Vector3.Lerp(rightMagExit.position, rightChamber.transform.position, boltLerpBetweenLockAndFore);
+                    m_rightProxy.ProxyRound.rotation = Quaternion.Slerp(rightMagExit.rotation, rightChamber.transform.rotation, boltLerpBetweenLockAndFore);
                 }
             }
             else orig(self);
@@ -158,7 +235,7 @@ namespace Cityrobo
         {
             if (self == this)
             {
-                return (this.m_proxy.IsFull || this.m_leftProxy.IsFull || this.m_rightProxy.IsFull);
+                return (m_proxy.IsFull || m_leftProxy.IsFull || m_rightProxy.IsFull);
             }
             else return orig(self);
         }
@@ -167,17 +244,17 @@ namespace Cityrobo
         {
             if (self == this)
             {
-                if (this.Chamber.IsFull)
+                if (Chamber.IsFull)
                 {
-                    this.Chamber.EjectRound(this.RoundPos_Ejection.position, base.transform.right * this.EjectionSpeed.x + base.transform.up * this.EjectionSpeed.y + base.transform.forward * this.EjectionSpeed.z, base.transform.right * this.EjectionSpin.x + base.transform.up * this.EjectionSpin.y + base.transform.forward * this.EjectionSpin.z, false);
+                    Chamber.EjectRound(RoundPos_Ejection.position, transform.right * EjectionSpeed.x + transform.up * EjectionSpeed.y + transform.forward * EjectionSpeed.z, transform.right * EjectionSpin.x + transform.up * EjectionSpin.y + transform.forward * EjectionSpin.z, false);
                 }
-                if (this.leftChamber.IsFull)
+                if (leftChamber.IsFull)
                 {
-                    this.leftChamber.EjectRound(this.leftEjection.position, base.transform.right * this.EjectionSpeed.x + base.transform.up * this.EjectionSpeed.y + base.transform.forward * this.EjectionSpeed.z, base.transform.right * this.EjectionSpin.x + base.transform.up * this.EjectionSpin.y + base.transform.forward * this.EjectionSpin.z, false);
+                    leftChamber.EjectRound(leftEjection.position, transform.right * EjectionSpeed.x + transform.up * EjectionSpeed.y + transform.forward * EjectionSpeed.z, transform.right * EjectionSpin.x + transform.up * EjectionSpin.y + transform.forward * EjectionSpin.z, false);
                 }
-                if (this.rightChamber.IsFull)
+                if (rightChamber.IsFull)
                 {
-                    this.rightChamber.EjectRound(this.rightEjection.position, base.transform.right * this.EjectionSpeed.x + base.transform.up * this.EjectionSpeed.y + base.transform.forward * this.EjectionSpeed.z, base.transform.right * this.EjectionSpin.x + base.transform.up * this.EjectionSpin.y + base.transform.forward * this.EjectionSpin.z, false);
+                    rightChamber.EjectRound(rightEjection.position, transform.right * EjectionSpeed.x + transform.up * EjectionSpeed.y + transform.forward * EjectionSpeed.z, transform.right * EjectionSpin.x + transform.up * EjectionSpin.y + transform.forward * EjectionSpin.z, false);
                 }
             }
             else orig(self);
@@ -187,27 +264,27 @@ namespace Cityrobo
         {
             if (this == self)
             {
-                if (!(this.m_proxy.IsFull && !this.Chamber.IsFull) && !(this.m_leftProxy.IsFull && !this.leftChamber.IsFull) && !(this.m_rightProxy.IsFull && !this.rightChamber.IsFull))
+                if (!(m_proxy.IsFull && !Chamber.IsFull) && !(m_leftProxy.IsFull && !leftChamber.IsFull) && !(m_rightProxy.IsFull && !rightChamber.IsFull))
                 {
                     //Debug.Log("Not Chambering Round");
 
                     return false;
                 }
 
-                if (this.m_proxy.IsFull && !this.Chamber.IsFull)
+                if (m_proxy.IsFull && !Chamber.IsFull)
                 {
-                    this.Chamber.SetRound(this.m_proxy.Round, false);
-                    this.m_proxy.ClearProxy();
+                    Chamber.SetRound(m_proxy.Round, false);
+                    m_proxy.ClearProxy();
                 }
-                if (this.m_leftProxy.IsFull && !this.leftChamber.IsFull)
+                if (m_leftProxy.IsFull && !leftChamber.IsFull)
                 {
-                    this.leftChamber.SetRound(this.m_leftProxy.Round, false);
-                    this.m_leftProxy.ClearProxy();
+                    leftChamber.SetRound(m_leftProxy.Round, false);
+                    m_leftProxy.ClearProxy();
                 }
-                if (this.m_rightProxy.IsFull && !this.rightChamber.IsFull)
+                if (m_rightProxy.IsFull && !rightChamber.IsFull)
                 {
-                    this.rightChamber.SetRound(this.m_rightProxy.Round, false);
-                    this.m_rightProxy.ClearProxy();
+                    rightChamber.SetRound(m_rightProxy.Round, false);
+                    m_rightProxy.ClearProxy();
                 }
                 return true;
             }
@@ -225,22 +302,22 @@ namespace Cityrobo
                 GameObject fromPrefabReferenceLeft = null;
                 GameObject fromPrefabReferenceRight = null;
 
-                if (!this.m_proxy.IsFull && this.Magazine != null && !this.Magazine.IsBeltBox && this.Magazine.HasARound())
+                if (!m_proxy.IsFull && Magazine != null && !Magazine.IsBeltBox && Magazine.HasARound())
                 {
                     flag = true;
-                    fromPrefabReference = this.Magazine.RemoveRound(false);
+                    fromPrefabReference = Magazine.RemoveRound(false);
                 }
 
-                if (!this.m_leftProxy.IsFull && this.Magazine != null && !this.Magazine.IsBeltBox && (this.Magazine as TKB_059_Magazine).leftMag.HasARound())
+                if (!m_leftProxy.IsFull && Magazine != null && !Magazine.IsBeltBox && (Magazine as TKB_059_Magazine).leftMag.HasARound())
                 {
                     flagLeft = true;
-                    fromPrefabReferenceLeft = (this.Magazine as TKB_059_Magazine).leftMag.RemoveRound(false);
+                    fromPrefabReferenceLeft = (Magazine as TKB_059_Magazine).leftMag.RemoveRound(false);
                 }
 
-                if (!this.m_rightProxy.IsFull && this.Magazine != null && !this.Magazine.IsBeltBox && (this.Magazine as TKB_059_Magazine).rightMag.HasARound())
+                if (!m_rightProxy.IsFull && Magazine != null && !Magazine.IsBeltBox && (Magazine as TKB_059_Magazine).rightMag.HasARound())
                 {
                     flagRight = true;
-                    fromPrefabReferenceRight = (this.Magazine as TKB_059_Magazine).rightMag.RemoveRound(false);
+                    fromPrefabReferenceRight = (Magazine as TKB_059_Magazine).rightMag.RemoveRound(false);
                 }
 
                 //Debug.Log("Chamber flag: " + flag);
@@ -256,15 +333,15 @@ namespace Cityrobo
                 }
                 if (flag)
                 {
-                    this.m_proxy.SetFromPrefabReference(fromPrefabReference);
+                    m_proxy.SetFromPrefabReference(fromPrefabReference);
                 }
                 if (flagLeft)
                 {
-                    this.m_leftProxy.SetFromPrefabReference(fromPrefabReferenceLeft);
+                    m_leftProxy.SetFromPrefabReference(fromPrefabReferenceLeft);
                 }
                 if (flagRight)
                 {
-                    this.m_rightProxy.SetFromPrefabReference(fromPrefabReferenceRight);
+                    m_rightProxy.SetFromPrefabReference(fromPrefabReferenceRight);
                 }
             }
             else orig(self);
@@ -274,9 +351,9 @@ namespace Cityrobo
         {
             if (self == this)
             {
-                bool chamberFire = this.Chamber.Fire();
-                bool leftChamberFire = this.leftChamber.Fire();
-                bool rightChamberFire = this.rightChamber.Fire();
+                bool chamberFire = Chamber.Fire();
+                bool leftChamberFire = leftChamber.Fire();
+                bool rightChamberFire = rightChamber.Fire();
 
                 //Debug.Log("chamberFire: " + chamberFire);
                 //Debug.Log("leftChamberFire: " + leftChamberFire);
@@ -288,75 +365,79 @@ namespace Cityrobo
 
                     return false;
                 }
-                this.m_timeSinceFiredShot = 0f;
+                m_timeSinceFiredShot = 0f;
                 float velMult = 1f;
-                if (this.UsesStickyDetonation)
+                if (UsesStickyDetonation)
                 {
-                    velMult = 1f + Mathf.Lerp(0f, this.StickyMaxMultBonus, this.m_stickyChargeUp);
+                    velMult = 1f + Mathf.Lerp(0f, StickyMaxMultBonus, m_stickyChargeUp);
                 }
-                bool twoHandStabilized = this.IsTwoHandStabilized();
-                bool foregripStabilized = base.AltGrip != null;
-                bool shoulderStabilized = this.IsShoulderStabilized();
+                bool twoHandStabilized = IsTwoHandStabilized();
+                bool foregripStabilized = AltGrip != null;
+                bool shoulderStabilized = IsShoulderStabilized();
 
+                int numberShots = 0;
                 if (chamberFire)
                 {
-                    base.Fire(this.Chamber, this.GetMuzzle(), true, velMult);
-                    this.Recoil(twoHandStabilized, foregripStabilized, shoulderStabilized, null, 1f);
+                    Fire(Chamber, GetMuzzle(), true, velMult);
+                    numberShots++;
                 }
                 if (leftChamberFire)
                 {
-                    base.Fire(leftChamber, leftMuzzle, true, velMult);
-                    this.Recoil(twoHandStabilized, foregripStabilized, shoulderStabilized, null, 1f);
+                    Fire(leftChamber, leftMuzzle, true, velMult);
+                    numberShots++;
                 }
                 if (rightChamberFire)
                 {
-                    base.Fire(rightChamber, rightMuzzle, true, velMult);
-                    this.Recoil(twoHandStabilized, foregripStabilized, shoulderStabilized, null, 1f);
+                    Fire(rightChamber, rightMuzzle, true, velMult);
+                    numberShots++;
                 }
+
                 bool flag = false;
-                ClosedBoltWeapon.FireSelectorMode fireSelectorMode = this.FireSelector_Modes[this.m_fireSelectorMode];
+                ClosedBoltWeapon.FireSelectorMode fireSelectorMode = FireSelector_Modes[m_fireSelectorMode];
                 if (fireSelectorMode.ModeType == ClosedBoltWeapon.FireSelectorModeType.SuperFastBurst)
                 {
                     for (int i = 0; i < fireSelectorMode.BurstAmount - 1; i++)
                     {
-                        if (this.Magazine.HasARound())
+                        if (Magazine.HasARound())
                         {
-                            this.Magazine.RemoveRound();
-                            base.Fire(this.Chamber, this.GetMuzzle(), false, 1f);
+                            Magazine.RemoveRound();
+                            Fire(Chamber, GetMuzzle(), false, 1f);
                             flag = true;
-                            this.Recoil(twoHandStabilized, foregripStabilized, shoulderStabilized, null, 1f);
+                            Recoil(twoHandStabilized, foregripStabilized, shoulderStabilized, null, 1f);
                         }
-                        if ((this.Magazine as TKB_059_Magazine).HasARound())
+                        if ((Magazine as TKB_059_Magazine).HasARound())
                         {
-                            this.Magazine.RemoveRound();
-                            base.Fire(this.Chamber, this.GetMuzzle(), false, 1f);
+                            Magazine.RemoveRound();
+                            Fire(Chamber, GetMuzzle(), false, 1f);
                             flag = true;
-                            this.Recoil(twoHandStabilized, foregripStabilized, shoulderStabilized, null, 1f);
+                            Recoil(twoHandStabilized, foregripStabilized, shoulderStabilized, null, 1f);
                         }
                     }
                 }
-                this.FireMuzzleSmoke();
-                if (this.UsesDelinker && this.HasBelt)
+                FireMuzzleSmoke();
+                if (UsesDelinker && HasBelt)
                 {
-                    this.DelinkerSystem.Emit(1);
+                    DelinkerSystem.Emit(1);
                 }
-                if (this.HasBelt)
+                if (HasBelt)
                 {
-                    this.BeltDD.AddJitter();
+                    BeltDD.AddJitter();
                 }
                 if (flag)
                 {
-                    base.PlayAudioGunShot(false, this.Chamber.GetRound().TailClass, this.Chamber.GetRound().TailClassSuppressed, GM.CurrentPlayerBody.GetCurrentSoundEnvironment());
+                    PlayAudioGunShot(false, Chamber.GetRound().TailClass, Chamber.GetRound().TailClassSuppressed, GM.CurrentPlayerBody.GetCurrentSoundEnvironment());
                 }
                 else
                 {
-                    if (chamberFire) base.PlayAudioGunShot(this.Chamber.GetRound(), GM.CurrentPlayerBody.GetCurrentSoundEnvironment(), 1f);
-                    if (leftChamberFire) base.PlayAudioGunShot(this.leftChamber.GetRound(), GM.CurrentPlayerBody.GetCurrentSoundEnvironment(), 1f);
-                    if (rightChamberFire) base.PlayAudioGunShot(this.rightChamber.GetRound(), GM.CurrentPlayerBody.GetCurrentSoundEnvironment(), 1f);
+                    if (numberShots > 0)
+                    {
+                        Recoil(twoHandStabilized, foregripStabilized, shoulderStabilized, null, 1f * numberShots);
+                        PlayAudioGunShot(Chamber.GetRound(), GM.CurrentPlayerBody.GetCurrentSoundEnvironment(), 0.7f + 0.1f * numberShots);
+                    }
                 }
-                if (this.ReciprocatesOnShot)
+                if (ReciprocatesOnShot)
                 {
-                    this.Bolt.ImpartFiringImpulse();
+                    Bolt.ImpartFiringImpulse();
                 }
                 return true;
             }

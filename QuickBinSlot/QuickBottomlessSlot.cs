@@ -50,8 +50,6 @@ namespace Cityrobo
         }
 
 #if !(UNITY_EDITOR || UNITY_5)
-        private SM.AudioSourcePool audioSource;
-
         private GameObject currentSelectedObject;
 
         private List<GameObject> storedGameObjects;
@@ -64,10 +62,14 @@ namespace Cityrobo
 
         public void Start()
         {
-            audioSource = new SM.AudioSourcePool(3, 3, FVRPooledAudioType.Generic);
             storedGameObjects = new List<GameObject>();
 
             Hook();
+        }
+
+        public void OnDestroy()
+        {
+            Unhook();
         }
         void Unhook()
         {
@@ -303,7 +305,7 @@ namespace Cityrobo
                     {
                         storedGameObjects[removalIndex].SetActive(true);
                         storedGameObjects.RemoveAt(removalIndex);
-                        audioSource.PlayClip(extractSound, this.transform.position);
+                        SM.PlayGenericSound(extractSound, this.transform.position);
                         switchingObject = false;
                     }
 
@@ -337,7 +339,7 @@ namespace Cityrobo
                 CurObject = null;
                 HeldObject = null;
 
-                audioSource.PlayClip(insertSound, this.transform.position);
+                SM.PlayGenericSound(insertSound, this.transform.position);
             }
         }
 
@@ -346,7 +348,7 @@ namespace Cityrobo
             CurObject.SetQuickBeltSlot(null);
             CurObject = null;
             HeldObject = null;
-            audioSource.PlayClip(failureSound, this.transform.position);
+            SM.PlayGenericSound(failureSound, this.transform.position);
             return false;
         }
 
@@ -420,7 +422,7 @@ namespace Cityrobo
                 Debug.Log("isHeld");
                 storedGameObjects.RemoveAt(selectedObjectIndex);
                 Debug.Log("RemovedMagFromStorage");
-                audioSource.PlayClip(extractSound, this.transform.position);
+                SM.PlayGenericSound(extractSound, this.transform.position);
             }
             else
             {

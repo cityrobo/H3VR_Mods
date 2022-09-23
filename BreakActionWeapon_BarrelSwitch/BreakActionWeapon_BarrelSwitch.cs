@@ -211,10 +211,21 @@ namespace Cityrobo
             orig(self, hand);
             if (self == breakActionWeapon)
             {
-                if (hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.down) < 45f)
+                if (!hand.IsInStreamlinedMode)
                 {
-                    NextBarrelGroup();
-                    self.PlayAudioEvent(FirearmAudioEventType.FireSelector);
+                    if (hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.down) < 45f)
+                    {
+                        NextBarrelGroup();
+                        self.PlayAudioEvent(FirearmAudioEventType.FireSelector);
+                    }
+                }
+                else
+                {
+                    if (hand.Input.AXButtonDown)
+                    {
+                        NextBarrelGroup();
+                        self.PlayAudioEvent(FirearmAudioEventType.FireSelector);
+                    }
                 }
             }
         }

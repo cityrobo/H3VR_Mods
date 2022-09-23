@@ -58,6 +58,7 @@ namespace Cityrobo
         public int currentBrightnessIndex = 3;
         public float[] HDRBrightnessLevels = new float[] { 0.25f, 0.5f, 0.75f, 1f, 1.25f, 1.5f, 1.75f, 2f, 2.5f, 3f };
         public float[] BrightnessAlphaLevels = new float[] { 0.25f, 0.5f, 0.75f, 1f, 1f, 1f, 1f, 1f, 1f, 1f };
+        public string[] BrightnessTexts = new string[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", };
 
         private FVRViveHand m_hand;
         private bool _attached = false;
@@ -286,7 +287,7 @@ namespace Cityrobo
             if (BrightnessTextScreen != null && _currentMenu == 2)
             {
                 if (textFrame != null) textFrame.localPosition = BrightnessTextScreen.transform.localPosition;
-                BrightnessTextScreen.text = BrightnessTextPrefix + HDRBrightnessLevels[currentBrightnessIndex];
+                BrightnessTextScreen.text = BrightnessTextPrefix + BrightnessTexts[currentBrightnessIndex];
             }
             else if (BrightnessTextScreen == null)
             {
@@ -298,7 +299,7 @@ namespace Cityrobo
         {
             if (reticleTextScreen != null) reticleTextScreen.text = reticleTestPrefix + reticleText[currentTexture];
             if (zeroTextScreen != null) zeroTextScreen.text = zeroTextPrefix + zeroDistances[currentZeroDistance] + "m";
-            if (BrightnessTextScreen != null) BrightnessTextScreen.text = BrightnessTextPrefix + HDRBrightnessLevels[currentBrightnessIndex];
+            if (BrightnessTextScreen != null) BrightnessTextScreen.text = BrightnessTextPrefix + BrightnessTexts[currentBrightnessIndex];
         }
         public void UseNextZeroDistance()
         {

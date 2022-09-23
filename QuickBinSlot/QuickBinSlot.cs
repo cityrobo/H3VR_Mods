@@ -36,11 +36,8 @@ namespace Cityrobo
         }
 
 #if !(UNITY_EDITOR || UNITY_5)
-        SM.AudioSourcePool audioSource;
         public void Start()
         {
-            audioSource = new SM.AudioSourcePool(3,3,FVRPooledAudioType.Generic);
-
             Hook();
         }
 
@@ -113,7 +110,7 @@ namespace Cityrobo
                     CurObject = null;
                     HeldObject = null;
                     IsHovered = false;
-                    audioSource.PlayClip(deleteSound, this.transform.position);
+                    SM.PlayGenericSound(deleteSound, this.transform.position);
                 }
 
                 if (CurObject != null && !(CurObject is FVRFireArmMagazine))
@@ -122,7 +119,7 @@ namespace Cityrobo
                     CurObject = null;
                     HeldObject = null;
                     IsHovered = false;
-                    audioSource.PlayClip(deleteFailureSound, this.transform.position);
+                    SM.PlayGenericSound(deleteFailureSound, this.transform.position);
                 }
             }
             else orig(self);

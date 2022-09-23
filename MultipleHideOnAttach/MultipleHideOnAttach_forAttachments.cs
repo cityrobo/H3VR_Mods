@@ -8,7 +8,7 @@ namespace Cityrobo
 {
     public class MultipleHideOnAttach_forAttachments : MonoBehaviour
     {
-        [Header("Mount to monitor for attachments:")]
+        [Header("Attachment to monitor for attachments:")]
         public FVRFireArmAttachment attachment;
 
         [Header("List of GameObjects to affect:")]

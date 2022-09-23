@@ -160,10 +160,14 @@ namespace Cityrobo
 
             bool hasMuzzleMount = false;
             if (self.AttachmentMounts == null) self.AttachmentMounts = new List<FVRFireArmAttachmentMount>();
-
+            bool hasNullMount = false;
             foreach (var Mount in self.AttachmentMounts)
             {
-                if (Mount == null) continue;
+                if (Mount == null)
+                {
+                    hasNullMount = true;
+                    continue;
+                }
                 if (Mount.Type == FVRFireArmAttachementMountType.Suppressor) hasMuzzleMount = true;
             }
 
@@ -255,7 +259,25 @@ namespace Cityrobo
                 collider.isTrigger = true;
 
                 if (self.AttachmentMounts == null) self.AttachmentMounts = new List<FVRFireArmAttachmentMount>();
-                self.AttachmentMounts.Add(Mount);
+                if (hasNullMount)
+                {
+                    for (int i = 0; i < self.AttachmentMounts.Count; i++)
+                    {
+                        if (self.AttachmentMounts[i] == null)
+                        {
+                            self.AttachmentMounts[i] = Mount;
+                            break;
+                        }
+                    }
+                    for (int i = 0; i < self.AttachmentMounts.Count; i++)
+                    {
+                        if (self.AttachmentMounts[i] == null)
+                        {
+                            self.AttachmentMounts.RemoveAt(i);
+                        }
+                    }
+                }
+                else self.AttachmentMounts.Add(Mount);
 
                 MuzzleMount.SetActive(true);
             }

@@ -12,7 +12,7 @@ namespace Cityrobo
 {
     public class MultiBarrelAttachment : MonoBehaviour 
     {
-        public FVRFireArmAttachment FireArmAttachment = null;
+        public FVRFireArmAttachment Attachment = null;
         public BreakActionWeapon breakAction = null;
         public Derringer derringer = null;
         public MultiBarrelMount Mount;
@@ -25,11 +25,13 @@ namespace Cityrobo
         private Dictionary<MuzzleEffect ,Vector3> _origMuzzleEffectPos = new Dictionary<MuzzleEffect, Vector3>();
         
         private List<FVRFireArmAttachment> _lastSubAttachments = new List<FVRFireArmAttachment>();
+
+        private bool _wasSuppressorWellMounted = false;
         public void Awake()
         {
-            if (FireArmAttachment == null) FireArmAttachment = this.gameObject.GetComponent<FVRFireArmAttachment>();
+            if (Attachment == null) Attachment = GetComponent<FVRFireArmAttachment>();
             
-            if (FireArmAttachment is MuzzleDevice muzzleDevice)
+            if (Attachment is MuzzleDevice muzzleDevice)
             {
                 _origMuzzlePos = muzzleDevice.Muzzle.localPosition;
 
@@ -38,11 +40,13 @@ namespace Cityrobo
                     if (muzzleEffect.OverridePoint != null) _origMuzzleEffectPos.Add(muzzleEffect, muzzleEffect.OverridePoint.localPosition);
                 }
             }
+
+            if (Attachment is Suppressor suppressor && suppressor.CatchRot >= 355f) _wasSuppressorWellMounted = true; 
         }
 
         public void Update()
         {
-            if (FireArmAttachment.curMount == null)
+            if (Attachment.curMount == null)
             {
                 Viz.SetActive(true);
 
@@ -51,7 +55,7 @@ namespace Cityrobo
                     Destroy(VizCopies[i]);
                 }
                 
-                if (FireArmAttachment is MuzzleDevice muzzleDevice)
+                if (Attachment is MuzzleDevice muzzleDevice)
                 {
                     muzzleDevice.Muzzle.localPosition = _origMuzzlePos;
 
@@ -73,56 +77,81 @@ namespace Cityrobo
 
             _lastSubAttachments.Clear();
             _lastSubAttachments.AddRange(subAttachments);
+
+            if (Attachment is Suppressor suppressor)
+            {
+                if (suppressor.CatchRot < 355f && _wasSuppressorWellMounted)
+                {
+                    foreach (var VizCopy in VizCopies)
+                    {
+                        VizCopy.SetActive(false);
+                    }
+
+                    Viz.SetActive(true);
+                }
+                else if (suppressor.CatchRot >= 355f && !_wasSuppressorWellMounted)
+                {
+                    foreach (var VizCopy in VizCopies)
+                    {
+                        VizCopy.SetActive(true);
+                    }
+
+                    Viz.SetActive(false);
+                }
+            }
         }
 
         private void FixNewSubAttachment(FVRFireArmAttachment newAttachment)
         {
-            if ((breakAction != null || derringer != null) && newAttachment != null && newAttachment.GetComponent<MultiBarrelAttachment>() == null)
+            if ((breakAction != null || derringer != null) && newAttachment != null && newAttachment is MuzzleDevice && newAttachment.GetComponent<MultiBarrelAttachment>() == null)
             {
                 MeshRenderer[] meshRenderers = newAttachment.GetComponentsInChildren<MeshRenderer>();
 
                 if (meshRenderers.Length > 0)
                 {
                     MultiBarrelAttachment multiBarrelAttachment = newAttachment.gameObject.AddComponent<MultiBarrelAttachment>();
-                    multiBarrelAttachment.FireArmAttachment = newAttachment;
+                    multiBarrelAttachment.Attachment = newAttachment;
                     multiBarrelAttachment.Mount = Mount;
 
-                    if (meshRenderers.Length == 1) multiBarrelAttachment.Viz = meshRenderers[0].gameObject;
-                    else
+                    if (newAttachment is MuzzleDevice)
                     {
-                        multiBarrelAttachment.Viz = new GameObject("Viz");
-                        multiBarrelAttachment.Viz.transform.SetParent(newAttachment.transform);
-                        multiBarrelAttachment.Viz.transform.localPosition = Vector3.zero;
-                        multiBarrelAttachment.Viz.transform.localRotation = Quaternion.identity;
-
-                        foreach (var meshRenderer in meshRenderers)
+                        if (meshRenderers.Length == 1) multiBarrelAttachment.Viz = meshRenderers[0].gameObject;
+                        else
                         {
-                            meshRenderer.transform.SetParent(multiBarrelAttachment.Viz.transform);
+                            multiBarrelAttachment.Viz = new GameObject("Viz");
+                            multiBarrelAttachment.Viz.transform.SetParent(newAttachment.transform);
+                            multiBarrelAttachment.Viz.transform.localPosition = Vector3.zero;
+                            multiBarrelAttachment.Viz.transform.localRotation = Quaternion.identity;
+
+                            foreach (var meshRenderer in meshRenderers)
+                            {
+                                meshRenderer.transform.SetParent(multiBarrelAttachment.Viz.transform);
+                            }
                         }
-                    }
 
-                    Vector3 attachmentOffset; 
-                    if (breakAction != null)
-                    {
-                        multiBarrelAttachment.breakAction = breakAction;
-
-                        foreach (var barrel in breakAction.Barrels)
+                        Vector3 attachmentOffset;
+                        if (breakAction != null)
                         {
-                            attachmentOffset = barrel.Muzzle.position - Mount.transform.position;
-                            multiBarrelAttachment.VizCopies.Add(Instantiate(multiBarrelAttachment.Viz, multiBarrelAttachment.Viz.transform.position + attachmentOffset, multiBarrelAttachment.Viz.transform.rotation, newAttachment.transform));
-                        }
-                        multiBarrelAttachment.Viz.SetActive(false);
-                    }
-                    else if (derringer != null)
-                    {
-                        multiBarrelAttachment.derringer = derringer;
+                            multiBarrelAttachment.breakAction = breakAction;
 
-                        foreach (var barrel in derringer.Barrels)
-                        {
-                            attachmentOffset = barrel.MuzzlePoint.position - Mount.transform.position;
-                            multiBarrelAttachment.VizCopies.Add(Instantiate(multiBarrelAttachment.Viz, multiBarrelAttachment.Viz.transform.position + attachmentOffset, multiBarrelAttachment.Viz.transform.rotation, newAttachment.transform));
+                            foreach (var barrel in breakAction.Barrels)
+                            {
+                                attachmentOffset = barrel.Muzzle.position - Mount.transform.position;
+                                multiBarrelAttachment.VizCopies.Add(Instantiate(multiBarrelAttachment.Viz, multiBarrelAttachment.Viz.transform.position + attachmentOffset, multiBarrelAttachment.Viz.transform.rotation, newAttachment.transform));
+                            }
+                            multiBarrelAttachment.Viz.SetActive(false);
                         }
-                        multiBarrelAttachment.Viz.SetActive(false);
+                        else if (derringer != null)
+                        {
+                            multiBarrelAttachment.derringer = derringer;
+
+                            foreach (var barrel in derringer.Barrels)
+                            {
+                                attachmentOffset = barrel.MuzzlePoint.position - Mount.transform.position;
+                                multiBarrelAttachment.VizCopies.Add(Instantiate(multiBarrelAttachment.Viz, multiBarrelAttachment.Viz.transform.position + attachmentOffset, multiBarrelAttachment.Viz.transform.rotation, newAttachment.transform));
+                            }
+                            multiBarrelAttachment.Viz.SetActive(false);
+                        }
                     }
                 }
             }
@@ -131,7 +160,7 @@ namespace Cityrobo
         private List<FVRFireArmAttachment> GetAllSubAttachments()
         {
             List <FVRFireArmAttachment> subAttachments = new List<FVRFireArmAttachment>();
-            foreach (var SubMount in FireArmAttachment.AttachmentInterface.SubMounts)
+            foreach (var SubMount in Attachment.AttachmentInterface.SubMounts)
             {
                 subAttachments.AddRange(SubMount.AttachmentsList);
             }

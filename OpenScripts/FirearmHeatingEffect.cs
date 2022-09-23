@@ -147,8 +147,8 @@ namespace Cityrobo
         public float FailureAccuracyMultiplier = 1000f;
         [Tooltip("Causes bolt rearwards speed to become a positive number, therefor the firearm won't cycle correctly")]
         public bool CausesStoppage = true;
-        [Tooltip("Just some random high number to offset the averaging affect of the different FirearmHeatingEffect components.")]
-        public float StoppageSpeed = 1000f;
+        [Tooltip("Just some random high negative number to offset the averaging affect of the different FirearmHeatingEffect components and invert the bolt speed.")]
+        public float StoppageSpeed = -1000f;
         public AudioEvent ExplosionSound;
         [Tooltip("DEBUG VALUE for in editor testing! Actual value determined by in game config. Can Explosion revert?")]
         public bool CanRecoverFromExplosion = true;
@@ -190,8 +190,10 @@ namespace Cityrobo
         private bool _isAttached = false;
 
         private bool _soundEnabled = false;
-        private bool _canExplode = false;
+        private bool _canExplode = true;
         private bool _hasPartExploded = false;
+
+        private bool _canChangeAccuracy = true;
 
         private float _origInternalMechanicalMOA = 0f;
 
@@ -207,6 +209,7 @@ namespace Cityrobo
 #if !DEBUG
 #if !MEATKIT
             _canExplode = OpenScripts_BepInEx.FirearmHeatingEffect_CanExplode.Value;
+            _canChangeAccuracy = OpenScripts_BepInEx.FirearmHeatingEffect_CanChanceAccuracy.Value;
             CanRecoverFromExplosion = OpenScripts_BepInEx.FirearmHeatingEffect_CanRecover.Value;
             RevertHeatThreshold = OpenScripts_BepInEx.FirearmHeatingEffect_RecoverThreshold.Value;
 #endif
@@ -230,7 +233,7 @@ namespace Cityrobo
 
             if (ParticleSystem != null) ChangeParticleEmissionRate(0f);
 
-            if (SoundEffect != null) 
+            if (SoundEffectSource != null && SoundEffect != null) 
             {
                 SoundEffectSource.loop = true;
                 SoundEffectSource.clip = SoundEffect;
@@ -411,7 +414,7 @@ namespace Cityrobo
             }
 
             // Accuracy
-            if (DoesHeatAffectAccuracy && FireArm != null && !_hasPartExploded)
+            if (_canChangeAccuracy && DoesHeatAffectAccuracy && FireArm != null && !_hasPartExploded)
             {
 #if !DEBUG
                 ChangeAccuracy();
