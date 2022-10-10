@@ -3,6 +3,9 @@ All the scripts that I use for my mods are published here. Take care. They are t
 
 Please credit me if you use my code!
 
+## Information!!!
+If you are here for OpenScripts, please consider using OpenScripts2 instead! https://github.com/cityrobo/OpenScripts2
+
 ## General Information:
 The Editor DLLs for the mods are found in Releases/unity_code.
 If such a file does not exist, it means that the mod actually uses the source files for implementation.
