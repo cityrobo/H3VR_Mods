@@ -22,7 +22,8 @@ namespace Cityrobo
         public static ConfigEntry<bool> FirearmHeatingEffect_CanRecover;
         public static ConfigEntry<float> FirearmHeatingEffect_RecoverThreshold;
         public static ConfigEntry<bool> FirearmHeatingEffect_CanChangeFirerate;
-        public static ConfigEntry<bool> FirearmHeatingEffect_CanChanceAccuracy;
+        public static ConfigEntry<bool> FirearmHeatingEffect_CanChangeAccuracy;
+        public static ConfigEntry<bool> FirearmHeatingEffect_CanCookOff;
 
         public OpenScripts_BepInEx()
         {
@@ -32,7 +33,8 @@ namespace Cityrobo
             FirearmHeatingEffect_CanRecover = Config.Bind("Firearm Heating Effect", "Part can recover", false, "If true, parts can recover from being exploded.");
             FirearmHeatingEffect_RecoverThreshold = Config.Bind("Firearm Heating Effect", "Recover heat threshold", 0f, new ConfigDescription("Defines the heat value, at which the part will recover from being exploded", new AcceptableValueRange<float>(0, 1)));
             FirearmHeatingEffect_CanChangeFirerate = Config.Bind("Firearm Heating Effect", "Gun can change firerate", true, "If true, enables firearm firerate changes based on heat.");
-            FirearmHeatingEffect_CanChanceAccuracy = Config.Bind("Firearm Heating Effect", "Gun can change accuracy", true, "If true, enables firearm accuracy changes based on heat.");
+            FirearmHeatingEffect_CanChangeAccuracy = Config.Bind("Firearm Heating Effect", "Gun can change accuracy", true, "If true, enables firearm accuracy changes based on heat.");
+            FirearmHeatingEffect_CanCookOff = Config.Bind("Firearm Heating Effect", "Gun can cook off", true, "If true, enables firearm cookoff chance based on heat.");
 
             PluginPath = this.Info.Location;
             string pluginName = Path.GetFileName(PluginPath);

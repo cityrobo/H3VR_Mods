@@ -36,7 +36,7 @@ namespace Cityrobo
         private Vector3 _lerpPosBarrel;
 
         private bool _soundPlayed = false;
-
+#if !DEBUG
         public void Start()
         {
             _currentZ = originalBolt.transform.localPosition.z;
@@ -134,5 +134,6 @@ namespace Cityrobo
         {
             return Mathf.InverseLerp(originalBolt.m_boltZ_lock, originalBolt.m_boltZ_rear, originalBolt.transform.localPosition.z);
         }
+#endif
     }
 }

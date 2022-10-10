@@ -40,50 +40,82 @@ namespace Cityrobo
         private FVRFireArmMagazine empty_mag;
         private FVRFireArmMagazine orig_mag;
         */
-        private Vector3 startPos;
-        private Vector3 stopPos;
+        private Vector3 _startPos;
+        private Vector3 _stopPos;
 
-        private Quaternion startRot;
-        private Quaternion stopRot;
+        private Quaternion _startRot;
+        private Quaternion _stopRot;
 
-        private bool isMoving = false;
-        private bool isActive = false;
+        private bool _magazineCuttoffActive = false;
+
+        private FVRFireArmMagazine _mag;
+
+        private Quaternion _targetRotation;
+        private Vector3 _targetPosition;
+
 #if !(UNITY_EDITOR || UNITY_5)
         public override void Start()
         {
             base.Start();
 
             CalculatePositions();
-            /*
-            empty_mag = FVRFireArmMagazine.Instantiate(fireArm.Magazine);
-            empty_mag.LoadedRounds = new FVRLoadedRound[0];
-            empty_mag.m_numRounds = 0;
-            */
+
+
         }
 
         public override void SimpleInteraction(FVRViveHand hand)
         {
             base.SimpleInteraction(hand);
 
-            isActive = !isActive;
+            _magazineCuttoffActive = !_magazineCuttoffActive;
 
             SM.PlayGenericSound(sounds, cutoffLever.position);
             switch (translationType)
             {
                 case TranslationType.Translation:
-                    if (isMoving) StopAllCoroutines();
-                    StartCoroutine(Activate_Translation());
+                    _targetPosition = _magazineCuttoffActive ? _stopPos : _startPos;
                     break;
                 case TranslationType.Rotation:
-                    if (isMoving) StopAllCoroutines();
-                    StartCoroutine(Activate_Rotation());
-                    break;
-                default:
+                    _targetRotation = _magazineCuttoffActive ? _stopRot : _startRot;
                     break;
             }
         }
 
-        void CalculatePositions()
+        public override void FVRUpdate()
+        {
+            base.FVRUpdate();
+
+            if (_magazineCuttoffActive && _mag != null)
+            {
+                if (_mag.FireArm == fireArm)
+                {
+                    _mag.IsExtractable = false;
+                }
+                else
+                {
+                    _mag.IsExtractable = true;
+                    _mag = null;
+                }
+            }
+            else if (!_magazineCuttoffActive && _mag != null)
+            {
+                _mag.IsExtractable = true;
+            }
+
+            _mag = fireArm.Magazine;
+
+
+            if (translationType == TranslationType.Rotation && cutoffLever.localRotation != _targetRotation)
+            {
+                cutoffLever.localRotation = Quaternion.RotateTowards(cutoffLever.localRotation, _targetRotation, speed * Time.deltaTime);
+            }
+            else if (translationType == TranslationType.Translation && cutoffLever.localPosition != _targetPosition)
+            {
+                cutoffLever.localPosition = Vector3.MoveTowards(cutoffLever.localPosition, _targetPosition, speed * Time.deltaTime);
+            }
+        }
+
+        private void CalculatePositions()
         {
             switch (translationType)
             {
@@ -91,99 +123,48 @@ namespace Cityrobo
                     switch (axis)
                     {
                         case Axis.X:
-                            startPos = new Vector3(startLimit, cutoffLever.localPosition.y, cutoffLever.localPosition.z);
-                            stopPos = new Vector3(stopLimit, cutoffLever.localPosition.y, cutoffLever.localPosition.z);
+                            _startPos = new Vector3(startLimit, cutoffLever.localPosition.y, cutoffLever.localPosition.z);
+                            _stopPos = new Vector3(stopLimit, cutoffLever.localPosition.y, cutoffLever.localPosition.z);
                             break;
                         case Axis.Y:
-                            startPos = new Vector3(cutoffLever.localPosition.x, startLimit, cutoffLever.localPosition.z);
-                            stopPos = new Vector3(cutoffLever.localPosition.x, stopLimit, cutoffLever.localPosition.z);
+                            _startPos = new Vector3(cutoffLever.localPosition.x, startLimit, cutoffLever.localPosition.z);
+                            _stopPos = new Vector3(cutoffLever.localPosition.x, stopLimit, cutoffLever.localPosition.z);
                             break;
                         case Axis.Z:
-                            startPos = new Vector3(cutoffLever.localPosition.x, cutoffLever.localPosition.y, startLimit);
-                            stopPos = new Vector3(cutoffLever.localPosition.x, cutoffLever.localPosition.y, stopLimit);
+                            _startPos = new Vector3(cutoffLever.localPosition.x, cutoffLever.localPosition.y, startLimit);
+                            _stopPos = new Vector3(cutoffLever.localPosition.x, cutoffLever.localPosition.y, stopLimit);
                             break;
                         default:
-                            startPos = new Vector3();
-                            stopPos = new Vector3();
+                            _startPos = new Vector3();
+                            _stopPos = new Vector3();
                             break;
                     }
-                    cutoffLever.localPosition = startPos;
+                    cutoffLever.localPosition = _startPos;
                     break;
                 case TranslationType.Rotation:
                     switch (axis)
                     {
                         case Axis.X:
-                            startRot = Quaternion.Euler(startLimit, cutoffLever.localEulerAngles.y, cutoffLever.localEulerAngles.z);
-                            stopRot = Quaternion.Euler(stopLimit, cutoffLever.localEulerAngles.y, cutoffLever.localEulerAngles.z);
+                            _startRot = Quaternion.Euler(startLimit, cutoffLever.localEulerAngles.y, cutoffLever.localEulerAngles.z);
+                            _stopRot = Quaternion.Euler(stopLimit, cutoffLever.localEulerAngles.y, cutoffLever.localEulerAngles.z);
                             break;
                         case Axis.Y:
-                            startRot = Quaternion.Euler(cutoffLever.localEulerAngles.x, startLimit, cutoffLever.localEulerAngles.z);
-                            stopRot = Quaternion.Euler(cutoffLever.localEulerAngles.x, stopLimit, cutoffLever.localEulerAngles.z);
+                            _startRot = Quaternion.Euler(cutoffLever.localEulerAngles.x, startLimit, cutoffLever.localEulerAngles.z);
+                            _stopRot = Quaternion.Euler(cutoffLever.localEulerAngles.x, stopLimit, cutoffLever.localEulerAngles.z);
                             break;
                         case Axis.Z:
-                            startRot = Quaternion.Euler(cutoffLever.localEulerAngles.x, cutoffLever.localEulerAngles.y, startLimit);
-                            stopRot = Quaternion.Euler(cutoffLever.localEulerAngles.x, cutoffLever.localEulerAngles.y, stopLimit);
+                            _startRot = Quaternion.Euler(cutoffLever.localEulerAngles.x, cutoffLever.localEulerAngles.y, startLimit);
+                            _stopRot = Quaternion.Euler(cutoffLever.localEulerAngles.x, cutoffLever.localEulerAngles.y, stopLimit);
                             break;
                         default:
-                            startRot = Quaternion.identity;
-                            stopRot = Quaternion.identity;
+                            _startRot = Quaternion.identity;
+                            _stopRot = Quaternion.identity;
                             break;
                     }
-                    cutoffLever.localRotation = startRot;
+                    cutoffLever.localRotation = _startRot;
                     break;
                 default:
                     break;
-            }
-        }
-
-        IEnumerator Activate_Translation()
-        {
-            isMoving = true;
-
-            Vector3 target = isActive ? stopPos : startPos;
-
-            while (cutoffLever.localPosition != target)
-            {
-                cutoffLever.localPosition = Vector3.MoveTowards(cutoffLever.localPosition, target, speed * Time.deltaTime);
-                yield return null;
-            }
-
-            Activate_Magazine();
-            isMoving = false;
-        }
-
-        IEnumerator Activate_Rotation()
-        {
-            isMoving = true;
-
-            Quaternion target = isActive ? stopRot : startRot;
-
-            while (cutoffLever.localRotation != target)
-            {
-                cutoffLever.localRotation = Quaternion.RotateTowards(cutoffLever.localRotation, target, speed * Time.deltaTime);
-                yield return null;
-            }
-
-            Activate_Magazine();
-            isMoving = false;
-        }
-
-        void Activate_Magazine()
-        {
-            if (isActive)
-            {
-                /*
-                orig_mag = fireArm.Magazine;
-                fireArm.Magazine = empty_mag;
-                */
-                fireArm.Magazine.IsExtractable = false;
-            }
-            else
-            {
-                /*
-                fireArm.Magazine = orig_mag;
-                */
-                fireArm.Magazine.IsExtractable = true;
             }
         }
 #endif
