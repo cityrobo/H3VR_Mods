@@ -19,7 +19,7 @@ namespace Cityrobo
         private Vector3 positionalOffset = new Vector3(0,0,0);
         private Quaternion rotationalOffset = new Quaternion();
 
-        private string lastMessage;
+        //private string lastMessage;
 
         private bool offsetCalculated = false;
 

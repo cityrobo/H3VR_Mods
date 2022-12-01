@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -38,7 +39,7 @@
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>preview</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
@@ -46,10 +47,10 @@
       <HintPath>..\packages\HarmonyX.2.7.0\lib\net35\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\H3VR.GameLibs.0.104.0-r.0\lib\net35\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\packages\H3VR.GameLibs.0.105.4\lib\net35\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\H3VR.GameLibs.0.104.0-r.0\lib\net35\Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>..\packages\H3VR.GameLibs.0.105.4\lib\net35\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx, Version=5.4.17.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\BepInEx.BaseLib.5.4.17\lib\net35\BepInEx.dll</HintPath>
@@ -94,16 +95,19 @@
       <HintPath>..\packages\UnityEngine.5.6.1\lib\net35\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\H3VR.GameLibs.0.104.0-r.0\lib\net35\UnityEngine.UI.dll</HintPath>
+      <HintPath>..\packages\H3VR.GameLibs.0.105.4\lib\net35\UnityEngine.UI.dll</HintPath>
     </Reference>
     <Reference Include="Valve.Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\H3VR.GameLibs.0.104.0-r.0\lib\net35\Valve.Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\H3VR.GameLibs.0.105.4\lib\net35\Valve.Newtonsoft.Json.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AttachmentMountPicatinnyRail.cs" />
+    <Compile Include="AttachmentPicatinnyRailForwardStop.cs" />
     <Compile Include="FirearmHeatingEffectEditor.cs" />
     <Compile Include="FirearmHeatingEffect_FirearmCore.cs" />
     <Compile Include="FirearmHeatingEffect.cs" />
+    <Compile Include="MuzzleEffectController.cs" />
     <Compile Include="RevolverFireNChambersBack.cs" />
     <Compile Include="HandGunSpin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

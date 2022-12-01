@@ -36,7 +36,7 @@ namespace Cityrobo
         private Vector3 _lerpPosBarrel;
 
         private bool _soundPlayed = false;
-
+#if !DEBUG
         public void Start()
         {
             _currentZ = originalBolt.m_boltZ_current;
@@ -124,5 +124,6 @@ namespace Cityrobo
             }
             _lastZ = _currentZ;
         }
+#endif
     }
 }

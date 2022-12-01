@@ -125,6 +125,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MainMenuSoundReplacer", "Ma
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DP12_Scripts", "DP12_Scripts\DP12_Scripts.csproj", "{95FCCEE2-10DE-4A87-9534-472A18BC63B8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReloadFromQuickBelt", "ReloadFromQuickBelt\ReloadFromQuickBelt.csproj", "{201EB113-EA24-4E97-AFAE-AF5205331F79}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SlowMotionMode", "SlowMotionMode\SlowMotionMode.csproj", "{76A02A1C-DFC3-4CC3-A811-433069EF427D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -498,6 +502,18 @@ Global
 		{95FCCEE2-10DE-4A87-9534-472A18BC63B8}.MeatKit|Any CPU.Build.0 = MeatKit|Any CPU
 		{95FCCEE2-10DE-4A87-9534-472A18BC63B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95FCCEE2-10DE-4A87-9534-472A18BC63B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{201EB113-EA24-4E97-AFAE-AF5205331F79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{201EB113-EA24-4E97-AFAE-AF5205331F79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{201EB113-EA24-4E97-AFAE-AF5205331F79}.MeatKit|Any CPU.ActiveCfg = MeatKit|Any CPU
+		{201EB113-EA24-4E97-AFAE-AF5205331F79}.MeatKit|Any CPU.Build.0 = MeatKit|Any CPU
+		{201EB113-EA24-4E97-AFAE-AF5205331F79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{201EB113-EA24-4E97-AFAE-AF5205331F79}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76A02A1C-DFC3-4CC3-A811-433069EF427D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76A02A1C-DFC3-4CC3-A811-433069EF427D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76A02A1C-DFC3-4CC3-A811-433069EF427D}.MeatKit|Any CPU.ActiveCfg = MeatKit|Any CPU
+		{76A02A1C-DFC3-4CC3-A811-433069EF427D}.MeatKit|Any CPU.Build.0 = MeatKit|Any CPU
+		{76A02A1C-DFC3-4CC3-A811-433069EF427D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76A02A1C-DFC3-4CC3-A811-433069EF427D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

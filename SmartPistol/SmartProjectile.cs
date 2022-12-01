@@ -52,6 +52,10 @@ namespace Cityrobo
 #if !DEBUG
         public void Awake()
         {
+            if (TargetLink != null) _curTarget = TargetLink.transform.position;
+            else if (TargetRB != null) _curTarget = TargetRB.position;
+            else if (TargetPoint != null) _curTarget = TargetPoint.Value;
+            else Destroy(this);
             if (UsesInheritInaccuracy) _currentInaccuracy = UnityEngine.Random.insideUnitCircle * AccuracyCircleRadius;
         }
 

@@ -201,36 +201,13 @@ namespace Cityrobo
             if (!disableOcclusionCulling && (isStandalone || _attached)) CheckReticleVisibility();
         }
 #endif
-        public void UseNextTexture()
-        {
-            currentTexture = (currentTexture + 1) % textures.Length;
-
-            reticle.material.SetTexture(s_nameOfTextureVariable, textures[currentTexture]);
-            if (reticleColors != null && reticleColors.Length == textures.Length) reticle.material.SetColor(s_nameOfColorVariable, reticleColors[currentTexture]);
-            if (buttonSwitch != null) buttonSwitch.localPosition = switchPositions[currentTexture];
-
-            UpdateBrightness();
-            UpdateScreen();
-        }
-
-        public void UsePreviousTexture()
-        {
-            currentTexture = (currentTexture + textures.Length - 1) % textures.Length;
-
-            reticle.material.SetTexture(s_nameOfTextureVariable, textures[currentTexture]);
-            if (reticleColors != null && reticleColors.Length == textures.Length) reticle.material.SetColor(s_nameOfColorVariable, reticleColors[currentTexture]);
-            if (buttonSwitch != null) buttonSwitch.localPosition = switchPositions[currentTexture];
-
-            UpdateBrightness();
-            UpdateScreen();
-        }
 
         private void ShowNextMenu() 
         {
             if (reticleTextScreen == null && zeroTextScreen == null && BrightnessTextScreen == null) return;
             _currentMenu++;
 
-            if (_currentMenu > 3) _currentMenu = 0;
+            if (_currentMenu > 2) _currentMenu = 0;
 
             switch (_currentMenu)
             {
@@ -255,11 +232,15 @@ namespace Cityrobo
                         return;
                     }
                     break;
-                default:
-                    _currentMenu = 0;
-                    break;
             }
             UpdateScreen();
+        }
+
+        private void StartScreen()
+        {
+            if (reticleTextScreen != null) reticleTextScreen.text = reticleTestPrefix + reticleText[currentTexture];
+            if (zeroTextScreen != null) zeroTextScreen.text = zeroTextPrefix + zeroDistances[currentZeroDistance] + "m";
+            if (BrightnessTextScreen != null) BrightnessTextScreen.text = BrightnessTextPrefix + BrightnessTexts[currentBrightnessIndex];
         }
 
         private void UpdateScreen()
@@ -269,38 +250,41 @@ namespace Cityrobo
                 if (textFrame != null) textFrame.localPosition = reticleTextScreen.transform.localPosition;
                 reticleTextScreen.text = reticleTestPrefix + reticleText[currentTexture];
             }
-            else if (reticleTextScreen == null)
-            {
-                _currentMenu = 1;
-            }
-
-            if (zeroTextScreen != null && _currentMenu == 1)
+            else if (zeroTextScreen != null && _currentMenu == 1)
             {
                 if (textFrame != null) textFrame.localPosition = zeroTextScreen.transform.localPosition;
                 zeroTextScreen.text = zeroTextPrefix + zeroDistances[currentZeroDistance] + "m";
             }
-            else if (zeroTextScreen == null)
-            {
-                _currentMenu = 2;
-            }
-            
-            if (BrightnessTextScreen != null && _currentMenu == 2)
+            else if (BrightnessTextScreen != null && _currentMenu == 2)
             {
                 if (textFrame != null) textFrame.localPosition = BrightnessTextScreen.transform.localPosition;
                 BrightnessTextScreen.text = BrightnessTextPrefix + BrightnessTexts[currentBrightnessIndex];
             }
-            else if (BrightnessTextScreen == null)
-            {
-                _currentMenu = 0;
-            }
+        }
+        public void UseNextTexture()
+        {
+            currentTexture = (currentTexture + 1) % textures.Length;
+
+            reticle.material.SetTexture(s_nameOfTextureVariable, textures[currentTexture]);
+            if (reticleColors != null && reticleColors.Length == textures.Length) reticle.material.SetColor(s_nameOfColorVariable, reticleColors[currentTexture]);
+            if (buttonSwitch != null) buttonSwitch.localPosition = switchPositions[currentTexture];
+
+            if(BrightnessTextScreen != null) UpdateBrightness();
+            UpdateScreen();
         }
 
-        private void StartScreen()
+        public void UsePreviousTexture()
         {
-            if (reticleTextScreen != null) reticleTextScreen.text = reticleTestPrefix + reticleText[currentTexture];
-            if (zeroTextScreen != null) zeroTextScreen.text = zeroTextPrefix + zeroDistances[currentZeroDistance] + "m";
-            if (BrightnessTextScreen != null) BrightnessTextScreen.text = BrightnessTextPrefix + BrightnessTexts[currentBrightnessIndex];
+            currentTexture = (currentTexture + textures.Length - 1) % textures.Length;
+
+            reticle.material.SetTexture(s_nameOfTextureVariable, textures[currentTexture]);
+            if (reticleColors != null && reticleColors.Length == textures.Length) reticle.material.SetColor(s_nameOfColorVariable, reticleColors[currentTexture]);
+            if (buttonSwitch != null) buttonSwitch.localPosition = switchPositions[currentTexture];
+
+            if (BrightnessTextScreen != null) UpdateBrightness();
+            UpdateScreen();
         }
+
         public void UseNextZeroDistance()
         {
             if (currentZeroDistance < zeroDistances.Length - 1) currentZeroDistance++;

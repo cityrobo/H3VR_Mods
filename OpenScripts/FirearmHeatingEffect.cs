@@ -194,6 +194,7 @@ namespace Cityrobo
         private bool _hasPartExploded = false;
 
         private bool _canChangeAccuracy = true;
+        private bool _canCookOff = true;
 
         private float _origInternalMechanicalMOA = 0f;
 
@@ -209,7 +210,8 @@ namespace Cityrobo
 #if !DEBUG
 #if !MEATKIT
             _canExplode = OpenScripts_BepInEx.FirearmHeatingEffect_CanExplode.Value;
-            _canChangeAccuracy = OpenScripts_BepInEx.FirearmHeatingEffect_CanChanceAccuracy.Value;
+            _canChangeAccuracy = OpenScripts_BepInEx.FirearmHeatingEffect_CanChangeAccuracy.Value;
+            _canCookOff = OpenScripts_BepInEx.FirearmHeatingEffect_CanCookOff.Value;
             CanRecoverFromExplosion = OpenScripts_BepInEx.FirearmHeatingEffect_CanRecover.Value;
             RevertHeatThreshold = OpenScripts_BepInEx.FirearmHeatingEffect_RecoverThreshold.Value;
 #endif
@@ -455,7 +457,7 @@ namespace Cityrobo
 #endif
                 CurrentBoltRearwardSpeedMultiplier = StoppageSpeed;
             }
-            else if (_hasPartExploded && _canExplode && Heat <= RevertHeatThreshold)
+            else if (_hasPartExploded && CanRecoverFromExplosion && Heat <= RevertHeatThreshold)
             {
                 _hasPartExploded = false;
                 if (MeshRenderer.gameObject == this.gameObject) MeshRenderer.enabled = true;
@@ -516,6 +518,9 @@ namespace Cityrobo
             OpenScripts_BepInEx.FirearmHeatingEffect_CanExplode.SettingChanged -= SettingsChanged;
             OpenScripts_BepInEx.FirearmHeatingEffect_CanRecover.SettingChanged -= SettingsChanged;
             OpenScripts_BepInEx.FirearmHeatingEffect_RecoverThreshold.SettingChanged -= SettingsChanged;
+            OpenScripts_BepInEx.FirearmHeatingEffect_CanChangeFirerate.SettingChanged -= SettingsChanged;
+            OpenScripts_BepInEx.FirearmHeatingEffect_CanChangeAccuracy.SettingChanged -= SettingsChanged;
+            OpenScripts_BepInEx.FirearmHeatingEffect_CanCookOff.SettingChanged -= SettingsChanged;
 #endif
 #endif
         }
@@ -528,6 +533,9 @@ namespace Cityrobo
             OpenScripts_BepInEx.FirearmHeatingEffect_CanExplode.SettingChanged += SettingsChanged;
             OpenScripts_BepInEx.FirearmHeatingEffect_CanRecover.SettingChanged += SettingsChanged;
             OpenScripts_BepInEx.FirearmHeatingEffect_RecoverThreshold.SettingChanged += SettingsChanged;
+            OpenScripts_BepInEx.FirearmHeatingEffect_CanChangeFirerate.SettingChanged += SettingsChanged;
+            OpenScripts_BepInEx.FirearmHeatingEffect_CanChangeAccuracy.SettingChanged += SettingsChanged;
+            OpenScripts_BepInEx.FirearmHeatingEffect_CanCookOff.SettingChanged += SettingsChanged;
 #endif
 #endif
         }
@@ -554,6 +562,8 @@ namespace Cityrobo
             else _canExplode = false;
             CanRecoverFromExplosion = OpenScripts_BepInEx.FirearmHeatingEffect_CanRecover.Value;
             RevertHeatThreshold = OpenScripts_BepInEx.FirearmHeatingEffect_RecoverThreshold.Value;
+            _canChangeAccuracy = OpenScripts_BepInEx.FirearmHeatingEffect_CanChangeAccuracy.Value;
+            _canCookOff = OpenScripts_BepInEx.FirearmHeatingEffect_CanCookOff.Value;
         }
 
         private IEnumerator CookoffSystem()
@@ -561,7 +571,7 @@ namespace Cityrobo
             while (DoesHeatCauseCookoff)
             {
                 float rand = UnityEngine.Random.Range(0f, 1f);
-                if (Heat > CookoffHeatThreshold)
+                if (_canCookOff && Heat > CookoffHeatThreshold)
                 {
                     float inverseLerp;
                     if (CookoffChanceStartsAtZero) inverseLerp = Mathf.InverseLerp(CookoffHeatThreshold, 1f, Heat);
