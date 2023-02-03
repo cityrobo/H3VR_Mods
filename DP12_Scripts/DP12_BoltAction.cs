@@ -277,10 +277,11 @@ namespace Cityrobo
             if (_hasHammerDropped && m_triggerFloat <= TriggerResetThreshold) _hasHammerDropped = false;
         }
 
-        private void BoltActionRifle_UpdateBolt(On.FistVR.BoltActionRifle.orig_UpdateBolt orig, BoltActionRifle self, BoltActionRifle_Handle.BoltActionHandleState State, float lerp)
+        private FVRFireArmRound BoltActionRifle_UpdateBolt(On.FistVR.BoltActionRifle.orig_UpdateBolt orig, BoltActionRifle self, BoltActionRifle_Handle.BoltActionHandleState State, float lerp, bool isCatchHeld)
         {
             if (self == this)
             {
+                FVRFireArmRound result = null;
                 CurBoltHandleState = State;
                 BoltLerp = lerp;
                 if (CurBoltHandleState != BoltActionRifle_Handle.BoltActionHandleState.Forward && !m_proxy.IsFull && !Chamber.IsFull)
@@ -323,11 +324,19 @@ namespace Cityrobo
                     else PlayAudioEvent(FirearmAudioEventType.HandleBackEmpty, 1f);
                     if (Chamber.IsFull)
                     {
-                        Chamber.EjectRound(EjectionPos.position, transform.right * RoundEjectionSpeed.x + transform.up * RoundEjectionSpeed.y + transform.forward * RoundEjectionSpeed.z, transform.right * RoundEjectionSpin.x + transform.up * RoundEjectionSpin.y + transform.forward * RoundEjectionSpin.z, false);
+                        FVRFireArmRound fvrFireArmRound = Chamber.EjectRound(EjectionPos.position, transform.right * RoundEjectionSpeed.x + transform.up * RoundEjectionSpeed.y + transform.forward * RoundEjectionSpeed.z, transform.right * RoundEjectionSpin.x + transform.up * RoundEjectionSpin.y + transform.forward * RoundEjectionSpin.z, false);
+                        if (isCatchHeld)
+                        {
+                            result = fvrFireArmRound;
+                        }
                     }
                     if (SecondChamber.IsFull)
                     {
-                        SecondChamber.EjectRound(Second_EjectionPos.position, transform.right * Second_RoundEjectionSpeed.x + transform.up * Second_RoundEjectionSpeed.y + transform.forward * Second_RoundEjectionSpeed.z, transform.right * Second_RoundEjectionSpin.x + transform.up * Second_RoundEjectionSpin.y + transform.forward * Second_RoundEjectionSpin.z, false);
+                        FVRFireArmRound fvrFireArmRound = SecondChamber.EjectRound(Second_EjectionPos.position, transform.right * Second_RoundEjectionSpeed.x + transform.up * Second_RoundEjectionSpeed.y + transform.forward * Second_RoundEjectionSpeed.z, transform.right * Second_RoundEjectionSpin.x + transform.up * Second_RoundEjectionSpin.y + transform.forward * Second_RoundEjectionSpin.z, false);
+                        if (isCatchHeld)
+                        {
+                            result = fvrFireArmRound;
+                        }
                     }
 
                     BoltMovingForward = true;
@@ -396,8 +405,10 @@ namespace Cityrobo
                     SecondChamber.ProxyRound.rotation = Quaternion.Slerp(Second_Extraction_ChamberPos.rotation, Second_Extraction_Ejecting.rotation, BoltLerp);
                 }
                 LastBoltHandleState = CurBoltHandleState;
+
+                return result;
             }
-            else orig(self, State, lerp);
+            else return orig(self, State, lerp, isCatchHeld);
         }
 
         private void BoltActionRifle_DropHammer(On.FistVR.BoltActionRifle.orig_DropHammer orig, BoltActionRifle self)

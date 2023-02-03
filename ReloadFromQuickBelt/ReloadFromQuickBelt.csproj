@@ -61,7 +61,7 @@
       <Version>5.4.19</Version>
     </PackageReference>
     <PackageReference Include="H3VR.GameLibs">
-      <Version>0.105.4</Version>
+      <Version>0.106.10</Version>
     </PackageReference>
     <PackageReference Include="HarmonyX">
       <Version>2.6.1</Version>
