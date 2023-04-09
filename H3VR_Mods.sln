@@ -133,6 +133,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp.ModulARScri
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockPosConfigurator", "StockPosConfigurator\StockPosConfigurator.csproj", "{1751DF95-87A0-4AF5-A5E9-1BCB1E3F9DF2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VanillaClickyPicatinnyMountEnabler", "VanillaClickyPicatinnyMountEnabler\VanillaClickyPicatinnyMountEnabler.csproj", "{7B2061D5-F464-4979-8E63-9C89AA3AD3F3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -530,6 +532,12 @@ Global
 		{1751DF95-87A0-4AF5-A5E9-1BCB1E3F9DF2}.MeatKit|Any CPU.Build.0 = MeatKit|Any CPU
 		{1751DF95-87A0-4AF5-A5E9-1BCB1E3F9DF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1751DF95-87A0-4AF5-A5E9-1BCB1E3F9DF2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B2061D5-F464-4979-8E63-9C89AA3AD3F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B2061D5-F464-4979-8E63-9C89AA3AD3F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B2061D5-F464-4979-8E63-9C89AA3AD3F3}.MeatKit|Any CPU.ActiveCfg = MeatKit|Any CPU
+		{7B2061D5-F464-4979-8E63-9C89AA3AD3F3}.MeatKit|Any CPU.Build.0 = MeatKit|Any CPU
+		{7B2061D5-F464-4979-8E63-9C89AA3AD3F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B2061D5-F464-4979-8E63-9C89AA3AD3F3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
