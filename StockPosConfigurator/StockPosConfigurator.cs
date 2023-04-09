@@ -23,10 +23,6 @@ namespace Cityrobo
         static StockPosConfigurator()
         {
             On.FistVR.FVRPhysicalObject.Awake += FVRPhysicalObject_Awake;
-
-            s_stockPosX.SettingChanged += SettingsChanged;
-            s_stockPosY.SettingChanged += SettingsChanged;
-            s_stockPosZ.SettingChanged += SettingsChanged;
         }
 
         public StockPosConfigurator()
@@ -36,6 +32,17 @@ namespace Cityrobo
             s_stockPosZ = Config.Bind("StockPosition Configurator", "Z Stock Position Modification", 0f, "Forward and back stock position adjustment. Positive numbers mean that the stock point will be shifted forwards, away from the shooter. This will make the stock feel shorter. Value is in meters.");
 
             s_currentPosChange = new Vector3(s_stockPosX.Value, s_stockPosY.Value, s_stockPosZ.Value);
+
+            s_stockPosX.SettingChanged += SettingsChanged;
+            s_stockPosY.SettingChanged += SettingsChanged;
+            s_stockPosZ.SettingChanged += SettingsChanged;
+        }
+
+        public void OnDestroy()
+        {
+            s_stockPosX.SettingChanged -= SettingsChanged;
+            s_stockPosY.SettingChanged -= SettingsChanged;
+            s_stockPosZ.SettingChanged -= SettingsChanged;
         }
 
         private static void FVRPhysicalObject_Awake(On.FistVR.FVRPhysicalObject.orig_Awake orig, FVRPhysicalObject self)
