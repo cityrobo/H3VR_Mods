@@ -139,8 +139,6 @@ namespace Cityrobo
                             case 2:
                                 UsePreviousBrightness();
                                 break;
-                            default:
-                                break;
                         }
                     }
                     else if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.right) < 45f)
@@ -156,20 +154,9 @@ namespace Cityrobo
                             case 2:
                                 UseNextBrightness();
                                 break;
-                            default:
-                                break;
                         }
                     }
                     else if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.up) < 45f) ShowNextMenu();
-                    /*
-                    if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.left) < 45f && _currentMenu == 0) UsePreviousTexture();
-                    else if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.right) < 45f && _currentMenu == 0) UseNextTexture();
-                    if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.left) < 45f && _currentMenu == 1) UsePreviousZeroDistance();
-                    else if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.right) < 45f && _currentMenu == 1) UseNextZeroDistance();
-                    if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.left) < 45f && _currentMenu == 2) UsePreviousBrightness();
-                    else if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.right) < 45f && _currentMenu == 2) UseNextBrightness();
-                    if (m_hand.Input.TouchpadDown && Vector2.Angle(m_hand.Input.TouchpadAxes, Vector2.up) < 45f) ShowNextMenu();
-                    */
                 }
             }
             if (!isStandalone && attachment.curMount != null && !_attached)
@@ -340,27 +327,6 @@ namespace Cityrobo
         private void CheckReticleVisibility()
         {
             bool scopeHit = false;
-            /*
-            RaycastHit raycastHit;
-            if (Physics.Linecast(GM.CurrentPlayerBody.Head.position + GM.CurrentPlayerBody.Head.right * 0.032f, muzzlePos.position + this.transform.forward * zeroDistances[currentZeroDistance] , out raycastHit, LayerMask.NameToLayer("Environment")))
-            {
-                if (scopeColliders.Contains(raycastHit.collider))
-                {
-                    reticle.gameObject.SetActive(true);
-                    scopeHit = true;
-                }
-            }
-            if (Physics.Linecast(GM.CurrentPlayerBody.Head.position + GM.CurrentPlayerBody.Head.right * -0.032f, muzzlePos.position + this.transform.forward * zeroDistances[currentZeroDistance], out raycastHit, LayerMask.NameToLayer("Environment")))
-            {
-                if (scopeColliders.Contains(raycastHit.collider))
-                {
-                    reticle.gameObject.SetActive(true);
-                    scopeHit = true;
-                }
-            }
-            if (!scopeHit) reticle.gameObject.SetActive(false);
-
-            */
             Vector3 muzzleOffset = _muzzlePos.InverseTransformPoint(reticle.transform.position);
             if (lensCollider == null && _scopeColliders != null && _scopeColliders.Count > 0)
             {
