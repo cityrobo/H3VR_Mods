@@ -7,6 +7,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using BepInEx;
+using System.Net.Mail;
 
 namespace Cityrobo
 {
@@ -27,9 +28,8 @@ namespace Cityrobo
             
             if ((breakAction != null || derringer != null) && attachment != null && attachment.GetComponent<MultiBarrelAttachment>() == null)
             {
-                if (attachment is Suppressor suppressor && suppressor.CatchRot < 355f) return;
-                Renderer[] renderers = attachment.GetComponentsInChildren<Renderer>();
-
+                if (attachment is Suppressor suppressor && suppressor.CatchRot < 359f) return;
+                Renderer[] renderers = attachment.GetComponentsInChildren<Renderer>().Where(obj => !(obj is ParticleSystemRenderer) && obj.sharedMaterials.Length > 0 && obj.sharedMaterials[0] != null && !obj.sharedMaterials[0].name.Contains("Default-Material")).ToArray();
                 if (renderers.Length > 0)
                 {
                     MultiBarrelAttachment multiBarrelAttachment = attachment.gameObject.AddComponent<MultiBarrelAttachment>();
@@ -40,18 +40,23 @@ namespace Cityrobo
                         if (renderers.Length == 1) multiBarrelAttachment.Viz = renderers[0].gameObject;
                         else
                         {
-                            multiBarrelAttachment.Viz = new GameObject("Viz");
-                            multiBarrelAttachment.Viz.transform.SetParent(attachment.transform);
-                            multiBarrelAttachment.Viz.transform.localPosition = Vector3.zero;
-                            multiBarrelAttachment.Viz.transform.localRotation = Quaternion.identity;
-
-                            foreach (var meshRenderer in renderers)
+                            Transform viz = attachment.transform.Find("Viz");
+                            if (viz != null) multiBarrelAttachment.Viz = viz.gameObject;
+                            if (multiBarrelAttachment.Viz == null)
                             {
-                                meshRenderer.transform.SetParent(multiBarrelAttachment.Viz.transform);
+                                multiBarrelAttachment.Viz = new GameObject("Viz");
+                                multiBarrelAttachment.Viz.transform.SetParent(attachment.transform);
+                                multiBarrelAttachment.Viz.transform.localPosition = Vector3.zero;
+                                multiBarrelAttachment.Viz.transform.localRotation = Quaternion.identity;
+
+                                foreach (var meshRenderer in renderers)
+                                {
+                                    meshRenderer.transform.SetParent(multiBarrelAttachment.Viz.transform);
+                                }
                             }
                         }
 
-                        if (breakAction != null)
+                        if (breakAction != null && multiBarrelAttachment.Viz != null)
                         {
                             multiBarrelAttachment.breakAction = breakAction;
 
@@ -61,7 +66,7 @@ namespace Cityrobo
                             }
                             multiBarrelAttachment.Viz.SetActive(false);
                         }
-                        else if (derringer != null)
+                        else if (derringer != null && multiBarrelAttachment.Viz != null)
                         {
                             multiBarrelAttachment.derringer = derringer;
 
@@ -73,6 +78,8 @@ namespace Cityrobo
                         }
                     }
                 }
+
+                if (attachment is Suppressor s) s.ForceBreakInteraction();
             }
         }
     }

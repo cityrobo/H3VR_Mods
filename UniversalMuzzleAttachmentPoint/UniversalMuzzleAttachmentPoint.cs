@@ -126,6 +126,12 @@ namespace Cityrobo
             if (!hasMuzzleMount)
             {
                 GameObject MuzzleMountGameObject = new GameObject(MOUNTNAME); ;
+
+                // Setup Mount GameObject
+                MuzzleMountGameObject.layer = LayerMask.NameToLayer(LAYERNAME);
+                MuzzleMountGameObject.tag = TAG;
+                MuzzleMountGameObject.SetActive(false);
+
                 bool parentToThis = false;
                 FVRFireArmAttachmentMount MountComponent;
                 // Setup Mount differently for Multi Barrel Weapons
@@ -190,11 +196,6 @@ namespace Cityrobo
                     MuzzleMountGameObject.transform.rotation = self.GetMuzzle().rotation;
                     MountComponent = MuzzleMountGameObject.AddComponent<FVRFireArmAttachmentMount>();
                 }
-
-                // Setup Mount GameObject
-                MuzzleMountGameObject.layer = LayerMask.NameToLayer(LAYERNAME);
-                MuzzleMountGameObject.tag = TAG;
-                MuzzleMountGameObject.SetActive(false);
 
                 // Setup Mount Component
                 MountComponent.MyObject = self;
@@ -335,7 +336,7 @@ namespace Cityrobo
                     {
                         for (int j = 0; j < muzzleEffect.OverridePoint.childCount; j++)
                         {
-                            muzzleEffect.OverridePoint.GetChild(j).localPosition = muzzleEffect.OverridePoint.GetChild(j).InverseTransformDirection(self.Barrels[i].MuzzlePoint.position - muzzleDevice.curMount.GetRootMount().transform.position);
+                            muzzleEffect.OverridePoint.GetChild(j).position = muzzleEffect.OverridePoint.position + (self.Barrels[i].MuzzlePoint.position - muzzleDevice.curMount.GetRootMount().transform.position);
                         }
                     }
                 }
@@ -396,7 +397,7 @@ namespace Cityrobo
                     {
                         for (int i = 0; i < muzzleEffect.OverridePoint.childCount; i++)
                         {
-                            muzzleEffect.OverridePoint.GetChild(i).localPosition = muzzleEffect.OverridePoint.GetChild(i).InverseTransformDirection(self.Barrels[b].Muzzle.position - muzzleDevice.curMount.GetRootMount().transform.position);
+                            muzzleEffect.OverridePoint.GetChild(i).position = muzzleEffect.OverridePoint.position + (self.Barrels[b].Muzzle.position - muzzleDevice.curMount.GetRootMount().transform.position);
                         }
                     }
                 }
@@ -425,7 +426,10 @@ namespace Cityrobo
         }
         private Transform BreakActionWeapon_GetMuzzle(On.FistVR.BreakActionWeapon.orig_GetMuzzle orig, BreakActionWeapon self)
         {
-            if (self.MuzzleDevices.Count != 0) return self.MuzzleDevices[self.MuzzleDevices.Count - 1].Muzzle;
+            if (self.MuzzleDevices.Count != 0)
+            {
+                return self.MuzzleDevices[self.MuzzleDevices.Count - 1].Muzzle;
+            }
             else return orig(self);
         }
 #if !(DEBUG || MEATKIT)
