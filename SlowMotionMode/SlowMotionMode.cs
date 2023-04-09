@@ -23,6 +23,7 @@ namespace Cityrobo
         public static ConfigEntry<float> SlowDownFadeTime;
         public static ConfigEntry<float> MinimumTimeScale;
         public static ConfigEntry<bool> ExternallyTriggered;
+        public static ConfigEntry<EHand> Hand;
 
         public static SlowMotionMode Instance;
         public float SlowMotionCharge = 1f;
@@ -33,6 +34,12 @@ namespace Cityrobo
 
         private const float INTENSITY_EXPONENT = 1.1f;
         private const float INTERP_EXPONENT = 2.5f;
+
+        public enum EHand
+        {
+            Left,
+            Right
+        }
 
         //private Dictionary<FVRViveHand, HeldObject> _lastHeldObjects = new();
 
@@ -61,6 +68,7 @@ namespace Cityrobo
             SlowMotionRechargeTime = Config.Bind("Slow Motion Mode", "Slow Motion Recharge Time", 5f, "How long how long does it take to fully recharge the slow motion ability?");
             SlowDownFadeTime = Config.Bind("Slow Motion Mode", "Slow Down Delay", 1f, "How quickly is the slow motion effect applied?");
             MinimumTimeScale = Config.Bind("Slow Motion Mode", "Minimum Time Scale", 0.25f, "How small can the time scale become?");
+            Hand = Config.Bind("Slow Motion Mode", "Slow Motion Hand", EHand.Right, "Which hand activates slow motion?");
             ExternallyTriggered = Config.Bind("Slow Motion Mode", "Externally Triggered", false, "If true, disables global activation command and only reacts to other external triggers.");
 
             Instance = this;
@@ -197,14 +205,13 @@ namespace Cityrobo
                 GM.CurrentSceneSettings.PlayerDeathEvent += DisableSlowMotion;
             } 
 
-            FVRViveHand leftHand = GetLeftHand();
+            FVRViveHand hand = Hand.Value == EHand.Left ? GetLeftHand() : GetRightHand();
 
-            if (!ExternallyTriggered.Value && leftHand != null)
+            if (!ExternallyTriggered.Value && hand != null)
             {
-                if (leftHand.Input.BYButtonDown)
+                if (hand.Input.BYButtonDown)
                 {
                     ToggleSlowMotionInternal();
-                    //Logger.LogInfo("Boop");
                 }
             }
 
@@ -282,8 +289,6 @@ namespace Cityrobo
                     StopAllCoroutines();
                     StartCoroutine(SpeedUpTime());
                     break;
-                default:
-                    break;
             }
         }
         
@@ -328,6 +333,13 @@ namespace Cityrobo
         {
             FVRViveHand[] FVRViveHands = GM.CurrentMovementManager.Hands;
             if (FVRViveHands[0].IsThisTheRightHand) return FVRViveHands[1];
+            else return FVRViveHands[0];
+        }
+
+        private FVRViveHand GetRightHand()
+        {
+            FVRViveHand[] FVRViveHands = GM.CurrentMovementManager.Hands;
+            if (!FVRViveHands[0].IsThisTheRightHand) return FVRViveHands[1];
             else return FVRViveHands[0];
         }
 
