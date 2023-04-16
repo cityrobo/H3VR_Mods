@@ -46,7 +46,7 @@ namespace Cityrobo
 
                 float railSize = Vector3.Distance(self.Point_Front.localPosition, self.Point_Rear.localPosition);
 
-                int numberOfSlots = Mathf.FloorToInt(railSize / PICATINNY_SLOT_DISTANCE);
+                int numberOfSlots = Mathf.RoundToInt(railSize / PICATINNY_SLOT_DISTANCE);
 
                 picatinnyRail.NumberOfPicatinnySlots = numberOfSlots;
                 picatinnyRail.Mount = self;
