@@ -7,8 +7,8 @@
     <ProjectGuid>{7B2061D5-F464-4979-8E63-9C89AA3AD3F3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>VanillaClickyPicatinnyMountEnabler</RootNamespace>
-    <AssemblyName>VanillaClickyPicatinnyMountEnabler</AssemblyName>
+    <RootNamespace>VanillaClickyRailsEnabler</RootNamespace>
+    <AssemblyName>VanillaClickyRailsEnabler</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -98,7 +98,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="VanillaClickyPicatinnyMountEnabler.cs" />
+    <Compile Include="VanillaClickyRailsEnabler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

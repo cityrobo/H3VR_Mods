@@ -9,16 +9,16 @@ using UnityEngine;
 
 namespace Cityrobo
 {
-    [BepInPlugin("h3vr.cityrobo.VanillaClickyPicatinnyMountEnabler", "Vanilla Clicky Picatinny Mount Enabler", "1.0.0")]
+    [BepInPlugin("h3vr.cityrobo.VanillaClickyRailsEnabler", "Vanilla Clicky Rails Enabler", "1.0.0")]
     [BepInDependency("h3vr.OpenScripts2")]
-    public class VanillaClickyPicatinnyMountEnabler : BaseUnityPlugin
+    public class VanillaClickyRailsEnabler : BaseUnityPlugin
     {
         private const string ASSET_BUNDLE_NAME = "picatinny_sounds";
         private const string PREFAB_NAME = "PicatinnyRailPrefab";
         private const float PICATINNY_SLOT_DISTANCE = 0.01f;
 
         private AttachmentMountPicatinnyRail _prefabRail;
-        public VanillaClickyPicatinnyMountEnabler()
+        public VanillaClickyRailsEnabler()
         {
             On.FistVR.FVRFireArmAttachmentMount.Awake += FVRFireArmAttachmentMount_Awake;
 
