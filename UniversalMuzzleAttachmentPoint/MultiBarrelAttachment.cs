@@ -115,7 +115,7 @@ namespace Cityrobo
 
         private void FixNewSubAttachment(FVRFireArmAttachment newAttachment)
         {
-            if (Attachment.curMount.GetRootMount().ScaleModifier != 1 && !Attachment.CanScaleToMount && newAttachment.CanScaleToMount) newAttachment.ScaleToMount(Attachment.curMount.GetRootMount());
+            if (newAttachment is MuzzleDevice && Attachment.curMount.GetRootMount().ScaleModifier != 1 && !Attachment.CanScaleToMount && newAttachment.CanScaleToMount) newAttachment.ScaleToMount(Attachment.curMount.GetRootMount());
 
             if ((breakAction != null || derringer != null) && newAttachment != null && newAttachment is MuzzleDevice && newAttachment.GetComponent<MultiBarrelAttachment>() == null)
             {

@@ -8,16 +8,18 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using BepInEx;
+using BepInEx.Configuration;
 
 namespace Cityrobo
 {
-    [BepInPlugin("h3vr.cityrobo.UniversalMuzzleAttachmentPoint", "UniversalMuzzleAttachmentPoint Script", "1.0.0")]
+    [BepInPlugin("h3vr.cityrobo.UniversalMuzzleAttachmentPoint", "Universal Muzzle Attachment Point", "1.0.0")]
     public class UniversalMuzzleAttachmentPoint : BaseUnityPlugin
     {
         private const string MOUNTNAME = "_PointSuppressorMount";
         private const string LAYERNAME = "Interactable";
         private const string TAG = "FVRFireArmAttachmentMount";
-        
+
+        public ConfigEntry<float> FlintLockScale;
 
         private string _dictionaryPath;
         private const string DICTIONARYNAME = "RoundScaleDictionary.txt";
@@ -53,6 +55,8 @@ namespace Cityrobo
 
         public void Awake()
         {
+            FlintLockScale = Config.Bind("Universal Muzzle Attachment Point", "Flintlock Muzzle Scale", 1.5f, "Since Flintlocks don't use conventional caliber types in the game's ammo sense, I cannot auto configure them by caliber. So this config option exists to negate that.");
+
             Hook();
 
             _dictionaryPath = Info.Location;
@@ -200,7 +204,8 @@ namespace Cityrobo
                 // Setup Mount Component
                 MountComponent.MyObject = self;
                 MountComponent.Parent = self;
-                MountComponent.ScaleModifier = GetScale(self.RoundType);
+                if (!(self is FlintlockWeapon)) MountComponent.ScaleModifier = GetScale(self.RoundType);
+                else MountComponent.ScaleModifier = FlintLockScale.Value;
                 MountComponent.Type = FVRFireArmAttachementMountType.Suppressor;
                 MountComponent.Point_Front = MountComponent.transform;
                 MountComponent.Point_Rear = MountComponent.transform;
@@ -210,9 +215,8 @@ namespace Cityrobo
                 if (parentToThis) MountComponent.ParentToThis = true;
 
                 // Create Trigger
-                CapsuleCollider collider = MuzzleMountGameObject.AddComponent<CapsuleCollider>();
+                SphereCollider collider = MuzzleMountGameObject.AddComponent<SphereCollider>();
                 collider.radius = 0.01f;
-                collider.height = 0.01f;
                 collider.isTrigger = true;
 
                 // Replace potential null mount with new mount and remove other null mounts
@@ -226,13 +230,8 @@ namespace Cityrobo
                             break;
                         }
                     }
-                    for (int i = 0; i < self.AttachmentMounts.Count; i++)
-                    {
-                        if (self.AttachmentMounts[i] == null)
-                        {
-                            self.AttachmentMounts.RemoveAt(i);
-                        }
-                    }
+
+                    self.AttachmentMounts.RemoveAll(obj => obj == null);
                 }
                 else self.AttachmentMounts.Add(MountComponent);
 
@@ -248,6 +247,7 @@ namespace Cityrobo
             if (self.AttachmentMounts == null) self.AttachmentMounts = new List<FVRFireArmAttachmentMount>();
             bool hasNullMount = false;
             // Check if Muzzle mount exists
+
             foreach (var Mount in self.AttachmentMounts)
             {
                 // Check for potential null mount
@@ -284,9 +284,8 @@ namespace Cityrobo
                 MountComponent.SubMounts = new List<FVRFireArmAttachmentMount>();
 
                 // Create Trigger
-                CapsuleCollider collider = MuzzleMountGameObject.AddComponent<CapsuleCollider>();
+                SphereCollider collider = MuzzleMountGameObject.AddComponent<SphereCollider>();
                 collider.radius = 0.01f;
-                collider.height = 0.01f;
                 collider.isTrigger = true;
 
                 // Replace potential null mount with new mount and remove other null mounts
@@ -300,13 +299,8 @@ namespace Cityrobo
                             break;
                         }
                     }
-                    for (int i = 0; i < self.AttachmentMounts.Count; i++)
-                    {
-                        if (self.AttachmentMounts[i] == null)
-                        {
-                            self.AttachmentMounts.RemoveAt(i);
-                        }
-                    }
+
+                    self.AttachmentMounts.RemoveAll(obj => obj == null);
                 }
                 else self.AttachmentMounts.Add(MountComponent);
 
