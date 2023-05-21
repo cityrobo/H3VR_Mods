@@ -99,10 +99,12 @@ namespace Cityrobo
             if (isStandalone)
             {
                 _muzzlePos = fireArm.MuzzlePos;
-                Vector3 muzzleOffset = _muzzlePos.InverseTransformPoint(reticle.transform.position);
+                Vector3 muzzleOffset = _muzzlePos.position - reticle.transform.position;
 
-                reticle.material.SetFloat(s_nameOfXOffsetVariable, -muzzleOffset.x);
-                reticle.material.SetFloat(s_nameOfYOffsetVariable, -muzzleOffset.y);
+                reticle.material.SetFloat(s_nameOfXOffsetVariable, muzzleOffset.x);
+                reticle.material.SetFloat(s_nameOfYOffsetVariable, muzzleOffset.y);
+
+                reticle.transform.rotation = Quaternion.LookRotation(_muzzlePos.forward);
             }
 
             StartScreen();
@@ -167,10 +169,12 @@ namespace Cityrobo
                 {
                     _muzzlePos = fireArm.CurrentMuzzle;
 
-                    Vector3 muzzleOffset = _muzzlePos.InverseTransformPoint(reticle.transform.position);
+                    Vector3 muzzleOffset = _muzzlePos.position - reticle.transform.position;
 
-                    reticle.material.SetFloat(s_nameOfXOffsetVariable, -muzzleOffset.x);
-                    reticle.material.SetFloat(s_nameOfYOffsetVariable, -muzzleOffset.y);
+                    reticle.material.SetFloat(s_nameOfXOffsetVariable, muzzleOffset.x);
+                    reticle.material.SetFloat(s_nameOfYOffsetVariable, muzzleOffset.y);
+
+                    reticle.transform.rotation = Quaternion.LookRotation(_muzzlePos.forward);
                 }
             }
             else if (!isStandalone && attachment.curMount == null && _attached)
@@ -178,6 +182,8 @@ namespace Cityrobo
                 _attached = false;
                 reticle.material.SetFloat(s_nameOfXOffsetVariable, 0f);
                 reticle.material.SetFloat(s_nameOfYOffsetVariable, 0f);
+
+                reticle.transform.localRotation = Quaternion.identity;
                 fireArm = null;
                 _muzzlePos = null;
             }
