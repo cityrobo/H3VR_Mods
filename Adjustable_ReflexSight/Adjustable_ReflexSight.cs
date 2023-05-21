@@ -77,15 +77,18 @@ namespace Cityrobo
         private Vector3 _leftEye;
         private Vector3 _rightEye;
 
+        private MaterialPropertyBlock _materialPropertyBlock;
+
         public void Start()
         {
+            _materialPropertyBlock = new MaterialPropertyBlock();
+
             if (currentTexture >= textures.Length || currentTexture < 0) currentTexture = 0;
             if (currentZeroDistance >= zeroDistances.Length || currentZeroDistance < 0) currentZeroDistance = 0;
             if (currentBrightnessIndex >= HDRBrightnessLevels.Length || currentBrightnessIndex < 0) currentBrightnessIndex = 0;
 
             if (HDRBrightnessLevels.Length != BrightnessAlphaLevels.Length) Debug.LogError($"AdjustableReflexsight {gameObject.name}: HDRBrightnessLevels.Length != BrightnessAlphaLevels.Length!");
-            if (textures.Length != 0) reticle.material.SetTexture(s_nameOfTextureVariable, textures[currentTexture]);
-            reticle.material.SetFloat(s_nameOfDistanceVariable, zeroDistances[currentZeroDistance]);
+            if (textures.Length != 0) _materialPropertyBlock.SetTexture(s_nameOfTextureVariable, textures[currentTexture]);
 
             if (buttonSwitch != null) buttonSwitch.localPosition = switchPositions[currentTexture];
 
@@ -96,17 +99,6 @@ namespace Cityrobo
                 _currentMenu = 1;
             }
 
-            if (isStandalone)
-            {
-                _muzzlePos = fireArm.MuzzlePos;
-                Vector3 muzzleOffset = _muzzlePos.position - reticle.transform.position;
-
-                reticle.material.SetFloat(s_nameOfXOffsetVariable, muzzleOffset.x);
-                reticle.material.SetFloat(s_nameOfYOffsetVariable, muzzleOffset.y);
-
-                reticle.transform.rotation = Quaternion.LookRotation(_muzzlePos.forward);
-            }
-
             StartScreen();
 #if !DEBUG
             _leftEye = GM.CurrentPlayerBody.Head.position + GM.CurrentPlayerBody.Head.right * -0.032f;
@@ -114,6 +106,9 @@ namespace Cityrobo
 
             if (!isStandalone) _scopeColliders = new List<Collider>(attachment.m_colliders);
 #endif
+            Zero();
+
+            reticle.SetPropertyBlock(_materialPropertyBlock);
         }
 #if !DEBUG
         public void OnDestroy()
@@ -165,33 +160,20 @@ namespace Cityrobo
             {
                 _attached = true;
                 fireArm = attachment.curMount.GetRootMount().MyObject as FVRFireArm;
-                if (fireArm != null)
-                {
-                    _muzzlePos = fireArm.CurrentMuzzle;
-
-                    Vector3 muzzleOffset = _muzzlePos.position - reticle.transform.position;
-
-                    reticle.material.SetFloat(s_nameOfXOffsetVariable, muzzleOffset.x);
-                    reticle.material.SetFloat(s_nameOfYOffsetVariable, muzzleOffset.y);
-
-                    reticle.transform.rotation = Quaternion.LookRotation(_muzzlePos.forward);
-                }
+                Zero();
             }
             else if (!isStandalone && attachment.curMount == null && _attached)
             {
                 _attached = false;
-                reticle.material.SetFloat(s_nameOfXOffsetVariable, 0f);
-                reticle.material.SetFloat(s_nameOfYOffsetVariable, 0f);
-
-                reticle.transform.localRotation = Quaternion.identity;
-                fireArm = null;
-                _muzzlePos = null;
+                Zero(true);
             }
 
             _leftEye = GM.CurrentPlayerBody.Head.position + GM.CurrentPlayerBody.Head.right * -0.032f;
             _rightEye = GM.CurrentPlayerBody.Head.position + GM.CurrentPlayerBody.Head.right * +0.032f;
 
             if (!disableOcclusionCulling && (isStandalone || _attached)) CheckReticleVisibility();
+
+            reticle.SetPropertyBlock(_materialPropertyBlock);
         }
 #endif
 
@@ -258,8 +240,8 @@ namespace Cityrobo
         {
             currentTexture = (currentTexture + 1) % textures.Length;
 
-            reticle.material.SetTexture(s_nameOfTextureVariable, textures[currentTexture]);
-            if (reticleColors != null && reticleColors.Length == textures.Length) reticle.material.SetColor(s_nameOfColorVariable, reticleColors[currentTexture]);
+            _materialPropertyBlock.SetTexture(s_nameOfTextureVariable, textures[currentTexture]);
+            if (reticleColors != null && reticleColors.Length == textures.Length) _materialPropertyBlock.SetColor(s_nameOfColorVariable, reticleColors[currentTexture]);
             if (buttonSwitch != null) buttonSwitch.localPosition = switchPositions[currentTexture];
 
             if(BrightnessTextScreen != null) UpdateBrightness();
@@ -270,8 +252,8 @@ namespace Cityrobo
         {
             currentTexture = (currentTexture + textures.Length - 1) % textures.Length;
 
-            reticle.material.SetTexture(s_nameOfTextureVariable, textures[currentTexture]);
-            if (reticleColors != null && reticleColors.Length == textures.Length) reticle.material.SetColor(s_nameOfColorVariable, reticleColors[currentTexture]);
+            _materialPropertyBlock.SetTexture(s_nameOfTextureVariable, textures[currentTexture]);
+            if (reticleColors != null && reticleColors.Length == textures.Length) _materialPropertyBlock.SetColor(s_nameOfColorVariable, reticleColors[currentTexture]);
             if (buttonSwitch != null) buttonSwitch.localPosition = switchPositions[currentTexture];
 
             if (BrightnessTextScreen != null) UpdateBrightness();
@@ -281,15 +263,13 @@ namespace Cityrobo
         public void UseNextZeroDistance()
         {
             if (currentZeroDistance < zeroDistances.Length - 1) currentZeroDistance++;
-            reticle.material.SetFloat(s_nameOfDistanceVariable, zeroDistances[currentZeroDistance]);
-
+            Zero();
             UpdateScreen();
         }
         public void UsePreviousZeroDistance()
         {
             if (currentZeroDistance > 0) currentZeroDistance--;
-            reticle.material.SetFloat(s_nameOfDistanceVariable, zeroDistances[currentZeroDistance]);
-
+            Zero();
             UpdateScreen();
         }
         public void UseNextBrightness()
@@ -328,7 +308,7 @@ namespace Cityrobo
             Color color = new Color(currentReticleColor.r * factor, currentReticleColor.g * factor, currentReticleColor.b * factor, currentReticleColor.a);
             color.a *= BrightnessAlphaLevels[currentBrightnessIndex];
 
-            reticle.material.SetColor(s_nameOfColorVariable, color);
+            _materialPropertyBlock.SetColor(s_nameOfColorVariable, color);
         }
         private void CheckReticleVisibility()
         {
@@ -418,6 +398,50 @@ namespace Cityrobo
                 disableOcclusionCulling = true;
             }
         }
+
+        private void Zero(bool reset = false)
+        {
+            if (!reset)
+            {
+                if (isStandalone)
+                {
+                    _muzzlePos = fireArm.MuzzlePos;
+                    Vector3 muzzleOffset = _muzzlePos.position - reticle.transform.position;
+
+                    _materialPropertyBlock.SetFloat(s_nameOfXOffsetVariable, muzzleOffset.x);
+                    _materialPropertyBlock.SetFloat(s_nameOfYOffsetVariable, muzzleOffset.y);
+
+                    reticle.transform.rotation = Quaternion.LookRotation(_muzzlePos.forward);
+                    _materialPropertyBlock.SetFloat(s_nameOfDistanceVariable, zeroDistances[currentZeroDistance]);
+                }
+                else
+                {
+                    if (fireArm != null)
+                    {
+                        _muzzlePos = fireArm.CurrentMuzzle;
+
+                        Vector3 muzzleOffset = _muzzlePos.position - reticle.transform.position;
+
+                        _materialPropertyBlock.SetFloat(s_nameOfXOffsetVariable, muzzleOffset.x);
+                        _materialPropertyBlock.SetFloat(s_nameOfYOffsetVariable, muzzleOffset.y);
+
+                        reticle.transform.rotation = Quaternion.LookRotation(_muzzlePos.forward);
+                        _materialPropertyBlock.SetFloat(s_nameOfDistanceVariable, zeroDistances[currentZeroDistance]);
+                    }
+                }
+            }
+            else
+            {
+                _materialPropertyBlock.SetFloat(s_nameOfXOffsetVariable, 0f);
+                _materialPropertyBlock.SetFloat(s_nameOfYOffsetVariable, 0f);
+
+                reticle.transform.localRotation = Quaternion.identity;
+                fireArm = null;
+                _muzzlePos = null;
+            }
+        }
+
+
         private void Unhook()
         {
 #if !(DEBUG || MEATKIT)
