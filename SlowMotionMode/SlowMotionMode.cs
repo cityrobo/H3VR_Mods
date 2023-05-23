@@ -14,7 +14,7 @@ using HarmonyLib;
 
 namespace Cityrobo
 {
-    [BepInPlugin("h3vr.cityrobo.SlowMotionMode", "Slow Motion Mode", "1.0.0")]
+    [BepInPlugin("h3vr.cityrobo.SlowMotionMode", "Slow Motion Mode", "1.1.0")]
     public class SlowMotionMode : BaseUnityPlugin
     {
         // Config Options:
@@ -24,6 +24,9 @@ namespace Cityrobo
         public static ConfigEntry<float> MinimumTimeScale;
         public static ConfigEntry<bool> ExternallyTriggered;
         public static ConfigEntry<EHand> Hand;
+        public static ConfigEntry<EButtonInput> ButtonInput;
+        public static ConfigEntry<bool> AffectMovementSpeed;
+        public static ConfigEntry<bool> AffectInteractionSpeed;
 
         public static SlowMotionMode Instance;
         public float SlowMotionCharge = 1f;
@@ -38,7 +41,22 @@ namespace Cityrobo
         public enum EHand
         {
             Left,
-            Right
+            Right,
+            OffHand
+        }
+
+        public enum EButtonInput
+        {
+            BYButton,
+            AXButton,
+            Trigger,
+            Touchpad,
+            TouchpadCenter,
+            TouchpadUp,
+            TouchpadDown,
+            TouchpadLeft,
+            TouchpadRight,
+            IndexAnalogStickClick
         }
 
         //private Dictionary<FVRViveHand, HeldObject> _lastHeldObjects = new();
@@ -68,7 +86,10 @@ namespace Cityrobo
             SlowMotionRechargeTime = Config.Bind("Slow Motion Mode", "Slow Motion Recharge Time", 5f, "How long how long does it take to fully recharge the slow motion ability?");
             SlowDownFadeTime = Config.Bind("Slow Motion Mode", "Slow Down Delay", 1f, "How quickly is the slow motion effect applied?");
             MinimumTimeScale = Config.Bind("Slow Motion Mode", "Minimum Time Scale", 0.25f, "How small can the time scale become?");
-            Hand = Config.Bind("Slow Motion Mode", "Slow Motion Hand", EHand.Right, "Which hand activates slow motion?");
+            Hand = Config.Bind("Slow Motion Mode", "Slow Motion Hand", EHand.Right, "Input which hand should toggle slow motion? Or should the slow motion be toggled with a hand that doesn't hold an item?");
+            ButtonInput = Config.Bind("Slow Motion Mode", "Slow Motion Button", EButtonInput.BYButton, "Which Button should activate slow motion?");
+            AffectMovementSpeed = Config.Bind("Slow Motion Mode", "Affect Movement Speed", true, "If true, movement speed will be increased to counter slow motion effect.");
+            AffectInteractionSpeed = Config.Bind("Slow Motion Mode", "Affect Interaction Speed", true, "If true, object interaction speed will be increased to counter slow motion effect.");
             ExternallyTriggered = Config.Bind("Slow Motion Mode", "Externally Triggered", false, "If true, disables global activation command and only reacts to other external triggers.");
 
             Instance = this;
@@ -76,21 +97,68 @@ namespace Cityrobo
 
         public void Awake()
         {
-            IL.FistVR.FVRMovementManager.UpdateSmoothLocomotion += FVRMovementManager_UpdateSmoothLocomotion;
-            IL.FistVR.FVRMovementManager.HandUpdateTwinstick += FVRMovementManager_HandUpdateTwinstick;
-            On.FistVR.FVRPhysicalObject.Awake += FVRPhysicalObject_Awake;
-            On.FistVR.FVRPhysicalObject.OnDestroy += FVRPhysicalObject_OnDestroy;
-            On.FistVR.FVRPhysicalObject.FVRUpdate += FVRPhysicalObject_FVRUpdate;
+            if (AffectMovementSpeed.Value)
+            {
+                IL.FistVR.FVRMovementManager.UpdateSmoothLocomotion += FVRMovementManager_UpdateSmoothLocomotion;
+                IL.FistVR.FVRMovementManager.HandUpdateTwinstick += FVRMovementManager_HandUpdateTwinstick;
+            }
+            if (AffectInteractionSpeed.Value)
+            {
+                On.FistVR.FVRPhysicalObject.Awake += FVRPhysicalObject_Awake;
+                On.FistVR.FVRPhysicalObject.OnDestroy += FVRPhysicalObject_OnDestroy;
+                On.FistVR.FVRPhysicalObject.FVRUpdate += FVRPhysicalObject_FVRUpdate;
+            }
+            AffectMovementSpeed.SettingChanged += AffectMovementSpeed_SettingChanged;
+            AffectInteractionSpeed.SettingChanged += AffectInteractionSpeed_SettingChanged;
 
             Harmony.CreateAndPatchAll(typeof(SlowMotionMode));
         }
 
+        private void AffectMovementSpeed_SettingChanged(object sender, EventArgs e)
+        {
+            if (AffectMovementSpeed.Value)
+            {
+                IL.FistVR.FVRMovementManager.UpdateSmoothLocomotion -= FVRMovementManager_UpdateSmoothLocomotion;
+                IL.FistVR.FVRMovementManager.HandUpdateTwinstick -= FVRMovementManager_HandUpdateTwinstick;
+                IL.FistVR.FVRMovementManager.UpdateSmoothLocomotion += FVRMovementManager_UpdateSmoothLocomotion;
+                IL.FistVR.FVRMovementManager.HandUpdateTwinstick += FVRMovementManager_HandUpdateTwinstick;
+            }
+            else
+            {
+                IL.FistVR.FVRMovementManager.UpdateSmoothLocomotion -= FVRMovementManager_UpdateSmoothLocomotion;
+                IL.FistVR.FVRMovementManager.HandUpdateTwinstick -= FVRMovementManager_HandUpdateTwinstick;
+            }
+        }
+
+        private void AffectInteractionSpeed_SettingChanged(object sender, EventArgs e)
+        {
+            if (AffectInteractionSpeed.Value)
+            {
+                On.FistVR.FVRPhysicalObject.Awake -= FVRPhysicalObject_Awake;
+                On.FistVR.FVRPhysicalObject.OnDestroy -= FVRPhysicalObject_OnDestroy;
+                On.FistVR.FVRPhysicalObject.FVRUpdate -= FVRPhysicalObject_FVRUpdate;
+                On.FistVR.FVRPhysicalObject.Awake += FVRPhysicalObject_Awake;
+                On.FistVR.FVRPhysicalObject.OnDestroy += FVRPhysicalObject_OnDestroy;
+                On.FistVR.FVRPhysicalObject.FVRUpdate += FVRPhysicalObject_FVRUpdate;
+            }
+            else
+            {
+                On.FistVR.FVRPhysicalObject.Awake -= FVRPhysicalObject_Awake;
+                On.FistVR.FVRPhysicalObject.OnDestroy -= FVRPhysicalObject_OnDestroy;
+                On.FistVR.FVRPhysicalObject.FVRUpdate -= FVRPhysicalObject_FVRUpdate;
+            }
+        }
+
         public void OnDestroy()
         {
+            IL.FistVR.FVRMovementManager.UpdateSmoothLocomotion -= FVRMovementManager_UpdateSmoothLocomotion;
             IL.FistVR.FVRMovementManager.HandUpdateTwinstick -= FVRMovementManager_HandUpdateTwinstick;
             On.FistVR.FVRPhysicalObject.Awake -= FVRPhysicalObject_Awake;
             On.FistVR.FVRPhysicalObject.OnDestroy -= FVRPhysicalObject_OnDestroy;
             On.FistVR.FVRPhysicalObject.FVRUpdate -= FVRPhysicalObject_FVRUpdate;
+
+            AffectMovementSpeed.SettingChanged -= AffectMovementSpeed_SettingChanged;
+            AffectInteractionSpeed.SettingChanged -= AffectInteractionSpeed_SettingChanged;
 
             if (_currentSceneSettings != null) _currentSceneSettings.PlayerDeathEvent -= DisableSlowMotion;
         }
@@ -138,7 +206,6 @@ namespace Cityrobo
                     self.RotIntensity = heldObject.RotIntensity;
                 }
             }
-
         }
 
         private void FVRMovementManager_HandUpdateTwinstick(ILContext il)
@@ -203,15 +270,31 @@ namespace Cityrobo
                 _currentSceneSettings = GM.CurrentSceneSettings;
                 GM.CurrentSceneSettings.PlayerDeathEvent -= DisableSlowMotion;
                 GM.CurrentSceneSettings.PlayerDeathEvent += DisableSlowMotion;
-            } 
+            }
 
-            FVRViveHand hand = Hand.Value == EHand.Left ? GetLeftHand() : GetRightHand();
-
-            if (!ExternallyTriggered.Value && hand != null)
+            if (!ExternallyTriggered.Value && Hand.Value != EHand.OffHand)
             {
-                if (hand.Input.BYButtonDown)
+                FVRViveHand hand = Hand.Value == EHand.Left ? GetLeftHand() : GetRightHand();
+                if (hand != null && CorrectButtonPressed(hand))
                 {
                     ToggleSlowMotionInternal();
+                }
+            }
+            else if (!ExternallyTriggered.Value && Hand.Value == EHand.OffHand)
+            {
+                FVRViveHand[] FVRViveHands = GM.CurrentMovementManager.Hands;
+                foreach (var hand in FVRViveHands)
+                {
+                    if (hand.CurrentInteractable != null && hand.CurrentInteractable is FVRPhysicalObject && (hand.OtherHand.CurrentInteractable == null || !(hand.OtherHand.CurrentInteractable is FVRPhysicalObject)) && hand.OtherHand.CurrentPointable == null && hand.OtherHand.m_grabityHoveredObject == null && hand.OtherHand.m_selectedObj == null && CorrectButtonPressed(hand.OtherHand))
+                    {
+                        ToggleSlowMotionInternal();
+                        break;
+                    }
+                    else if (hand.CurrentInteractable == null && hand.OtherHand.CurrentInteractable == null && hand.CurrentPointable == null && hand.m_grabityHoveredObject == null && hand.m_selectedObj == null && CorrectButtonPressed(hand))
+                    {
+                        ToggleSlowMotionInternal();
+                        break;
+                    }
                 }
             }
 
@@ -251,6 +334,35 @@ namespace Cityrobo
             if (ExternallyTriggered.Value && Instance != null)
             {
                 Instance.ToggleSlowMotionInternal();
+            }
+        }
+
+        private bool CorrectButtonPressed(FVRViveHand hand)
+        {
+            switch (ButtonInput.Value)
+            {
+                case EButtonInput.BYButton:
+                    return hand.Input.BYButtonDown;
+                case EButtonInput.AXButton:
+                    return hand.Input.AXButtonDown;
+                case EButtonInput.Trigger:
+                    return hand.Input.TriggerDown;
+                case EButtonInput.Touchpad:
+                    return hand.Input.TouchpadDown;
+                case EButtonInput.TouchpadCenter:
+                    return hand.Input.TouchpadDown && hand.Input.TouchpadAxes.magnitude < 0.5f;
+                case EButtonInput.TouchpadUp:
+                    return hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.up) < 45f;
+                case EButtonInput.TouchpadDown:
+                    return hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.down) < 45f;
+                case EButtonInput.TouchpadLeft:
+                    return hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.left) < 45f;
+                case EButtonInput.TouchpadRight:
+                    return hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.right) < 45f;
+                case EButtonInput.IndexAnalogStickClick:
+                    return hand.Input.Secondary2AxisInputDown;
+                default: 
+                    return false;
             }
         }
 
