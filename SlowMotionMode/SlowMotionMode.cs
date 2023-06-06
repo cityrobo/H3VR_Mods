@@ -339,31 +339,20 @@ namespace Cityrobo
 
         private bool CorrectButtonPressed(FVRViveHand hand)
         {
-            switch (ButtonInput.Value)
+            return ButtonInput.Value switch
             {
-                case EButtonInput.BYButton:
-                    return hand.Input.BYButtonDown;
-                case EButtonInput.AXButton:
-                    return hand.Input.AXButtonDown;
-                case EButtonInput.Trigger:
-                    return hand.Input.TriggerDown;
-                case EButtonInput.Touchpad:
-                    return hand.Input.TouchpadDown;
-                case EButtonInput.TouchpadCenter:
-                    return hand.Input.TouchpadDown && hand.Input.TouchpadAxes.magnitude < 0.5f;
-                case EButtonInput.TouchpadUp:
-                    return hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.up) < 45f;
-                case EButtonInput.TouchpadDown:
-                    return hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.down) < 45f;
-                case EButtonInput.TouchpadLeft:
-                    return hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.left) < 45f;
-                case EButtonInput.TouchpadRight:
-                    return hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.right) < 45f;
-                case EButtonInput.IndexAnalogStickClick:
-                    return hand.Input.Secondary2AxisInputDown;
-                default: 
-                    return false;
-            }
+                EButtonInput.BYButton => hand.Input.BYButtonDown,
+                EButtonInput.AXButton => hand.Input.AXButtonDown,
+                EButtonInput.Trigger => hand.Input.TriggerDown,
+                EButtonInput.Touchpad => hand.Input.TouchpadDown,
+                EButtonInput.TouchpadCenter => hand.Input.TouchpadDown && hand.Input.TouchpadAxes.magnitude < 0.5f,
+                EButtonInput.TouchpadUp => hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.up) < 45f,
+                EButtonInput.TouchpadDown => hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.down) < 45f,
+                EButtonInput.TouchpadLeft => hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.left) < 45f,
+                EButtonInput.TouchpadRight => hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.right) < 45f,
+                EButtonInput.IndexAnalogStickClick => hand.Input.Secondary2AxisInputDown,
+                _ => false,
+            };
         }
 
         private void ToggleSlowMotionInternal()
