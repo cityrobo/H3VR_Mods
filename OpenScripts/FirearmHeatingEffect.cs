@@ -510,7 +510,7 @@ namespace Cityrobo
             Core.FirearmHeatingEffects.Remove(this);
             Core = null;
         }
-        void Unhook()
+        private void Unhook()
         {
 #if !DEBUG
             GM.CurrentSceneSettings.ShotFiredEvent -= OnShotFired;
@@ -525,7 +525,7 @@ namespace Cityrobo
 #endif
         }
 
-        void Hook()
+        private void Hook()
         {
 #if !DEBUG
             GM.CurrentSceneSettings.ShotFiredEvent += OnShotFired;

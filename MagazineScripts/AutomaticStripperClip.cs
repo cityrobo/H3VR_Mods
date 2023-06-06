@@ -18,42 +18,54 @@ namespace Cityrobo
         private bool _loadingRounds = false;
 
 #if!(UNITY_EDITOR || UNITY_5)
-        public void Update()
+
+        public void Awake()
         {
-            if (!_loadingRounds && Clip.FireArm != null)
-            {
-                if (DelayBetweenRounds != 0f) StartCoroutine(LoadRoundsOneByOne());
-                else LoadAllRounds();
-            }
+            gameObject.SetActive(false);
+            OpenScripts2.AutomaticStripperClip automaticStripperClip = gameObject.AddComponent<OpenScripts2.AutomaticStripperClip>();
+            automaticStripperClip.Clip = Clip;
+            automaticStripperClip.DelayBetweenRounds = DelayBetweenRounds;
+            gameObject.SetActive(true);
+
+            Destroy(this);
         }
 
-        IEnumerator LoadRoundsOneByOne()
-        {
-            _loadingRounds = true;
-            while (Clip.HasARound() && Clip.FireArm != null && Clip.FireArm.Magazine != null && !Clip.FireArm.Magazine.IsFull())
-            {
-                Clip.LoadOneRoundFromClipToMag();
-                yield return new WaitForSeconds(DelayBetweenRounds);
-            }
-            _loadingRounds = false;
-        }
+        //public void Update()
+        //{
+        //    if (!_loadingRounds && Clip.FireArm != null)
+        //    {
+        //        if (DelayBetweenRounds != 0f) StartCoroutine(LoadRoundsOneByOne());
+        //        else LoadAllRounds();
+        //    }
+        //}
 
-        void LoadAllRounds()
-        {
-            if (Clip.FireArm == null || Clip.FireArm.Magazine == null || Clip.FireArm.Magazine.IsFull() || !Clip.HasARound())
-            {
-                return;
-            }
-            SM.PlayGenericSound(Clip.LoadFromClipToMag, base.transform.position);
+        //IEnumerator LoadRoundsOneByOne()
+        //{
+        //    _loadingRounds = true;
+        //    while (Clip.HasARound() && Clip.FireArm != null && Clip.FireArm.Magazine != null && !Clip.FireArm.Magazine.IsFull())
+        //    {
+        //        Clip.LoadOneRoundFromClipToMag();
+        //        yield return new WaitForSeconds(DelayBetweenRounds);
+        //    }
+        //    _loadingRounds = false;
+        //}
 
-            for (int i = 0; i < Clip.m_numRounds; i++)
-            {
-                if (Clip.FireArm.Magazine.IsFull() || !Clip.HasARound()) break;
+        //void LoadAllRounds()
+        //{
+        //    if (Clip.FireArm == null || Clip.FireArm.Magazine == null || Clip.FireArm.Magazine.IsFull() || !Clip.HasARound())
+        //    {
+        //        return;
+        //    }
+        //    SM.PlayGenericSound(Clip.LoadFromClipToMag, base.transform.position);
 
-                FireArmRoundClass rClass = Clip.RemoveRoundReturnClass();
-                Clip.FireArm.Magazine.AddRound(rClass, false, true);
-            }
-        }
+        //    for (int i = 0; i < Clip.m_numRounds; i++)
+        //    {
+        //        if (Clip.FireArm.Magazine.IsFull() || !Clip.HasARound()) break;
+
+        //        FireArmRoundClass rClass = Clip.RemoveRoundReturnClass();
+        //        Clip.FireArm.Magazine.AddRound(rClass, false, true);
+        //    }
+        //}
 #endif
     }
 }

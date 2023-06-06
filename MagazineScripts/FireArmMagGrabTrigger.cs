@@ -8,36 +8,47 @@ namespace Cityrobo
 		public FVRFireArm FireArm;
 
 #if !DEBUG
-		public override bool IsInteractable()
-		{
-			return !(this.FireArm.Magazine == null);
-		}
 
-		public override void BeginInteraction(FVRViveHand hand)
+		public override void Awake()
 		{
-			base.BeginInteraction(hand);
-			if (this.FireArm.Magazine != null)
-			{
-				this.EndInteraction(hand);
-				FVRFireArmMagazine magazine = this.FireArm.Magazine;
-				this.FireArm.EjectMag(false);
-				hand.ForceSetInteractable(magazine);
-				magazine.BeginInteraction(hand);
-			}
-		}
+			gameObject.SetActive(false);
+			OpenScripts2.UniversalMagazineGrabTrigger universalMagazineGrabTrigger = gameObject.AddComponent<OpenScripts2.UniversalMagazineGrabTrigger>();
+            universalMagazineGrabTrigger.FireArm = FireArm;
+			gameObject.SetActive(true);
 
-		public override void UpdateInteraction(FVRViveHand hand)
-		{
-			base.UpdateInteraction(hand);
-			if (hand.Input.TouchpadDown && this.FireArm.Magazine != null)
-			{
-				this.EndInteraction(hand);
-				FVRFireArmMagazine magazine = this.FireArm.Magazine;
-				this.FireArm.EjectMag(false);
-				hand.ForceSetInteractable(magazine);
-				magazine.BeginInteraction(hand);
-			}
-		}
+			Destroy(this);
+        }
+
+		//public override bool IsInteractable()
+		//{
+		//	return !(FireArm.Magazine == null);
+		//}
+
+		//public override void BeginInteraction(FVRViveHand hand)
+		//{
+		//	base.BeginInteraction(hand);
+		//	if (FireArm.Magazine != null)
+		//	{
+		//		EndInteraction(hand);
+		//		FVRFireArmMagazine magazine = FireArm.Magazine;
+		//		FireArm.EjectMag(false);
+		//		hand.ForceSetInteractable(magazine);
+		//		magazine.BeginInteraction(hand);
+		//	}
+		//}
+
+		//public override void UpdateInteraction(FVRViveHand hand)
+		//{
+		//	base.UpdateInteraction(hand);
+		//	if (hand.Input.TouchpadDown && FireArm.Magazine != null)
+		//	{
+		//		EndInteraction(hand);
+		//		FVRFireArmMagazine magazine = FireArm.Magazine;
+		//		FireArm.EjectMag(false);
+		//		hand.ForceSetInteractable(magazine);
+		//		magazine.BeginInteraction(hand);
+		//	}
+		//}
 	}
 #endif
 }

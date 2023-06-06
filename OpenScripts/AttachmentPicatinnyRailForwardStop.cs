@@ -13,15 +13,26 @@ namespace Cityrobo
     public class AttachmentPicatinnyRailForwardStop : MonoBehaviour
     {
         public FVRFireArmAttachment Attachment;
-
-        public void Awake()
+#if !(DEBUG)
+        public void Start()
         {
-            AttachmentMountPicatinnyRail.ExistingForwardStops.Add(Attachment, this);
+            gameObject.SetActive(false);
+
+            OpenScripts2.AttachmentPicatinnyRailForwardStop newRail = gameObject.AddComponent<OpenScripts2.AttachmentPicatinnyRailForwardStop>();
+
+            newRail.Attachment = Attachment;
+
+            gameObject.SetActive(true);
+
+            Destroy(this);
+            // AttachmentMountPicatinnyRail.ExistingForwardStops.Add(Attachment, this);
         }
+
 
         public void OnDestroy()
         {
-            AttachmentMountPicatinnyRail.ExistingForwardStops.Remove(Attachment);
+            // AttachmentMountPicatinnyRail.ExistingForwardStops.Remove(Attachment);
         }
+#endif
     }
 }

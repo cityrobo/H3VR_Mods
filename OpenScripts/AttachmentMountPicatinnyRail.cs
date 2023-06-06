@@ -29,7 +29,8 @@ namespace Cityrobo
         private static IntPtr _methodPointer;
 
         private int _lastPosIndex = -1;
-
+#if (!DEBUG)
+        /*
         static AttachmentMountPicatinnyRail()
         {
             _methodPointer = IntPtr.Zero;
@@ -135,9 +136,11 @@ namespace Cityrobo
             orig(self);
         }
 #endif
-        public void Awake()
+        */
+        public void Start()
         {
-            _exisingAttachmentMountPicatinnyRail.Add(Mount, this);
+            StartCoroutine(ReplaceScript());
+            /* _exisingAttachmentMountPicatinnyRail.Add(Mount, this);
             if (_methodPointer == IntPtr.Zero)
             {
                 var _methodInfo = typeof(FVRPhysicalObject).GetMethod("GetPosTarget", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -145,13 +148,34 @@ namespace Cityrobo
             }
 
             _slotLerpFactor = 1f/(NumberOfPicatinnySlots - 1);
+            */
         }
 
+
+        IEnumerator ReplaceScript()
+        {
+            yield return null;
+
+            OpenScripts2.AttachmentMountPicatinnyRail newRail = GetComponent<OpenScripts2.AttachmentMountPicatinnyRail>();
+            if (newRail != null) Destroy(newRail);
+            yield return null;
+
+            gameObject.SetActive(false);
+            newRail = gameObject.AddComponent<OpenScripts2.AttachmentMountPicatinnyRail>();
+
+            newRail.Mount = Mount;
+            newRail.NumberOfPicatinnySlots = NumberOfPicatinnySlots;
+            newRail.SlotSound = SlotSound;
+
+            gameObject.SetActive(true);
+            Destroy(this);
+        }
+        /*
         public void OnDestoy()
         {
-            _exisingAttachmentMountPicatinnyRail.Remove(Mount);
+             _exisingAttachmentMountPicatinnyRail.Remove(Mount);
         }
-
+        
         public void Update()
         {
             if (!_isPatched && _currentlyPatchedAttachment != null)
@@ -240,5 +264,7 @@ namespace Cityrobo
             Vector3 AV = value - a;
             return Vector3.Dot(AV, AB) / Vector3.Dot(AB, AB);
         }
+        */
+#endif
     }
 }

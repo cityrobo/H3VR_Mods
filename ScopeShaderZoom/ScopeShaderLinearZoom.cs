@@ -395,7 +395,7 @@ namespace Cityrobo
         }
         public void Zero()
         {
-#if!Debug
+#if!DEBUG
             if (IsIntegrated || (this._attachment != null && this._attachment.curMount != null && this._attachment.curMount.Parent != null && this._attachment.curMount.Parent is FVRFireArm))
             {
                 if (!IsIntegrated) FireArm = this._attachment.curMount.Parent as FVRFireArm;

@@ -76,6 +76,9 @@
     <Reference Include="MonoMod.Utils, Version=21.12.13.1, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MonoMod.Utils.21.12.13.1\lib\net35\MonoMod.Utils.dll</HintPath>
     </Reference>
+    <Reference Include="OpenScripts2">
+      <HintPath>..\..\OpenScripts2\OpenScripts2\OpenScripts2.dll</HintPath>
+    </Reference>
     <Reference Include="OpenScriptsBepInEx">
       <HintPath>..\Releases\OpenScripts\OpenScriptsBepInEx.dll</HintPath>
     </Reference>

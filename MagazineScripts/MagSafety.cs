@@ -11,6 +11,16 @@ namespace Cityrobo
         private int lastFireMode;
         private bool magSafetyEngaged;
 #if !(UNITY_EDITOR || UNITY_5)
+        public void Awake()
+        {
+            //gameObject.SetActive(false);
+            //OpenScripts2.MagazineSafety magSafety = gameObject.AddComponent<OpenScripts2.MagazineSafety>();
+            //magSafety.FireArm = fireArm;
+            //gameObject.SetActive(true);
+
+            //Destroy(this);
+        }
+
         public void Update()
         {
             switch (fireArm)

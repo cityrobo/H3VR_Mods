@@ -79,9 +79,12 @@ namespace Cityrobo
 
         private MaterialPropertyBlock _materialPropertyBlock;
 
+        private Quaternion _origReticleRotation;
+
         public void Start()
         {
             _materialPropertyBlock = new MaterialPropertyBlock();
+            _origReticleRotation = reticle.transform.localRotation;
 
             if (currentTexture >= textures.Length || currentTexture < 0) currentTexture = 0;
             if (currentZeroDistance >= zeroDistances.Length || currentZeroDistance < 0) currentZeroDistance = 0;
@@ -106,7 +109,7 @@ namespace Cityrobo
 
             if (!isStandalone) _scopeColliders = new List<Collider>(attachment.m_colliders);
 #endif
-            Zero();
+            if (isStandalone) Zero();
 
             reticle.SetPropertyBlock(_materialPropertyBlock);
         }
@@ -403,44 +406,19 @@ namespace Cityrobo
         {
             if (!reset)
             {
-                if (isStandalone)
-                {
-                    _muzzlePos = fireArm.MuzzlePos;
-                    Vector3 muzzleOffset = _muzzlePos.position - reticle.transform.position;
+                _muzzlePos = fireArm.CurrentMuzzle;
+                Vector3 worldPosition = _muzzlePos.position + _muzzlePos.forward * zeroDistances[currentZeroDistance];
+                reticle.transform.LookAt(worldPosition, reticle.transform.up);
 
-                    _materialPropertyBlock.SetFloat(s_nameOfXOffsetVariable, muzzleOffset.x);
-                    _materialPropertyBlock.SetFloat(s_nameOfYOffsetVariable, muzzleOffset.y);
-
-                    reticle.transform.rotation = Quaternion.LookRotation(_muzzlePos.forward);
-                    _materialPropertyBlock.SetFloat(s_nameOfDistanceVariable, zeroDistances[currentZeroDistance]);
-                }
-                else
-                {
-                    if (fireArm != null)
-                    {
-                        _muzzlePos = fireArm.CurrentMuzzle;
-
-                        Vector3 muzzleOffset = _muzzlePos.position - reticle.transform.position;
-
-                        _materialPropertyBlock.SetFloat(s_nameOfXOffsetVariable, muzzleOffset.x);
-                        _materialPropertyBlock.SetFloat(s_nameOfYOffsetVariable, muzzleOffset.y);
-
-                        reticle.transform.rotation = Quaternion.LookRotation(_muzzlePos.forward);
-                        _materialPropertyBlock.SetFloat(s_nameOfDistanceVariable, zeroDistances[currentZeroDistance]);
-                    }
-                }
+                _materialPropertyBlock.SetFloat(s_nameOfDistanceVariable, zeroDistances[currentZeroDistance]);
             }
             else
             {
-                _materialPropertyBlock.SetFloat(s_nameOfXOffsetVariable, 0f);
-                _materialPropertyBlock.SetFloat(s_nameOfYOffsetVariable, 0f);
-
-                reticle.transform.localRotation = Quaternion.identity;
+                reticle.transform.localRotation = _origReticleRotation;
                 fireArm = null;
                 _muzzlePos = null;
             }
         }
-
 
         private void Unhook()
         {

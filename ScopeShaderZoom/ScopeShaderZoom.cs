@@ -105,8 +105,6 @@ namespace Cityrobo
 
         private float _baseReticleSize;
 
-        
-
         public void Start()
         {
             _correspondingCameraFOV = new List<float>();
@@ -121,9 +119,11 @@ namespace Cityrobo
                 _correspondingCameraFOV.Add(zoomValue);
             }
 
-
             _renderTexture = camera.targetTexture;
-            _renderTexture = RenderTexture.Instantiate(_renderTexture);
+            _renderTexture = Instantiate(_renderTexture);
+            _renderTexture.width = OpenScripts_BepInEx.ScopeResolution.Value;
+            _renderTexture.height = OpenScripts_BepInEx.ScopeResolution.Value;
+
             camera.targetTexture = _renderTexture;
             scopeLens.material.mainTexture = _renderTexture;
 
@@ -444,7 +444,7 @@ namespace Cityrobo
         }
         public void Zero()
         {
-#if !Debug
+#if !DEBUG
             if (isIntegrated || (this._attachment != null && this._attachment.curMount != null && this._attachment.curMount.Parent != null && this._attachment.curMount.Parent is FVRFireArm))
             {
                 if (!isIntegrated) firearm = this._attachment.curMount.Parent as FVRFireArm;

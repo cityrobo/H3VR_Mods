@@ -9,18 +9,29 @@ namespace Cityrobo
 
         private bool posChanged;
 #if!DEBUG
-        public void Update()
+
+        public void Awake()
         {
-            if (posChanged && fireArm.Magazine == null)
-            {
-                if (posChanged) posChanged = false;
-            }
-            else if (!posChanged && fireArm.Magazine != null)
-            {
-                fireArm.Magazine.SetParentage(fireArm.MagazineMountPos.transform);
-                posChanged = true;
-            }
+            gameObject.SetActive(false);
+            OpenScripts2.ForceMagazineMountingToMagMountPos forceMagazineMountingToMag = gameObject.AddComponent<OpenScripts2.ForceMagazineMountingToMagMountPos>();
+            forceMagazineMountingToMag.FireArm = fireArm;
+            gameObject.SetActive(true);
+
+            Destroy(this);
         }
+
+        //public void Update()
+        //{
+        //    if (posChanged && fireArm.Magazine == null)
+        //    {
+        //        if (posChanged) posChanged = false;
+        //    }
+        //    else if (!posChanged && fireArm.Magazine != null)
+        //    {
+        //        fireArm.Magazine.SetParentage(fireArm.MagazineMountPos.transform);
+        //        posChanged = true;
+        //    }
+        //}
 #endif
     }
 }
