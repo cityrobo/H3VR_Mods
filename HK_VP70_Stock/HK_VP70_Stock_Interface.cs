@@ -17,14 +17,18 @@ namespace Cityrobo
         {
             base.OnAttach();
 
-            (Attachment as HK_VP70_Stock).AddBurst();
+            HK_VP70_Stock stock = Attachment as HK_VP70_Stock;
+            stock.AddBurst();
+            //stock.SightFlipper.gameObject.layer = LayerMask.NameToLayer("NoCol");
         }
 
         public override void OnDetach()
         {
             base.OnDetach();
 
-            (Attachment as HK_VP70_Stock).RemoveBurst();
+            HK_VP70_Stock stock = Attachment as HK_VP70_Stock;
+            stock.RemoveBurst();
+            //stock.SightFlipper.gameObject.layer = LayerMask.NameToLayer("Interactable");
         }
 #endif
     }

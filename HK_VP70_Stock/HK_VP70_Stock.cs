@@ -100,7 +100,7 @@ namespace Cityrobo
 
             if (QBSlot.HeldObject != null && QuickbeltSlot != null)
             {
-                gameObject.layer = LayerMask.NameToLayer("Default");
+                gameObject.layer = LayerMask.NameToLayer("NoCol");
                 QBSlot.gameObject.layer = LayerMask.NameToLayer("Interactable");
                 QuickbeltSlot.IsSelectable = false;
             }
@@ -115,12 +115,14 @@ namespace Cityrobo
             if (!SightFlipper.m_isLargeAperture)
             {
                 QBSlot.IsSelectable = true;
-                Sensor.gameObject.SetActive(false);
+                //Sensor.gameObject.SetActive(false);
+                if (QBSlot.HeldObject != null && QBSlot.HeldObject is Handgun handgun && handgun.Slide.gameObject.layer != LayerMask.NameToLayer("Interactable")) handgun.Slide.gameObject.layer = LayerMask.NameToLayer("Interactable");
             }
             else
             {
                 QBSlot.IsSelectable = false;
-                Sensor.gameObject.SetActive(true);
+                //Sensor.gameObject.SetActive(true);
+                if (QBSlot.HeldObject != null && QBSlot.HeldObject is Handgun handgun && handgun.Slide.gameObject.layer != LayerMask.NameToLayer("NoCol")) handgun.Slide.gameObject.layer = LayerMask.NameToLayer("NoCol");
             }
         }
 #endif
