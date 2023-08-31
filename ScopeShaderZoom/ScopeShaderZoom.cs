@@ -50,6 +50,7 @@ namespace Cityrobo
           1000f
         };
 
+        public float fastElevationAdjustmentDelay = 1.0f;
         public float elevationIncreasePerClick = 0.5f;
         public float windageIncreasePerClick = 0.5f;
         [Header("Optimization Setting. Set to false when done testing for vanilla scope like behavior of showing a black picture when not attached to gun.")]
@@ -78,8 +79,8 @@ namespace Cityrobo
         [Tooltip("All reticle textures. Default reticle is first entry.")]
         public List<Texture2D> reticles;
         [Tooltip("Colors of all reticles. Default reticle name is first entry.")]
-        public List<Color> reticleColors;
         [ColorUsage(true, true, float.MaxValue, float.MaxValue, 0f, 0f)]
+        public List<Color> reticleColors;
         [Tooltip("Names of all reticles. Default reticle name is first entry.")]
         public string[] reticleName;
         
@@ -99,6 +100,7 @@ namespace Cityrobo
 
         private float _elevationStep;
         private float _windageStep;
+        private float time_tickdown;
 
         private int _currentMenu;
         private bool _initialZero = false;
@@ -123,6 +125,7 @@ namespace Cityrobo
             _renderTexture = Instantiate(_renderTexture);
             _renderTexture.width = OpenScripts_BepInEx.ScopeResolution.Value;
             _renderTexture.height = OpenScripts_BepInEx.ScopeResolution.Value;
+            time_tickdown = fastElevationAdjustmentDelay;
 
             camera.targetTexture = _renderTexture;
             scopeLens.material.mainTexture = _renderTexture;
@@ -217,6 +220,30 @@ namespace Cityrobo
                 else if (_currentMenu == 1 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.right) < 45f) NextZero();
                 else if (_currentMenu == 2 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.left) < 45f) DecreaseElevationAdjustment();
                 else if (_currentMenu == 2 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.right) < 45f) IncreaseElevationAdjustment();
+                else if (_currentMenu == 2 && hand.Input.TouchpadPressed && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.left) < 45f)
+                {
+                    if (this.time_tickdown > 0)
+                    {
+                        this.time_tickdown -= Time.deltaTime;
+                    }
+                    else
+                    {
+                        DecreaseElevationAdjustment();
+                    }
+                }
+                else if (_currentMenu == 2 && hand.Input.TouchpadPressed && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.right) < 45f)
+
+                {
+                    if (this.time_tickdown > 0)
+                    {
+                        this.time_tickdown -= Time.deltaTime;
+                    }
+                    else
+                    {
+                        IncreaseElevationAdjustment();
+                    }
+                }
+                else if (_currentMenu == 2 && hand.Input.TouchpadUp) this.time_tickdown = fastElevationAdjustmentDelay;
                 else if (_currentMenu == 3 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.left) < 45f) DecreaseWindageAdjustment();
                 else if (_currentMenu == 3 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.right) < 45f) IncreaseWindageAdjustment();
                 else if (_currentMenu == 4 && hand.Input.TouchpadDown && Vector2.Angle(hand.Input.TouchpadAxes, Vector2.left) < 45f) PreviousReticle();
