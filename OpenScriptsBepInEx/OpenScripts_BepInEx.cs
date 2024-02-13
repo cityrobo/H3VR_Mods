@@ -9,7 +9,7 @@ using BepInEx.Configuration;
 
 namespace Cityrobo
 {
-    [BepInPlugin("h3vr.cityrobo.OpenScripts", "OpenScripts BepInEx Loader Plugin", "1.5.1")]
+    [BepInPlugin("h3vr.cityrobo.OpenScripts", "OpenScripts BepInEx Loader Plugin", "1.6.0")]
     public class OpenScripts_BepInEx : BaseUnityPlugin
     {
         public static string PluginPath;

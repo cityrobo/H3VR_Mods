@@ -19,31 +19,39 @@ namespace Cityrobo
 
         public void Awake()
         {
-            attachmentMount.HasHoverDisablePiece = true;
-            if (attachmentMount.DisableOnHover == null)
-            {
-                attachmentMount.DisableOnHover = new GameObject("MultipleHideOnAttach_Proxy");
-            }
+            gameObject.SetActive(false);
+            OpenScripts2.MultipleHideOnAttach newComponent = gameObject.AddComponent<OpenScripts2.MultipleHideOnAttach>();
+            newComponent.attachmentMount = attachmentMount;
+            newComponent.ShowOnAttach = showOnAttach;
+            newComponent.ObjectToHideOrShow = objectToHideOrShow;
+            gameObject.SetActive(true);
+
+            Destroy(this);
+            //attachmentMount.HasHoverDisablePiece = true;
+            //if (attachmentMount.DisableOnHover == null)
+            //{
+            //    attachmentMount.DisableOnHover = new GameObject("MultipleHideOnAttach_Proxy");
+            //}
         }
 #if !DEBUG
-        public void Update()
-        {
+        //public void Update()
+        //{
 
-            if (attachmentMount.DisableOnHover.activeInHierarchy == false)
-            {
-                foreach (GameObject gameObject in objectToHideOrShow)
-                {
-                    gameObject.SetActive(showOnAttach);
-                }
-            }
-            else
-            {
-                foreach (GameObject gameObject in objectToHideOrShow)
-                {
-                    gameObject.SetActive(!showOnAttach);
-                }
-            }
-        }
+        //    if (attachmentMount.DisableOnHover.activeInHierarchy == false)
+        //    {
+        //        foreach (GameObject gameObject in objectToHideOrShow)
+        //        {
+        //            gameObject.SetActive(showOnAttach);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        foreach (GameObject gameObject in objectToHideOrShow)
+        //        {
+        //            gameObject.SetActive(!showOnAttach);
+        //        }
+        //    }
+        //}
 #endif
     }
 }

@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-
 namespace Cityrobo
 {
     public class CapAndBallRevolver : SingleActionRevolver
@@ -21,9 +20,7 @@ namespace Cityrobo
         public int numberOfChambersBackwardsToRam;
 
         private CapAndBallRevolverCylinder CapCylinder;
-
         private int lastChamber = -1;
-
         private bool isRamRodExtended = false;
 
 #if!(UNITY_EDITOR || UNITY_5 || DEBUG)
@@ -41,6 +38,7 @@ namespace Cityrobo
             Unhook();
             base.OnDestroy();
         }
+
         private void Unhook()
         {
             On.FistVR.SingleActionRevolver.Fire -= SingleActionRevolver_Fire;

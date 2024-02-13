@@ -9,21 +9,32 @@ namespace Cityrobo
 		public FVRFireArmAttachment attachment;
 		public FVRFireArmAttachmentMount mount;
 #if!DEBUG
-		public void Start()
+		public void Awake()
 		{
-			StartCoroutine("AttachToMount");
-		}
+            gameObject.SetActive(false);
+            OpenScripts2.PreattachedAttachment newComponent = gameObject.AddComponent<OpenScripts2.PreattachedAttachment>();
+			newComponent.Attachment = attachment;
+			newComponent.AttachmentMount = mount;
+            gameObject.SetActive(true);
 
-		public IEnumerator AttachToMount()
-		{
-			yield return null;
-			attachment.AttachToMount(mount, false);
-            if (attachment.GetType() == typeof(Suppressor))
-            {
-				Suppressor tempSup = attachment as Suppressor;
-				tempSup.AutoMountWell();
-            }
-		}
+            Destroy(this);
+        }
+
+		//public void Start()
+		//{
+		//	StartCoroutine("AttachToMount");
+		//}
+
+		//public IEnumerator AttachToMount()
+		//{
+		//	yield return null;
+		//	attachment.AttachToMount(mount, false);
+  //          if (attachment.GetType() == typeof(Suppressor))
+  //          {
+		//		Suppressor tempSup = attachment as Suppressor;
+		//		tempSup.AutoMountWell();
+  //          }
+		//}
 #endif
 	}
 }

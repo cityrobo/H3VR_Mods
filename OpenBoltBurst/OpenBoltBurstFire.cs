@@ -7,6 +7,7 @@ using UnityEngine;
 
 namespace H3VRUtils
 {
+	[Obsolete("Use vanilla open bolt burst selector setting instead")]
 	public class OpenBoltBurstFire : MonoBehaviour
 	{
 		public OpenBoltReceiver Receiver = null;

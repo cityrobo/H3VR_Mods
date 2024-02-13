@@ -18,61 +18,72 @@ namespace Cityrobo
 		private bool slotHasItem = false;
         private bool isHooked = false;
 #if !(UNITY_EDITOR || UNITY_5)
-		public void Start()
+        public void Awake()
         {
-			slot = gameObject.GetComponent<FVRQuickBeltSlot>();
-            slotHasItem = false;
+            gameObject.SetActive(false);
+            OpenScripts2.CustomQBSlotSounds newComponent = gameObject.AddComponent<OpenScripts2.CustomQBSlotSounds>();
+            newComponent.InsertSounds = insertSound;
+            newComponent.ExtractSounds = extractSound;
+            gameObject.SetActive(true);
+
+            Destroy(this);
         }
 
-		public void Update()
-        {
-            if (!slotHasItem && (slot.HeldObject != null || slot.CurObject != null))
-            {
-                slotHasItem = true;
-                SM.PlayGenericSound(insertSound, slot.transform.position);
-            }
-            else if (slotHasItem && (slot.HeldObject == null && slot.CurObject == null))
-            {
-                slotHasItem = false;
-                SM.PlayGenericSound(extractSound, slot.transform.position);
-            }
+//		public void Start()
+//        {
+//			slot = gameObject.GetComponent<FVRQuickBeltSlot>();
+//            slotHasItem = false;
+//        }
 
-            if (!isHooked && slotHasItem && slot.CurObject.m_isSpawnLock == true)
-            {
-                Hook();
-                isHooked = true;
-            }
-            else if (isHooked && (!slotHasItem || slot.CurObject.m_isSpawnLock == false))
-            {
-                Unhook();
-                isHooked = false;
-            }
-        }
+//		public void Update()
+//        {
+//            if (!slotHasItem && (slot.HeldObject != null || slot.CurObject != null))
+//            {
+//                slotHasItem = true;
+//                SM.PlayGenericSound(insertSound, slot.transform.position);
+//            }
+//            else if (slotHasItem && (slot.HeldObject == null && slot.CurObject == null))
+//            {
+//                slotHasItem = false;
+//                SM.PlayGenericSound(extractSound, slot.transform.position);
+//            }
 
-        void Unhook()
-        {
-#if !(DEBUG || MEATKIT)
-            On.FistVR.FVRPhysicalObject.DuplicateFromSpawnLock -= FVRPhysicalObject_DuplicateFromSpawnLock;
-#endif
-        }
+//            if (!isHooked && slotHasItem && slot.CurObject.m_isSpawnLock == true)
+//            {
+//                Hook();
+//                isHooked = true;
+//            }
+//            else if (isHooked && (!slotHasItem || slot.CurObject.m_isSpawnLock == false))
+//            {
+//                Unhook();
+//                isHooked = false;
+//            }
+//        }
 
-        void Hook()
-        {
-#if !(DEBUG || MEATKIT)
-            On.FistVR.FVRPhysicalObject.DuplicateFromSpawnLock += FVRPhysicalObject_DuplicateFromSpawnLock;
-#endif
-        }
-#if !(DEBUG || MEATKIT)
-        private GameObject FVRPhysicalObject_DuplicateFromSpawnLock(On.FistVR.FVRPhysicalObject.orig_DuplicateFromSpawnLock orig, FVRPhysicalObject self, FVRViveHand hand)
-        {
-            GameObject temp = orig(self, hand);
-            if (self == slot.CurObject || self == slot.HeldObject)
-            {
-                SM.PlayGenericSound(extractSound, slot.transform.position);
-            }
-            return temp;
-        }
-#endif
+//        void Unhook()
+//        {
+//#if !(DEBUG || MEATKIT)
+//            On.FistVR.FVRPhysicalObject.DuplicateFromSpawnLock -= FVRPhysicalObject_DuplicateFromSpawnLock;
+//#endif
+//        }
+
+//        void Hook()
+//        {
+//#if !(DEBUG || MEATKIT)
+//            On.FistVR.FVRPhysicalObject.DuplicateFromSpawnLock += FVRPhysicalObject_DuplicateFromSpawnLock;
+//#endif
+//        }
+//#if !(DEBUG || MEATKIT)
+//        private GameObject FVRPhysicalObject_DuplicateFromSpawnLock(On.FistVR.FVRPhysicalObject.orig_DuplicateFromSpawnLock orig, FVRPhysicalObject self, FVRViveHand hand)
+//        {
+//            GameObject temp = orig(self, hand);
+//            if (self == slot.CurObject || self == slot.HeldObject)
+//            {
+//                SM.PlayGenericSound(extractSound, slot.transform.position);
+//            }
+//            return temp;
+//        }
+//#endif
 #endif
     }
 }

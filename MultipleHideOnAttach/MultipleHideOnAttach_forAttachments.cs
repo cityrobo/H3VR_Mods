@@ -19,6 +19,14 @@ namespace Cityrobo
 
         public void Awake()
         {
+            gameObject.SetActive(false);
+            OpenScripts2.MultipleHideOnAttachForAttachments newComponent = gameObject.AddComponent<OpenScripts2.MultipleHideOnAttachForAttachments>();
+            newComponent.Attachment = attachment;
+            newComponent.ShowOnAttach = showOnAttach;
+            newComponent.ObjectToHideOrShow = objectToHideOrShow;
+            gameObject.SetActive(true);
+
+            Destroy(this);
             /*
             if (attachment.DisableOnHover == null)
             {
@@ -27,24 +35,24 @@ namespace Cityrobo
             */
         }
 #if !DEBUG
-        public void Update()
-        {
+        //public void Update()
+        //{
 
-            if (attachment.Sensor.CurHoveredMount != null)
-            {
-                foreach (GameObject gameObject in objectToHideOrShow)
-                {
-                    gameObject.SetActive(showOnAttach);
-                }
-            }
-            else
-            {
-                foreach (GameObject gameObject in objectToHideOrShow)
-                {
-                    gameObject.SetActive(!showOnAttach);
-                }
-            }
-        }
+        //    if (attachment.Sensor.CurHoveredMount != null)
+        //    {
+        //        foreach (GameObject gameObject in objectToHideOrShow)
+        //        {
+        //            gameObject.SetActive(showOnAttach);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        foreach (GameObject gameObject in objectToHideOrShow)
+        //        {
+        //            gameObject.SetActive(!showOnAttach);
+        //        }
+        //    }
+        //}
 #endif
     }
 }

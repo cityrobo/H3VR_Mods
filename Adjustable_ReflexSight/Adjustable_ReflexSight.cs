@@ -17,7 +17,7 @@ namespace Cityrobo
         [Tooltip("All reticle textures. Default reticle is first entry.")]
         public Texture2D[] textures;
         [Tooltip("Colors of all reticles. Default reticle name is first entry.")]
-        [ColorUsage(true, true, float.MaxValue, float.MaxValue, 0f, 0f)]
+        [ColorUsage(true, true, 0f, float.MaxValue, 0f, float.MaxValue)]
         public Color[] reticleColors;
         [Tooltip("Names of all reticles. Default reticle name is first entry.")]
         public string[] reticleText;

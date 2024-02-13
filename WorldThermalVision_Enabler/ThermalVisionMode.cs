@@ -4,28 +4,28 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace MiguelFerreira {
-
+namespace MiguelFerreira 
+{
 //    [ExecuteInEditMode]
     public class ThermalVisionMode : MonoBehaviour
     {
-		
 		public Shader thermalShader;
 		public Texture2D thermalLookUpTexture;
 		public bool useOwnRenderTexture;
 		public RenderTexture referenceRenderTexture;
 		public MeshRenderer screen;
 
-
 		RenderingPath mainCameraOriginalRenderingPath;
 		bool mainCameraOriginalOcclusionCulling;
 		private RenderTexture renderTexture;
 
-
 		Camera _mainCamera;
-		Camera MainCamera {
-			get { 
-				if (_mainCamera == null) {
+		Camera MainCamera 
+		{
+			get 
+			{ 
+				if (_mainCamera == null) 
+				{
 					_mainCamera = GetComponent<Camera> ();
 				}
 
@@ -33,8 +33,8 @@ namespace MiguelFerreira {
 			}
 		}
 
-		void OnEnable() {
-
+		public void OnEnable() 
+		{
 			Shader.SetGlobalTexture ("_ThermalColorLUT",thermalLookUpTexture);
 
 			mainCameraOriginalOcclusionCulling = MainCamera.useOcclusionCulling;
@@ -42,7 +42,6 @@ namespace MiguelFerreira {
 			MainCamera.useOcclusionCulling = false;
 			MainCamera.renderingPath = RenderingPath.Forward;
 			MainCamera.SetReplacementShader (thermalShader, "Thermal");
-
 
 			if (useOwnRenderTexture)
 			{
@@ -53,8 +52,8 @@ namespace MiguelFerreira {
 			}
 		}
 
-		void OnDisable() {
-
+		public void OnDisable() 
+		{
 			MainCamera.useOcclusionCulling = mainCameraOriginalOcclusionCulling;
 			MainCamera.renderingPath = mainCameraOriginalRenderingPath;
 			MainCamera.ResetReplacementShader ();

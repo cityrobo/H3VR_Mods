@@ -37,103 +37,126 @@ namespace Cityrobo
 
         private bool _soundPlayed = false;
 #if !DEBUG
-        public void Start()
+        public void Awake()
         {
-            _currentZ = originalBolt.transform.localPosition.z;
-            _lastZ = _currentZ;
-        }
-        public void Update()
-        {
-            _currentZ = originalBolt.transform.localPosition.z;
-            if (originalBolt.IsHeld || _wasHeld)
-            {
-                _boltLerp = GetBoltLerpBetweenRearAndFore();
-                _lerpPosBolt = Vector3.Lerp(newBoltRearwardPos.localPosition, newBoltForwardPos.localPosition, _boltLerp);
-                newBolt.transform.localPosition = _lerpPosBolt;
-                if (originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.Forward) _wasHeld = false;
-                else _wasHeld = true;
-            }
-            else if (!_wasHeld)
-            {
-                if (originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.ForwardToMid && _currentZ < _lastZ)
-                {
-                    _boltLerp = originalBolt.GetBoltLerpBetweenLockAndFore();
+            gameObject.SetActive(false);
+            OpenScripts2.LongRecoilSystem_OpenBolt newComp = gameObject.AddComponent<OpenScripts2.LongRecoilSystem_OpenBolt>();
+            newComp.OriginalBolt = originalBolt;
 
-                    if (_boltLerp >= (1f - barrelForwardThreshhold))
-                    {
-                        float inverseLerp = Mathf.InverseLerp((1f - barrelForwardThreshhold), 1f, _boltLerp);
-                        _lerpPosBolt = Vector3.Lerp(newBoltRearwardPos.localPosition, newBoltForwardPos.localPosition, inverseLerp);
-                        _lerpPosBarrel = Vector3.Lerp(barrelRearwardPos.localPosition, barrelForwardPos.localPosition, inverseLerp);
+            newComp.NewBolt = newBolt;
+            newComp.NewBoltForwardPos = newBoltForwardPos;
+            newComp.NewBoltLockingPos = newBoltLockingPos;
+            newComp.NewBoltRearwardPos = newBoltRearwardPos;
 
-                        newBolt.transform.localPosition = _lerpPosBolt;
-                        barrel.transform.localPosition = _lerpPosBarrel;
-                    }
-                    else if (_boltLerp < (1f - barrelForwardThreshhold))
-                    {
-                        float inverseLerp = Mathf.InverseLerp((1f - barrelForwardThreshhold), 0f, _boltLerp);
-                        _lerpPosBarrel = Vector3.Lerp(barrelRearwardPos.localPosition, barrelLockingPos.localPosition, inverseLerp);
+            newComp.Barrel = barrel;
+            newComp.BarrelForwardPos = barrelForwardPos;
+            newComp.BarrelLockingPos = barrelLockingPos;
+            newComp.BarrelRearwardPos = barrelRearwardPos;
+            newComp.BarrelForwardThreshhold = barrelForwardThreshhold;
 
-                        newBolt.transform.localPosition = newBoltRearwardPos.localPosition;
-                        barrel.transform.localPosition = _lerpPosBarrel;
-                    }
-                }
-                else if (originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.Locked && _currentZ < _lastZ)
-                {
-                    newBolt.transform.localPosition = newBoltRearwardPos.localPosition;
-                    barrel.transform.localPosition = barrelLockingPos.localPosition;
-                }
-                else if (originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.LockedToRear && _currentZ < _lastZ)
-                {
-                    _boltLerp = GetBoltLerpBetweenLockAndRear();
-                    _lerpPosBarrel = Vector3.Lerp(barrelLockingPos.localPosition, barrelForwardPos.localPosition, _boltLerp);
-
-                    newBolt.transform.localPosition = newBoltRearwardPos.localPosition;
-                    barrel.transform.localPosition = _lerpPosBarrel;
-                }
-                else if (originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.Rear && (_currentZ < _lastZ || _currentZ == _lastZ))
-                {
-                    newBolt.transform.localPosition = newBoltRearwardPos.localPosition;
-                    barrel.transform.localPosition = barrelForwardPos.localPosition;
-                }
-                else if ((originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.LockedToRear || originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.ForwardToMid) && _currentZ > _lastZ)
-                {
-                    _boltLerp = GetBoltLerpBetweenRearAndFore();
-                    _lerpPosBolt = Vector3.Lerp(newBoltRearwardPos.localPosition, newBoltForwardPos.localPosition, _boltLerp);
-
-                    newBolt.transform.localPosition = _lerpPosBolt;
-                    barrel.transform.localPosition = barrelForwardPos.localPosition;
-                }
-                else if (originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.Forward && (_currentZ > _lastZ || _currentZ == _lastZ))
-                {
-                    newBolt.transform.localPosition = newBoltForwardPos.localPosition;
-                    barrel.transform.localPosition = barrelForwardPos.localPosition;
-
-                    _soundPlayed = false;
-                }
-                else if (originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.Locked && _currentZ == _lastZ)
-                {
-                    newBolt.transform.localPosition = newBoltLockingPos.localPosition;
-                    barrel.transform.localPosition = barrelForwardPos.localPosition;
-                }
-                // Sound
-                if (!_soundPlayed && ((originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.Rear && (_currentZ < _lastZ || _currentZ == _lastZ)) || (originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.LockedToRear && _currentZ > _lastZ) || (originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.ForwardToMid && _currentZ > _lastZ)))
-                {
-                    SM.PlayGenericSound(barrelHitForward, transform.position);
-                    _soundPlayed = true;
-                }
-            }
-            _lastZ = _currentZ;
+            newComp.BarrelHitForward = barrelHitForward;
+            gameObject.SetActive(true);
+            Destroy(this);
         }
 
-        private float GetBoltLerpBetweenRearAndFore()
-        {
-            return Mathf.InverseLerp(originalBolt.m_boltZ_rear, originalBolt.m_boltZ_forward, originalBolt.transform.localPosition.z);
-        }
+        //public void Start()
+        //{
+        //    _currentZ = originalBolt.transform.localPosition.z;
+        //    _lastZ = _currentZ;
+        //}
 
-        private float GetBoltLerpBetweenLockAndRear()
-        {
-            return Mathf.InverseLerp(originalBolt.m_boltZ_lock, originalBolt.m_boltZ_rear, originalBolt.transform.localPosition.z);
-        }
+        //public void Update()
+        //{
+        //    _currentZ = originalBolt.transform.localPosition.z;
+        //    if (originalBolt.IsHeld || _wasHeld)
+        //    {
+        //        _boltLerp = GetBoltLerpBetweenRearAndFore();
+        //        _lerpPosBolt = Vector3.Lerp(newBoltRearwardPos.localPosition, newBoltForwardPos.localPosition, _boltLerp);
+        //        newBolt.transform.localPosition = _lerpPosBolt;
+        //        if (originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.Forward) _wasHeld = false;
+        //        else _wasHeld = true;
+        //    }
+        //    else if (!_wasHeld)
+        //    {
+        //        if (originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.ForwardToMid && _currentZ < _lastZ)
+        //        {
+        //            _boltLerp = originalBolt.GetBoltLerpBetweenLockAndFore();
+
+        //            if (_boltLerp >= (1f - barrelForwardThreshhold))
+        //            {
+        //                float inverseLerp = Mathf.InverseLerp((1f - barrelForwardThreshhold), 1f, _boltLerp);
+        //                _lerpPosBolt = Vector3.Lerp(newBoltRearwardPos.localPosition, newBoltForwardPos.localPosition, inverseLerp);
+        //                _lerpPosBarrel = Vector3.Lerp(barrelRearwardPos.localPosition, barrelForwardPos.localPosition, inverseLerp);
+
+        //                newBolt.transform.localPosition = _lerpPosBolt;
+        //                barrel.transform.localPosition = _lerpPosBarrel;
+        //            }
+        //            else if (_boltLerp < (1f - barrelForwardThreshhold))
+        //            {
+        //                float inverseLerp = Mathf.InverseLerp((1f - barrelForwardThreshhold), 0f, _boltLerp);
+        //                _lerpPosBarrel = Vector3.Lerp(barrelRearwardPos.localPosition, barrelLockingPos.localPosition, inverseLerp);
+
+        //                newBolt.transform.localPosition = newBoltRearwardPos.localPosition;
+        //                barrel.transform.localPosition = _lerpPosBarrel;
+        //            }
+        //        }
+        //        else if (originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.Locked && _currentZ < _lastZ)
+        //        {
+        //            newBolt.transform.localPosition = newBoltRearwardPos.localPosition;
+        //            barrel.transform.localPosition = barrelLockingPos.localPosition;
+        //        }
+        //        else if (originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.LockedToRear && _currentZ < _lastZ)
+        //        {
+        //            _boltLerp = GetBoltLerpBetweenLockAndRear();
+        //            _lerpPosBarrel = Vector3.Lerp(barrelLockingPos.localPosition, barrelForwardPos.localPosition, _boltLerp);
+
+        //            newBolt.transform.localPosition = newBoltRearwardPos.localPosition;
+        //            barrel.transform.localPosition = _lerpPosBarrel;
+        //        }
+        //        else if (originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.Rear && (_currentZ < _lastZ || _currentZ == _lastZ))
+        //        {
+        //            newBolt.transform.localPosition = newBoltRearwardPos.localPosition;
+        //            barrel.transform.localPosition = barrelForwardPos.localPosition;
+        //        }
+        //        else if ((originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.LockedToRear || originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.ForwardToMid) && _currentZ > _lastZ)
+        //        {
+        //            _boltLerp = GetBoltLerpBetweenRearAndFore();
+        //            _lerpPosBolt = Vector3.Lerp(newBoltRearwardPos.localPosition, newBoltForwardPos.localPosition, _boltLerp);
+
+        //            newBolt.transform.localPosition = _lerpPosBolt;
+        //            barrel.transform.localPosition = barrelForwardPos.localPosition;
+        //        }
+        //        else if (originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.Forward && (_currentZ > _lastZ || _currentZ == _lastZ))
+        //        {
+        //            newBolt.transform.localPosition = newBoltForwardPos.localPosition;
+        //            barrel.transform.localPosition = barrelForwardPos.localPosition;
+
+        //            _soundPlayed = false;
+        //        }
+        //        else if (originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.Locked && _currentZ == _lastZ)
+        //        {
+        //            newBolt.transform.localPosition = newBoltLockingPos.localPosition;
+        //            barrel.transform.localPosition = barrelForwardPos.localPosition;
+        //        }
+        //        // Sound
+        //        if (!_soundPlayed && ((originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.Rear && (_currentZ < _lastZ || _currentZ == _lastZ)) || (originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.LockedToRear && _currentZ > _lastZ) || (originalBolt.CurPos == OpenBoltReceiverBolt.BoltPos.ForwardToMid && _currentZ > _lastZ)))
+        //        {
+        //            SM.PlayGenericSound(barrelHitForward, transform.position);
+        //            _soundPlayed = true;
+        //        }
+        //    }
+        //    _lastZ = _currentZ;
+        //}
+
+        //private float GetBoltLerpBetweenRearAndFore()
+        //{
+        //    return Mathf.InverseLerp(originalBolt.m_boltZ_rear, originalBolt.m_boltZ_forward, originalBolt.transform.localPosition.z);
+        //}
+
+        //private float GetBoltLerpBetweenLockAndRear()
+        //{
+        //    return Mathf.InverseLerp(originalBolt.m_boltZ_lock, originalBolt.m_boltZ_rear, originalBolt.transform.localPosition.z);
+        //}
 #endif
     }
 }
