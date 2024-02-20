@@ -27,7 +27,7 @@ namespace Cityrobo
 
         public void Awake()
         {
-            // Either grab the vanilla mount or my own script
+            // Grab the attachment mount this component should monitor
             _multipleHideOnAttach = GetComponent<MultipleHideOnAttach>();
             if (_multipleHideOnAttach != null)
             {
@@ -76,8 +76,17 @@ namespace Cityrobo
 
         public void Update()
         {
-            // either the config setting is not applied or we need to check if the mount's parent is being held
-            bool isHeld = !HighlightHiddenRails_BepInEx.OnlyHighlightOnHeldObject.Value || HighlightHiddenRails_BepInEx.OnlyHighlightOnHeldObject.Value && _mount.GetRootMount().Parent.IsHeld;
+            // either the config setting is not applied or we need to check if the mount's parent is being held. Sometimes GetRootMount() null-refs so we need to catch that and try something else.
+            bool isHeld;
+            try
+            {
+                isHeld = !HighlightHiddenRails_BepInEx.OnlyHighlightOnHeldObject.Value || HighlightHiddenRails_BepInEx.OnlyHighlightOnHeldObject.Value && _mount.GetRootMount().MyObject.IsHeld;
+            }
+            catch (Exception) 
+            {
+                FVRPhysicalObject physicalObject = _mount.GetComponentInParent<FVRPhysicalObject>();
+                isHeld = !HighlightHiddenRails_BepInEx.OnlyHighlightOnHeldObject.Value || HighlightHiddenRails_BepInEx.OnlyHighlightOnHeldObject.Value && physicalObject != null && physicalObject.IsHeld;
+            }
 
             // We don't want our code to run if our mount is already being hovered by an attachment
             if (isHeld && !_isHovered)
@@ -166,8 +175,14 @@ namespace Cityrobo
                 _alternativeBoxMesh.transform.rotation = _mount.transform.rotation;
                 
                 // Scale cube according to mount collider size
-                Vector3 colliderSize = GetColliderSize(collider);
-                _alternativeBoxMesh.transform.localScale = colliderSize;
+                _alternativeBoxMesh.transform.localScale = GetColliderSize(collider);
+
+                // move cube to collider center
+                _alternativeBoxMesh.transform.localPosition = GetColliderCenter(collider);
+
+                // If the cube has a collider, which it should come with by default, remove it
+                Collider cubeCollider = _alternativeBoxMesh.GetComponent<Collider>();
+                if (cubeCollider != null) Destroy(cubeCollider);
 
                 // Disable the cube so it's hidden by default
                 _alternativeBoxMesh.SetActive(false);
@@ -179,7 +194,7 @@ namespace Cityrobo
             }
         }
 
-        Vector3 GetColliderSize(Collider collider)
+        private Vector3 GetColliderSize(Collider collider)
         {
             if (collider is BoxCollider boxCollider)
             {
@@ -210,6 +225,14 @@ namespace Cityrobo
                 return collider.bounds.size;
             }
         }
+
+        private Vector3 GetColliderCenter(Collider collider) => collider switch
+        {
+            BoxCollider c => c.center,
+            SphereCollider c => c.center,
+            CapsuleCollider c => c.center,
+            _ => collider.bounds.center,
+        };
 
 #if !DEBUG
         static RailHighlightController()
