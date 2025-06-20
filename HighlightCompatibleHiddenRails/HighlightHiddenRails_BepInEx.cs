@@ -12,7 +12,7 @@ using BepInEx.Configuration;
 
 namespace Cityrobo
 {
-    [BepInPlugin("h3vr.cityrobo.HighlightHiddenRails", "Highlight Hidden Rails", "1.0.1")]
+    [BepInPlugin("h3vr.cityrobo.HighlightHiddenRails", "Highlight Hidden Rails", "1.0.2")]
     public class HighlightHiddenRails_BepInEx : BaseUnityPlugin
     {
         public static Material _highlightMaterial;

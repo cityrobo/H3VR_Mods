@@ -6,13 +6,15 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using FistVR;
+using BepInEx;
 
 namespace Cityrobo
 {
-    public class Class1 : MonoBehaviour
+    [BepInPlugin("h3vr.cityrobo.", "", "1.0.0")]
+    public class Class1 : BaseUnityPlugin
     {
 
-#if !(DEBUG || MEATKIT)
+#if !DEBUG
 
 #endif
     }

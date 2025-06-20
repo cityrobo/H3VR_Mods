@@ -13,13 +13,16 @@ namespace Cityrobo
     [BepInDependency("h3vr.OpenScripts2")]
     public class VanillaClickyRailsEnabler : BaseUnityPlugin
     {
+        public static ConfigEntry<float> PicatinnySlotDistance;
+
         private const string ASSET_BUNDLE_NAME = "picatinny_sounds";
         private const string PREFAB_NAME = "PicatinnyRailPrefab";
-        private const float PICATINNY_SLOT_DISTANCE = 0.01f;
 
-        private AttachmentMountPicatinnyRail _prefabRail;
+        private readonly AttachmentMountPicatinnyRail _prefabRail;
         public VanillaClickyRailsEnabler()
         {
+            PicatinnySlotDistance = Config.Bind("Vanilla Clicky Rails Enabler", "Picatinny slot distance", 0.01f);
+
             On.FistVR.FVRFireArmAttachmentMount.Awake += FVRFireArmAttachmentMount_Awake;
 
             string pluginPath = Path.GetDirectoryName(Info.Location);
@@ -44,14 +47,14 @@ namespace Cityrobo
                 self.gameObject.SetActive(false);
                 AttachmentMountPicatinnyRail picatinnyRail = self.gameObject.AddComponent<AttachmentMountPicatinnyRail>();
 
-                float railSize = Vector3.Distance(self.Point_Front.localPosition, self.Point_Rear.localPosition);
-
-                int numberOfSlots = Mathf.RoundToInt(railSize / PICATINNY_SLOT_DISTANCE);
+                float railSize = Vector3.Distance(self.Point_Front.position, self.Point_Rear.position);
+                int numberOfSlots = Mathf.RoundToInt(railSize / PicatinnySlotDistance.Value);
 
                 picatinnyRail.NumberOfPicatinnySlots = numberOfSlots;
                 picatinnyRail.Mount = self;
                 picatinnyRail.SlotSound = _prefabRail.SlotSound;
 
+                if (numberOfSlots == 0) Destroy(picatinnyRail);
                 self.gameObject.SetActive(true);
             }
         }
@@ -60,6 +63,5 @@ namespace Cityrobo
         {
 
         }
-
     }
 }

@@ -43,6 +43,7 @@ namespace Cityrobo
                 On.FistVR.Sosig.Start -= Sosig_Start;
                 On.FistVR.FVRPhysicalObject.Awake -= FVRPhysicalObject_Awake;
                 On.FistVR.TNH_EncryptionTarget.Start -= TNH_EncryptionTarget_Start;
+                On.FistVR.F18Steak.Start -= F18Steak_Start;
             }
             else
             {
@@ -53,6 +54,7 @@ namespace Cityrobo
                 On.FistVR.FVRFireArmRound.FVRUpdate -= FVRFireArmRound_FVRUpdate;
                 On.FistVR.FVRFireArmChamber.UpdateProxyDisplay -= FVRFireArmChamber_UpdateProxyDisplay;
                 On.FistVR.FVRFireArmMagazine.UpdateBulletDisplay -= FVRFireArmMagazine_UpdateBulletDisplay;
+                On.FistVR.F18Steak.Start -= F18Steak_Start;
             }
 
             IsHooked = false;
@@ -68,6 +70,7 @@ namespace Cityrobo
             On.FistVR.FVRFireArmRound.FVRUpdate += FVRFireArmRound_FVRUpdate;
             On.FistVR.FVRFireArmChamber.UpdateProxyDisplay += FVRFireArmChamber_UpdateProxyDisplay;
             On.FistVR.FVRFireArmMagazine.UpdateBulletDisplay += FVRFireArmMagazine_UpdateBulletDisplay;
+            On.FistVR.F18Steak.Start += F18Steak_Start;
 
             ApplyStaticValues();
             IsHooked = true;
@@ -80,6 +83,7 @@ namespace Cityrobo
             On.FistVR.Sosig.Start += Sosig_Start;
             On.FistVR.FVRPhysicalObject.Awake += FVRPhysicalObject_Awake;
             On.FistVR.TNH_EncryptionTarget.Start += TNH_EncryptionTarget_Start;
+            On.FistVR.F18Steak.Start += F18Steak_Start;
 
             essentialsOnly = true;
 
@@ -368,6 +372,29 @@ namespace Cityrobo
                 tB.MinimumTemperature = temperatureData.physicalObject_minTemp;
                 tB.enabled = true;
                 self.gameObject.SetActive(true);
+            }
+        }
+
+        private void F18Steak_Start(On.FistVR.F18Steak.orig_Start orig, FistVR.F18Steak self)
+        {
+            orig(self);
+            ThermalBody tB = self.gameObject.GetComponent<ThermalBody>();
+            if (tB == null)
+            {
+                tB = self.gameObject.AddComponent<ThermalBody>();
+                tB.enabled = false;
+                tB.ThermalDistribution = temperatureData.sosig_tempDist;
+                tB.MaximumTemperature = temperatureData.sosig_maxTemp;
+                tB.MinimumTemperature = temperatureData.sosig_minTemp;
+                tB.enabled = true;
+            }
+            else
+            {
+                tB.enabled = false;
+                tB.ThermalDistribution = temperatureData.sosig_tempDist;
+                tB.MaximumTemperature = temperatureData.sosig_maxTemp;
+                tB.MinimumTemperature = temperatureData.sosig_minTemp;
+                tB.enabled = true;
             }
         }
 #endif

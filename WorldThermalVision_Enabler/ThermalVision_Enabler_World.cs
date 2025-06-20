@@ -109,7 +109,7 @@ namespace Cityrobo
             }
         }
 
-        void OnDestroy()
+        public void OnDestroy()
         {
             ThermalVisionsInScene.Remove(this);
 

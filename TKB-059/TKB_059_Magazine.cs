@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Cityrobo
 {
-    class TKB_059_Magazine : FVRFireArmMagazine
+    public class TKB_059_Magazine : FVRFireArmMagazine
     {
         [Header("TKB_059_Magazine Config")]
         public FVRFireArmMagazine leftMag;

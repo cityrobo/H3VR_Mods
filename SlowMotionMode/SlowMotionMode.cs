@@ -94,26 +94,6 @@ namespace Cityrobo
 
             Instance = this;
         }
-
-        public void Awake()
-        {
-            if (AffectMovementSpeed.Value)
-            {
-                IL.FistVR.FVRMovementManager.UpdateSmoothLocomotion += FVRMovementManager_UpdateSmoothLocomotion;
-                IL.FistVR.FVRMovementManager.HandUpdateTwinstick += FVRMovementManager_HandUpdateTwinstick;
-            }
-            if (AffectInteractionSpeed.Value)
-            {
-                On.FistVR.FVRPhysicalObject.Awake += FVRPhysicalObject_Awake;
-                On.FistVR.FVRPhysicalObject.OnDestroy += FVRPhysicalObject_OnDestroy;
-                On.FistVR.FVRPhysicalObject.FVRUpdate += FVRPhysicalObject_FVRUpdate;
-            }
-            AffectMovementSpeed.SettingChanged += AffectMovementSpeed_SettingChanged;
-            AffectInteractionSpeed.SettingChanged += AffectInteractionSpeed_SettingChanged;
-
-            Harmony.CreateAndPatchAll(typeof(SlowMotionMode));
-        }
-
         private void AffectMovementSpeed_SettingChanged(object sender, EventArgs e)
         {
             if (AffectMovementSpeed.Value)
@@ -147,6 +127,26 @@ namespace Cityrobo
                 On.FistVR.FVRPhysicalObject.OnDestroy -= FVRPhysicalObject_OnDestroy;
                 On.FistVR.FVRPhysicalObject.FVRUpdate -= FVRPhysicalObject_FVRUpdate;
             }
+        }
+
+        #region Patches
+        public void Awake()
+        {
+            if (AffectMovementSpeed.Value)
+            {
+                IL.FistVR.FVRMovementManager.UpdateSmoothLocomotion += FVRMovementManager_UpdateSmoothLocomotion;
+                IL.FistVR.FVRMovementManager.HandUpdateTwinstick += FVRMovementManager_HandUpdateTwinstick;
+            }
+            if (AffectInteractionSpeed.Value)
+            {
+                On.FistVR.FVRPhysicalObject.Awake += FVRPhysicalObject_Awake;
+                On.FistVR.FVRPhysicalObject.OnDestroy += FVRPhysicalObject_OnDestroy;
+                On.FistVR.FVRPhysicalObject.FVRUpdate += FVRPhysicalObject_FVRUpdate;
+            }
+            AffectMovementSpeed.SettingChanged += AffectMovementSpeed_SettingChanged;
+            AffectInteractionSpeed.SettingChanged += AffectInteractionSpeed_SettingChanged;
+
+            Harmony.CreateAndPatchAll(typeof(SlowMotionMode));
         }
 
         public void OnDestroy()
@@ -230,6 +230,7 @@ namespace Cityrobo
             c.Emit(OpCodes.Div);
             c.Emit(OpCodes.Mul);
         }
+
         private void FVRMovementManager_UpdateSmoothLocomotion(ILContext il)
         {
             ILCursor c = new(il);
@@ -259,6 +260,21 @@ namespace Cityrobo
             c.Emit(OpCodes.Div);
             c.Emit(OpCodes.Mul);
         }
+
+        [HarmonyPatch(typeof(AudioSource), "pitch", (MethodType)2)]
+        [HarmonyPrefix]
+        public static void FixPitch(ref float value)
+        {
+            if (Instance._currentTimeScale != 1f)
+            {
+                value *= Mathf.Pow(Instance._currentTimeScale, 0.25f);
+            }
+            else
+            {
+                value *= 1f;
+            }
+        }
+        #endregion
 
         public void Update()
         {
@@ -430,6 +446,7 @@ namespace Cityrobo
 
             _currentTimeScale = scale;
         }
+
         private FVRViveHand GetLeftHand()
         {
             FVRViveHand[] FVRViveHands = GM.CurrentMovementManager.Hands;
@@ -444,19 +461,7 @@ namespace Cityrobo
             else return FVRViveHands[0];
         }
 
-        [HarmonyPatch(typeof(AudioSource), "pitch", (MethodType)2)]
-        [HarmonyPrefix]
-        public static void FixPitch(ref float value)
-        {
-            if (Instance._currentTimeScale != 1f)
-            {
-                value *= Mathf.Pow(Instance._currentTimeScale, 0.25f);
-            }
-            else
-            {
-                value *= 1f;
-            }
-        }
+
 
         private class HeldObject
         {

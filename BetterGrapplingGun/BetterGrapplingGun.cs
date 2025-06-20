@@ -63,6 +63,7 @@ namespace Cityrobo
         {
             Unhook();
         }
+
         private void Unhook()
         {
             IL.FistVR.GrappleGun.CanFireCheck -= GrappleGun_CanFireCheck;
