@@ -3,11 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
-using UnityEngine.UI;
-using BepInEx;
-using System.Net.Mail;
 
 namespace Cityrobo
 {
@@ -19,15 +15,16 @@ namespace Cityrobo
         public MultiBarrelMount Mount;
 
         public GameObject Viz = null;
-        public List<GameObject> VizCopies = new List<GameObject>();
+        public List<GameObject> VizCopies = [];
         
         private Vector3 _origMuzzlePos;
 
-        private readonly Dictionary<MuzzleEffect ,Vector3> _origMuzzleEffectPos = new Dictionary<MuzzleEffect, Vector3>();
+        private readonly Dictionary<MuzzleEffect, Vector3> _origMuzzleEffectPos = [];
         
-        private readonly List<FVRFireArmAttachment> _lastSubAttachments = new List<FVRFireArmAttachment>();
+        private readonly List<FVRFireArmAttachment> _lastSubAttachments = [];
 
         private bool _wasSuppressorWellMounted = false;
+
         public void Awake()
         {
             if (Attachment == null) Attachment = GetComponent<FVRFireArmAttachment>();
@@ -119,7 +116,13 @@ namespace Cityrobo
 
             if ((breakAction != null || derringer != null) && newAttachment != null && newAttachment is MuzzleDevice && newAttachment.GetComponent<MultiBarrelAttachment>() == null)
             {
-                Renderer[] meshRenderers = newAttachment.GetComponentsInChildren<Renderer>().Where(obj => !(obj is ParticleSystemRenderer) && obj.sharedMaterials.Length > 0 && obj.sharedMaterials[0] != null && !obj.sharedMaterials[0].name.Contains("Default-Material")).ToArray();
+                Renderer[] meshRenderers = newAttachment.GetComponentsInChildren<Renderer>().Where
+                    (
+                        obj => obj is not ParticleSystemRenderer 
+                        && obj.sharedMaterials.Length > 0 
+                        && obj.sharedMaterials[0] != null 
+                        && !obj.sharedMaterials[0].name.Contains("Default-Material")
+                    ).ToArray();
 
                 if (meshRenderers.Length > 0)
                 {
@@ -152,7 +155,6 @@ namespace Cityrobo
                         }
 
                         Vector3 attachmentOffset;
-
                         Suppressor suppressor = newAttachment as Suppressor;
                         if (breakAction != null && multiBarrelAttachment.Viz != null)
                         {
@@ -192,7 +194,7 @@ namespace Cityrobo
 
         private List<FVRFireArmAttachment> GetAllSubAttachments()
         {
-            List <FVRFireArmAttachment> subAttachments = new List<FVRFireArmAttachment>();
+            List <FVRFireArmAttachment> subAttachments = [];
             foreach (var SubMount in Attachment.AttachmentInterface.SubMounts)
             {
                 subAttachments.AddRange(SubMount.AttachmentsList);
